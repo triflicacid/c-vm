@@ -1,0 +1,13 @@
+# C Virtual Machine
+
+Basic virtual machine written in C
+
+## Components
+- Basic "CPU" (*in progress*)
+
+### TODO
+- Print to STDOUT (using memory mapping to map characters?)
+- Basic assembly script and assembler
+
+## Goal
+The goal of this repo is to build a basic virtual machine with I/O, equipped with a custom assembler, and a C-like language to accompany it.
