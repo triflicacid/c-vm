@@ -270,8 +270,34 @@
         }                                                           \
     }
 
+// Instruction syntax `<bytes: u8> <addr: uword>`. In-place modify `addr` result
+// of `fname(addr, bytes)`
+#define OP_APPLYF_MEM(ip, fname)                         \
+    {                                                    \
+        T_u8 bytes = MEM_READ(ip, T_u8);                 \
+        ip += sizeof(T_u8);                              \
+        UWORD_T addr = MEM_READ(ip, UWORD_T);            \
+        ip += sizeof(UWORD_T);                           \
+        fname((void *)((T_u8 *)cpu->mem + addr), bytes); \
+    }
+
+// Instruction syntax `<bytes: u8> <addr1: uword> <addr2: uword>`. In-place
+// modify `addr1` result of `fname(addr1, addr2, addr1, bytes)`
+#define OP_APPLYF_MEM_MEM(ip, fname)                     \
+    {                                                    \
+        T_u8 bytes = MEM_READ(ip, T_u8);                 \
+        ip += sizeof(T_u8);                              \
+        UWORD_T addr1 = MEM_READ(ip, UWORD_T);           \
+        ip += sizeof(UWORD_T);                           \
+        UWORD_T addr2 = MEM_READ(ip, UWORD_T);           \
+        ip += sizeof(UWORD_T);                           \
+        void *buf1 = (void *)((T_u8 *)cpu->mem + addr1); \
+        void *buf2 = (void *)((T_u8 *)cpu->mem + addr2); \
+        fname(buf1, buf2, buf1, bytes);                  \
+    }
+
 /** Begin a fetch-execute cycle, starting at `ip`. Continue until error of HALT.
- * Return error code. */
-ERRNO_T cpu_fecycle(struct CPU *cpu);
+ * Return number of cycles. */
+unsigned int cpu_fecycle(struct CPU *cpu);
 
 #endif

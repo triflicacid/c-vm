@@ -47,7 +47,7 @@
 // Syntax: `mov <data: 8 bytes> <address: unsigned word>`
 #define OP_MOV64_LIT_MEM 0x0019
 // Move k-bit literal to memory address.
-// Syntax: `mov <bytes: u8> <data: n bytes> <address: unsigned word>`
+// Syntax: `mov <bytes: u8> <address: unsigned word> <data: n bytes>`
 #define OP_MOVN_LIT_MEM 0x001A
 
 // Move value stored at address [register + memory address], and store in
@@ -154,130 +154,145 @@
 // Syntax: `and <register: u8> <register: u8>`
 #define OP_AND_REG_REG 0x0045
 
+// Computer bitwise AND of `byte` long buffers at two memory addresses.
+// Syntax: `and <bytes: u8> <addr1: uword> <addr2: uword>`
+#define OP_AND_MEM_MEM 0x0046
+
 // Computer bitwise OR of register | literal, and store in register.
 // Syntax: `or <register: u8> <data: word>`
-#define OP_OR_REG_LIT 0x0047
+#define OP_OR_REG_LIT 0x0050
 // Computer 8-bit bitwise OR of register | literal, and store in register.
 // Syntax: `or <register: u8> <data: 8-bit>`
-#define OP_OR8_REG_LIT 0x0048
+#define OP_OR8_REG_LIT 0x0051
 // Computer 16-bit bitwise OR of register | literal, and store in register.
 // Syntax: `or <register: u8> <data: 16-bit>`
-#define OP_OR16_REG_LIT 0x0049
+#define OP_OR16_REG_LIT 0x0052
 // Computer 32-bit bitwise OR of register | literal, and store in register.
 // Syntax: `or <register: u8> <data: 32-bit>`
-#define OP_OR32_REG_LIT 0x004A
+#define OP_OR32_REG_LIT 0x0053
 // Computer 64-bit bitwise OR of register | literal, and store in register.
 // Syntax: `or <register: u8> <data: 64-bit>`
-#define OP_OR64_REG_LIT 0x004B
+#define OP_OR64_REG_LIT 0x0054
 
 // Computer bitwise OR of register1 | register2, and store in register1.
 // Syntax: `or <register: u8> <register: u8>`
-#define OP_OR_REG_REG 0x004C
+#define OP_OR_REG_REG 0x0055
+
+// Computer bitwise OR of `byte` long buffers at two memory addresses.
+// Syntax: `or <bytes: u8> <addr1: uword> <addr2: uword>`
+#define OP_OR_MEM_MEM 0x0056
 
 // Computer bitwise XOR of register ^ literal, and store in register.
 // Syntax: `xor <register: u8> <data: word>`
-#define OP_XOR_REG_LIT 0x0050
+#define OP_XOR_REG_LIT 0x0060
 // Computer 8-bit bitwise XOR of register ^ literal, and store in register.
 // Syntax: `xor <register: u8> <data: word>`
-#define OP_XOR8_REG_LIT 0x0051
+#define OP_XOR8_REG_LIT 0x0061
 // Computer 16-bit bitwise XOR of register ^ literal, and store in register.
 // Syntax: `xor <register: u8> <data: word>`
-#define OP_XOR16_REG_LIT 0x0052
+#define OP_XOR16_REG_LIT 0x0062
 // Computer 32-bit bitwise XOR of register ^ literal, and store in register.
 // Syntax: `xor <register: u8> <data: word>`
-#define OP_XOR32_REG_LIT 0x0053
+#define OP_XOR32_REG_LIT 0x0063
 // Computer 64-bit bitwise XOR of register ^ literal, and store in register.
 // Syntax: `xor <register: u8> <data: word>`
-#define OP_XOR64_REG_LIT 0x0054
+#define OP_XOR64_REG_LIT 0x0064
 
 // Computer bitwise XOR of register1 ^ register2, and store in register1.
 // Syntax: `xor <register: u8> <register: u8>`
-#define OP_XOR_REG_REG 0x0055
+#define OP_XOR_REG_REG 0x0065
+
+// Computer bitwise XOR of `byte` long buffers at two memory addresses.
+// Syntax: `xor <bytes: u8> <addr1: uword> <addr2: uword>`
+#define OP_XOR_MEM_MEM 0x0066
 
 // Computer bitwise NOT of register, and stores back in register.
 // Syntax: `not <register: u8>`
-#define OP_NOT 0x0056
+#define OP_NOT 0x0070
+// Computer bitwise NOT of value `bytes` long starting at address.
+// Syntax: `not <bytes: u8> <addr: unsigned wort>`
+#define OP_NOT_MEM 0x0071
 
 // Negates value of register: x -> -x
 // Syntax: `neg <register: u8>`
-#define OP_NEG 0x0057
+#define OP_NEG 0x0075
 // Negates value of register AS A FLOAT: x -> -x
 // Syntax: `negf32 <register: u8>`
-#define OP_NEGF32 0x0058
+#define OP_NEGF32 0x0076
 // Negates value of register AS A DOUBLE: x -> -x
 // Syntax: `negf64 <register: u8>`
-#define OP_NEGF64 0x0059
+#define OP_NEGF64 0x0077
 
 // Logically shifts right (fills with 0) register by a literal amount.
 // Syntax: `slr <reg: u8> <lit: u8>`
-#define OP_LRSHIFT_LIT 0x005A
+#define OP_LRSHIFT_LIT 0x007A
 // Logically shifts right (fills with 0) register by a registers' value.
 // Syntax: `slr <reg: u8> <reg: u8>`
-#define OP_LRSHIFT_REG 0x005B
+#define OP_LRSHIFT_REG 0x007B
 
 // Arithmetically shifts right (preserves sign) register by a literal amount.
 // Syntax: `sar <reg: u8> <lit: u8>`
-#define OP_ARSHIFT_LIT 0x005C
+#define OP_ARSHIFT_LIT 0x007C
 // Arithmetically shifts right (preserves sign) register by a register' value.
 // Syntax: `sar <reg: u8> <reg: u8>`
-#define OP_ARSHIFT_REG 0x005D
+#define OP_ARSHIFT_REG 0x007D
 
 // Shifts left register by a literal amount.
 // Syntax: `sll <reg: u8> <lit: u8>`
-#define OP_LSHIFT_LIT 0x005E
+#define OP_LSHIFT_LIT 0x007E
 // Shifts left register by a register' value.
 // Syntax: `sll <reg: u8> <reg: u8>`
-#define OP_LSHIFT_REG 0x005F
+#define OP_LSHIFT_REG 0x007F
 
 // Convert i8 to i16 in register.
 // Syntax: `ci8i16 <reg: u8>`
-#define OP_CVT_i8_i16 0x0060
+#define OP_CVT_i8_i16 0x0080
 // Convert i16 to i8 in register.
 // Syntax: `ci16i8 <reg: u8>`
-#define OP_CVT_i16_i8 0x0061
+#define OP_CVT_i16_i8 0x0081
 // Convert i16 to i32 in register.
 // Syntax: `ci16i32 <reg: u8>`
-#define OP_CVT_i16_i32 0x0062
+#define OP_CVT_i16_i32 0x0082
 // Convert i32 to i16 in register.
 // Syntax: `ci32i16 <reg: u8>`
-#define OP_CVT_i32_i16 0x0063
+#define OP_CVT_i32_i16 0x0083
 // Convert i32 to i64 in register.
 // Syntax: `ci32i64 <reg: u8>`
-#define OP_CVT_i32_i64 0x0064
+#define OP_CVT_i32_i64 0x0084
 // Convert i64 to i32 in register.
 // Syntax: `ci64i32 <reg: u8>`
-#define OP_CVT_i64_i32 0x0065
+#define OP_CVT_i64_i32 0x0085
 
 // Convert i32 to f32 in register.
 // Syntax: `ci32f32 <reg: u8>`
-#define OP_CVT_i32_f32 0x006A
+#define OP_CVT_i32_f32 0x008A
 // Convert f32 to i32 in register.
 // Syntax: `cf32i32 <reg: u8>`
-#define OP_CVT_f32_i32 0x006B
+#define OP_CVT_f32_i32 0x008B
 // Convert i64 to f64 in register.
 // Syntax: `ci64f64 <reg: u8>`
-#define OP_CVT_i64_f64 0x006C
+#define OP_CVT_i64_f64 0x008C
 // Convert f64 to i64 in register.
 // Syntax: `cf64i64 <reg: u8>`
-#define OP_CVT_f64_i64 0x006D
+#define OP_CVT_f64_i64 0x008D
 
 // Add a literal to a register : reg = reg + lit
 // Syntax: `add <reg: u8> <lit: word>`
-#define OP_ADD_REG_LIT 0x0070
+#define OP_ADD_REG_LIT 0x0090
 // Add a literal to a register AS FLOATS : reg = reg + lit
-// Syntax: `addf <reg: u8> <lit: f32>`
-#define OP_ADDF32_REG_LIT 0x0071
+// Syntax: `addf32 <reg: u8> <lit: f32>`
+#define OP_ADDF32_REG_LIT 0x0091
 // Add a literal to a register AS DOUBLES : reg = reg + lit
-// Syntax: `addd <reg: u8> <lit: f64>`
-#define OP_ADDF64_REG_LIT 0x0072
+// Syntax: `addf64 <reg: u8> <lit: f64>`
+#define OP_ADDF64_REG_LIT 0x0092
 // Add a 2 registers together : r1 = r1 + r2
 // Syntax: `add <reg: u8> <reg: u8>`
-#define OP_ADD_REG_REG 0x0073
+#define OP_ADD_REG_REG 0x0093
 // Add a 2 registers together AS FLOATS : r1 = r1 + r2
-// Syntax: `addf <reg: u8> <reg: u8>`
-#define OP_ADDF32_REG_REG 0x0074
+// Syntax: `addf32 <reg: u8> <reg: u8>`
+#define OP_ADDF32_REG_REG 0x0094
 // Add a 2 registers together AS DOUBLES : r1 = r1 + r2
-// Syntax: `addd <reg: u8> <reg: u8>`
-#define OP_ADDF64_REG_REG 0x0075
+// Syntax: `addf64 <reg: u8> <reg: u8>`
+#define OP_ADDF64_REG_REG 0x0095
 
 #endif

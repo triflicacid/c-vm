@@ -146,6 +146,9 @@ int cpu_mem_exec(struct CPU *cpu, OPCODE_T opcode, UWORD_T *ip) {
         case OP_AND_REG_REG:
             OP_REG_REG(&, *ip, WORD_T);
             return 1;
+        case OP_AND_MEM_MEM:
+            OP_APPLYF_MEM_MEM(*ip, bitwise_and);
+            return 1;
         case OP_OR_REG_LIT:
             OP_REG_LIT(|, *ip, WORD_T);
             return 1;
@@ -163,6 +166,9 @@ int cpu_mem_exec(struct CPU *cpu, OPCODE_T opcode, UWORD_T *ip) {
             return 1;
         case OP_OR_REG_REG:
             OP_REG_REG(|, *ip, WORD_T);
+            return 1;
+        case OP_OR_MEM_MEM:
+            OP_APPLYF_MEM_MEM(*ip, bitwise_or);
             return 1;
         case OP_XOR_REG_LIT:
             OP_REG_LIT(^, *ip, WORD_T);
@@ -182,8 +188,14 @@ int cpu_mem_exec(struct CPU *cpu, OPCODE_T opcode, UWORD_T *ip) {
         case OP_XOR_REG_REG:
             OP_REG_REG(^, *ip, WORD_T);
             return 1;
+        case OP_XOR_MEM_MEM:
+            OP_APPLYF_MEM_MEM(*ip, bitwise_xor);
+            return 1;
         case OP_NOT:
             OP_REG(~, , *ip, WORD_T);
+            return 1;
+        case OP_NOT_MEM:
+            OP_APPLYF_MEM(*ip, bitwise_not);
             return 1;
         case OP_NEG:
             OP_REG(-, , *ip, WORD_T);
@@ -277,14 +289,13 @@ int cpu_exec(struct CPU *cpu) {
     return cnt;
 }
 
-ERRNO_T cpu_fecycle(struct CPU *cpu) {
-    if (cpu->err) return cpu->err;  // Must be error-clear
-    int cnt = 1, i = 0;
+unsigned int cpu_fecycle(struct CPU *cpu) {
+    if (cpu->err) return 0;  // Must be error-clear
+    unsigned int cnt = 1, i = 0;
     while (cnt && cpu->err == 0) {
         cnt = cpu_exec(cpu);
         i++;
     }
-    ERRNO_T err = cpu->err;
     printf("Process finished with code %i after %i cycles.\n", cpu->err, i);
     if (cpu->err != 0) {
         printf("\n");
@@ -292,5 +303,5 @@ ERRNO_T cpu_fecycle(struct CPU *cpu) {
         ERR_CLEAR();
         printf("\n");
     }
-    return err;
+    return i;
 }
