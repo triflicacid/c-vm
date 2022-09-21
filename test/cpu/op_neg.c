@@ -7,7 +7,7 @@
 #include "../../src/util.c"
 
 int main() {
-    struct CPU _cpu = cpu_create(8, 512);
+    struct CPU _cpu = cpu_create(512);
     struct CPU *cpu = &_cpu;
 
     // Expected

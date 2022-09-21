@@ -6,8 +6,8 @@
 
 #include "err.h"
 
-struct CPU cpu_create(WORDSIZE_T word_size, WORD_T mem_size) {
-    struct CPU cpu = {.word_size = word_size, .mem_size = mem_size, .err = 0};
+struct CPU cpu_create(UWORD_T mem_size) {
+    struct CPU cpu = {.mem_size = mem_size, .err = 0};
     cpu.mem = malloc(mem_size);
     cpu.regs[REG_IP] = 0;  // Clear IP register
     return cpu;
@@ -20,7 +20,6 @@ void cpu_destroy(struct CPU* cpu) {
 
 void cpu_print_details(struct CPU* cpu) {
     printf("===== CPU =====\n");
-    printf("Word   Size: " WORDSIZE_T_FLAG "\n", cpu->word_size);
     printf("Memory Size: " WORD_T_FLAG "\n", cpu->mem_size);
     printf("Registers  : %i\n", REG_COUNT);
     printf("Errno      : 0x%.8X\n", cpu->err);

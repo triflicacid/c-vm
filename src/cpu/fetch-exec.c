@@ -188,10 +188,10 @@ int cpu_mem_exec(struct CPU *cpu, OPCODE_T opcode, UWORD_T *ip) {
         case OP_NEG:
             OP_REG(-, , *ip, WORD_T);
             return 1;
-        case OP_NEGF:
+        case OP_NEGF32:
             OP_REG(-, , *ip, T_f32);
             return 1;
-        case OP_NEGD:
+        case OP_NEGF64:
             OP_REG(-, , *ip, T_f64);
             return 1;
         case OP_LRSHIFT_LIT:

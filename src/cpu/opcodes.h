@@ -202,11 +202,11 @@
 // Syntax: `neg <register: u8>`
 #define OP_NEG 0x0057
 // Negates value of register AS A FLOAT: x -> -x
-// Syntax: `negf <register: u8>`
-#define OP_NEGF 0x0058
+// Syntax: `negf32 <register: u8>`
+#define OP_NEGF32 0x0058
 // Negates value of register AS A DOUBLE: x -> -x
-// Syntax: `negd <register: u8>`
-#define OP_NEGD 0x0059
+// Syntax: `negf64 <register: u8>`
+#define OP_NEGF64 0x0059
 
 // Logically shifts right (fills with 0) register by a literal amount.
 // Syntax: `slr <reg: u8> <lit: u8>`

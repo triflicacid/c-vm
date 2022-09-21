@@ -10,8 +10,6 @@
 #define WORD_T_FLAG "%lli"
 #define UWORD_T T_u64
 #define UWORD_T_FLAG "%llu"
-#define WORDSIZE_T T_u8
-#define WORDSIZE_T_FLAG "%i"
 #define ERRNO_T int
 
 // Registers: general 0-9, ip
@@ -40,7 +38,6 @@
 
 struct CPU {
     WORD_T mem_size;         // Size of .mem
-    WORDSIZE_T word_size;    // word size
     void *mem;               // Pointer to start of memory block
     ERRNO_T err;             // Error number (0 = none)
     WORD_T err_data;         // Extra error data if error (errno != 0)
@@ -48,7 +45,7 @@ struct CPU {
 };
 
 /** Create a new CPU struct */
-struct CPU cpu_create(WORDSIZE_T word_size, WORD_T mem_size);
+struct CPU cpu_create(UWORD_T mem_size);
 
 /** Destroy data inside a struct. Doesn't free() the struct itself */
 void cpu_destroy(struct CPU *cpu);
