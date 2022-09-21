@@ -2,6 +2,7 @@
 #ifndef __FETCH_EXEC__H_
 #define __FETCH_EXEC__H_
 
+#include "../util.h"
 #include "cpu.h"
 #include "err.h"
 
