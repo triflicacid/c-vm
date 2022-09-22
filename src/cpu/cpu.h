@@ -32,6 +32,12 @@
         (addr += sizeof(type));                       \
     }
 
+// Macro - easy memory write. Requires variable `struct CPU *cpu`. `addr` is
+// incremented by `sizeof(type * bytes)`. `ptr` points to start of block to move
+// (`void*`)
+#define MEM_WRITE_BYTES(addr, ptr, bytes) \
+    for (T_u8 i = 0; i < bytes; ++i) MEM_WRITE(addr, T_u8, *((T_u8 *)ptr + i))
+
 // Macro - easy memory write. Requires variable `struct CPU *cpu`. `addr` is not
 // modified
 #define MEM_WRITEK(addr, type, value) \

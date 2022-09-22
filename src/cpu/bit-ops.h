@@ -3,6 +3,13 @@
 
 #include "../util.h"
 
+/** Print seqence of bytes e.g. for `int` call print_bytes(&var, sizeof(int)) to
+ * print `XX XX XX XX ` */
+void print_bytes(const void *data, const unsigned int length);
+
+/** Print seqence of characters */
+void print_chars(const char *data, const unsigned int chars);
+
 /** Bitwise NOT a sequence of bytes in place */
 void bitwise_not(void *data, T_u8 bytes);
 

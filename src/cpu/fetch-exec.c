@@ -1,5 +1,6 @@
 #include "fetch-exec.h"
 
+#include "bit-ops.h"
 #include "cpu.h"
 #include "err.h"
 #include "opcodes.h"
@@ -13,6 +14,31 @@ int cpu_mem_exec(struct CPU *cpu, OPCODE_T opcode, UWORD_T *ip) {
             cpu_mem_print(cpu, 500, 16, 1, 16);
             return 1;
 
+        case OP_PRINT_HEX_MEM:
+            OP_APPLYF_MEM(*ip, print_bytes);
+            return 1;
+        case OP_PRINT_HEX_REG: {
+            T_u8 reg = MEM_READ(*ip, T_u8);
+            *ip += sizeof(T_u8);
+            T_u8 *addr = (T_u8 *)(cpu->regs + reg);
+            for (T_u8 off = 0; off < sizeof(WORD_T); ++off)
+                printf("%.2X ", addr[off]);
+            return 1;
+        }
+        case OP_PRINT_CHARS_MEM:
+            OP_APPLYF_MEM(*ip, print_chars);
+            return 1;
+        case OP_PRINT_CHARS_REG: {
+            T_u8 reg = MEM_READ(*ip, T_u8);
+            *ip += sizeof(T_u8);
+            T_u8 *addr = (T_u8 *)(cpu->regs + reg);
+            for (T_u8 off = 0; off < sizeof(WORD_T); ++off) {
+                T_u8 ch = addr[off];
+                if (ch == '\0') break;
+                printf("%c", ch);
+            }
+            return 1;
+        }
         case OP_NOP:
             return 1;
         case OP_HALT:
@@ -276,11 +302,66 @@ int cpu_mem_exec(struct CPU *cpu, OPCODE_T opcode, UWORD_T *ip) {
             cpu->regs[REG_FLAG] = cry;
             return 1;
         }
+        case OP_SUB_REG_LIT:
+            OP_REG_LIT(-, *ip, WORD_T);
+            return 1;
+        case OP_SUB_REG_REG:
+            OP_REG_REG(-, *ip, WORD_T);
+            return 1;
+        case OP_SUBF32_REG_LIT:
+            OP_REG_LIT_TYPE(-, *ip, T_f32);
+            return 1;
+        case OP_SUBF32_REG_REG:
+            OP_REG_REG(-, *ip, T_f32);
+            return 1;
+        case OP_SUBF64_REG_LIT:
+            OP_REG_LIT_TYPE(-, *ip, T_f64);
+            return 1;
+        case OP_SUBF64_REG_REG:
+            OP_REG_REG(-, *ip, T_f64);
+            return 1;
+        case OP_MUL_REG_LIT:
+            OP_REG_LIT(*, *ip, WORD_T);
+            return 1;
+        case OP_MUL_REG_REG:
+            OP_REG_REG(*, *ip, WORD_T);
+            return 1;
+        case OP_MULF32_REG_LIT:
+            OP_REG_LIT_TYPE(*, *ip, T_f32);
+            return 1;
+        case OP_MULF32_REG_REG:
+            OP_REG_REG(*, *ip, T_f32);
+            return 1;
+        case OP_MULF64_REG_LIT:
+            OP_REG_LIT_TYPE(*, *ip, T_f64);
+            return 1;
+        case OP_MULF64_REG_REG:
+            OP_REG_REG(*, *ip, T_f64);
+            return 1;
+        case OP_DIV_REG_LIT:
+            OP_REG_LIT(/, *ip, WORD_T);
+            return 1;
+        case OP_DIVF32_REG_LIT:
+            OP_REG_LIT(/, *ip, T_f32);
+            return 1;
+        case OP_DIVF64_REG_LIT:
+            OP_REG_LIT(/, *ip, T_f64);
+            return 1;
+        case OP_DIV_REG_REG:
+            OP_REG_REG_REG(/, %, *ip, WORD_T, REG_FLAG);
+            return 1;
+        case OP_DIVF32_REG_REG:
+            OP_REG_REG(/, *ip, T_f32);
+            return 1;
+        case OP_DIVF64_REG_REG:
+            OP_REG_REG(/, *ip, T_f64);
+            return 1;
         default:  // Unknown instruction
             cpu->err = ERR_UNINST;
             cpu->err_data = opcode;
             return 0;
     }
+    return 1;
 }
 
 int cpu_exec(struct CPU *cpu) {

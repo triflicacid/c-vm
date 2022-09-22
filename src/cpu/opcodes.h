@@ -15,6 +15,20 @@
 // DEBUG: PRINT REGISTERS
 #define OP_PREG 0xFFFB
 
+// Print hex `bytes` bytes from memory
+// Syntax: `phm <bytes: u8> <addr: uword>`
+#define OP_PRINT_HEX_MEM 0xFFE0
+// Print hex `bytes` bytes from register
+// Syntax: `phr <reg: u8>`
+#define OP_PRINT_HEX_REG 0xFFE1
+
+// Print `bytes` characters from memory
+// Syntax: `pcm <bytes: u8> <addr: uword>`
+#define OP_PRINT_CHARS_MEM 0xFFE2
+// Print up to four characters from a register. Print up until '\0' is found.
+// Syntax: `pcr <reg: u8>`
+#define OP_PRINT_CHARS_REG 0xFFE3
+
 // Move literal to register.
 // Syntax: `mov <data: word> <register: u8>`
 #define OP_MOV_LIT_REG 0x0010
@@ -297,5 +311,62 @@
 // Add two `byte`-length buffers together. Indicate carry.
 // Syntax: `add <bytes: u8> <addr1: uword> <addr2: uword>`
 #define OP_ADD_MEM_MEM 0x0096
+
+// Subtract a literal from a register : reg = reg - lit
+// Syntax: `sub <reg: u8> <lit: word>`
+#define OP_SUB_REG_LIT 0x00A0
+// Subtract a literal from a register AS FLOATS : reg = reg - lit
+// Syntax: `subf32 <reg: u8> <lit: f32>`
+#define OP_SUBF32_REG_LIT 0x00A1
+// Subtract a literal from a register AS DOUBLES : reg = reg - lit
+// Syntax: `subf64 <reg: u8> <lit: f64>`
+#define OP_SUBF64_REG_LIT 0x00A2
+// Subtract 2 registers : r1 = r1 - r2
+// Syntax: `sub <reg: u8> <reg: u8>`
+#define OP_SUB_REG_REG 0x00A3
+// Subtract 2 registers AS FLOATS : r1 = r1 - r2
+// Syntax: `subf32 <reg: u8> <reg: u8>`
+#define OP_SUBF32_REG_REG 0x00A4
+// Subtract 2 registers AS DOUBLES : r1 = r1 - r2
+// Syntax: `subf64 <reg: u8> <reg: u8>`
+#define OP_SUBF64_REG_REG 0x00A5
+
+// Multiply a literal and a register : reg = reg * lit
+// Syntax: `mul <reg: u8> <lit: word>`
+#define OP_MUL_REG_LIT 0x00B0
+// Multiply a literal and a register AS FLOATS : reg = reg * lit
+// Syntax: `mulf32 <reg: u8> <lit: f32>`
+#define OP_MULF32_REG_LIT 0x00B1
+// Multiply a literal and a register AS DOUBLES : reg = reg * lit
+// Syntax: `mulf64 <reg: u8> <lit: f64>`
+#define OP_MULF64_REG_LIT 0x00B2
+// Multiply 2 registers : r1 = r1 * r2
+// Syntax: `mul <reg: u8> <reg: u8>`
+#define OP_MUL_REG_REG 0x00B3
+// Multiply 2 registers AS FLOATS : r1 = r1 * r2
+// Syntax: `mulf32 <reg: u8> <reg: u8>`
+#define OP_MULF32_REG_REG 0x00B4
+// Multiply 2 registers AS DOUBLES : r1 = r1 * r2
+// Syntax: `mulf64 <reg: u8> <reg: u8>`
+#define OP_MULF64_REG_REG 0x00B5
+
+// Divide a register by a literal. Place remainder in REG_FLAG.
+// Syntax: `div <reg: u8> <lit: word>`
+#define OP_DIV_REG_LIT 0x00C0
+// Divide a register by a literal.
+// Syntax: `divf32 <reg: u8> <lit: f32>`
+#define OP_DIVF32_REG_LIT 0x00C1
+// Divide a register by a literal.
+// Syntax: `divf64 <reg: u8> <lit: f64>`
+#define OP_DIVF64_REG_LIT 0x00C2
+// Divide 2 registers : r1 = r1 / r2. Place remainder in REG_FLAG.
+// Syntax: `div <reg: u8> <reg: u8>`
+#define OP_DIV_REG_REG 0x00C3
+// Divide 2 registers : r1 = r1 / r2.
+// Syntax: `divf32 <reg: u8> <reg: u8>`
+#define OP_DIVF32_REG_REG 0x00C4
+// Divide 2 registers : r1 = r1 / r2.
+// Syntax: `divf64 <reg: u8> <reg: u8>`
+#define OP_DIVF64_REG_REG 0x00C5
 
 #endif

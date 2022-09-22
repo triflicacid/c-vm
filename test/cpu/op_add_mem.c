@@ -8,18 +8,18 @@ int main() {
 
     const T_u8 bytes1[] = {0xFF, 0xFF};
     const T_u8 bytes2[] = {0xFF, 0xFF};
-    // 0xFF + 0xFF = 0x1FFFE so expect 0xFFF1 overflow 1
+    // 0xFF + 0xFF = 0x1FFFE so expect 0xFFFE overflow 1
     const UWORD_T bytes_addr = 256;
 
     int addr = 0;
     MEM_WRITE(addr, OPCODE_T, OP_MOVN_LIT_MEM);
     MEM_WRITE(addr, T_u8, sizeof(bytes1));
     MEM_WRITE(addr, UWORD_T, bytes_addr);
-    for (T_u8 i = 0; i < sizeof(bytes1); ++i) MEM_WRITE(addr, T_u8, bytes1[i]);
+    MEM_WRITE_BYTES(addr, bytes1, sizeof(bytes1));
     MEM_WRITE(addr, OPCODE_T, OP_MOVN_LIT_MEM);
     MEM_WRITE(addr, T_u8, sizeof(bytes2));
     MEM_WRITE(addr, UWORD_T, bytes_addr + sizeof(bytes1));
-    for (T_u8 i = 0; i < sizeof(bytes2); ++i) MEM_WRITE(addr, T_u8, bytes2[i]);
+    MEM_WRITE_BYTES(addr, bytes2, sizeof(bytes2));
     MEM_WRITE(addr, OPCODE_T, OP_HALT);
 
     cpu_fecycle(cpu);

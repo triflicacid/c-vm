@@ -14,7 +14,7 @@ int main() {
     MEM_WRITE(addr, OPCODE_T, OP_MOVN_LIT_MEM);
     MEM_WRITE(addr, T_u8, sizeof(bytes));
     MEM_WRITE(addr, UWORD_T, bytes_addr);
-    for (T_u8 i = 0; i < sizeof(bytes); ++i) MEM_WRITE(addr, T_u8, bytes[i]);
+    MEM_WRITE_BYTES(addr, bytes, sizeof(bytes));
     MEM_WRITE(addr, OPCODE_T, OP_HALT);
 
     cpu_fecycle(cpu);

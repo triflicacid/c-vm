@@ -7,6 +7,7 @@ Basic virtual machine written in C
 
 ### TODO
 - Print to STDOUT (using memory mapping to map characters?)
+- Opcode documentation? (explained in `opcodes.h` - maybe write a more general overview?)
 - Basic assembly script and assembler
 
 ## Goal

@@ -223,6 +223,30 @@
         }                                                  \
     }
 
+// Perform operation between 2 registers in type `type` : r1 = r1 op1 r2, r3
+// = r1 op2 r2
+#define OP_REG_REG_REG(op1, op2, ip, type, r3)        \
+    {                                                 \
+        T_u8 r1 = MEM_READ(ip, T_u8);                 \
+        if (r1 >= REG_COUNT) {                        \
+            ERR_SET(ERR_REG, r1);                     \
+        } else {                                      \
+            ip += sizeof(T_u8);                       \
+            T_u8 r2 = MEM_READ(ip, T_u8);             \
+            if (r2 >= REG_COUNT) {                    \
+                ERR_SET(ERR_REG, r2);                 \
+            } else {                                  \
+                ip += sizeof(T_u8);                   \
+                type v1 = (*(type *)(cpu->regs + r1)) \
+                    op1(*(type *)(cpu->regs + r2));   \
+                type v2 = (*(type *)(cpu->regs + r1)) \
+                    op2(*(type *)(cpu->regs + r2));   \
+                cpu->regs[r1] = *(WORD_T *)&v1;       \
+                cpu->regs[r3] = *(WORD_T *)&v2;       \
+            }                                         \
+        }                                             \
+    }
+
 #define ARS(x, n) ((x < 0 && n > 0) ? (x >> n | ~(~0U >> n)) : (x >> n))
 
 // Perform arithmetic right shift : r1 = r1 a>> r2

@@ -19,8 +19,4 @@
       }){.u16 = 1}    \
           .c)
 
-/** Print seqence of bytes e.g. for `int` call print_bytes(&var, sizeof(int)) to
- * print `XX XX XX XX ` */
-void print_bytes(const void *data, const unsigned int length);
-
 #endif
