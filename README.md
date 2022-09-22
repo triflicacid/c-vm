@@ -1,6 +1,8 @@
 # C Virtual Machine
 
-Basic virtual machine written in C
+Basic virtual machine written in C.
+
+For more informations, see `docs/`, `tests/`.
 
 ## Components
 - Basic "CPU" (*in progress*)
