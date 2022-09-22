@@ -22,6 +22,8 @@ void cpu_print_details(struct CPU* cpu) {
     printf("===== CPU =====\n");
     printf("Memory Size: " WORD_T_FLAG "\n", cpu->mem_size);
     printf("Registers  : %i\n", REG_COUNT);
+    printf("  - R ip   : %i\n", REG_IP);
+    printf("  - R flag : %i\n", REG_FLAG);
     printf("Errno      : 0x%.8X\n", cpu->err);
     if (cpu->err != 0) printf("Error Data : " WORD_T_FLAG "\n", cpu->err_data);
     printf("===============\n");
@@ -100,6 +102,8 @@ ERRNO_T cpu_reg_print(struct CPU* cpu) {
     for (int i = 0; i < REG_COUNT; ++i) {
         if (i == REG_IP)
             printf("ip");
+        else if (i == REG_FLAG)
+            printf("fg");
         else
             printf("r%i", i);
         printf(" | ");

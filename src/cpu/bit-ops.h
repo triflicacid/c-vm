@@ -15,4 +15,9 @@ void bitwise_or(void *b1, void *b2, void *b3, T_u8 bytes);
 /** Bitwise XOR two sequences of bytes, place into third buffer */
 void bitwise_xor(void *b1, void *b2, void *b3, T_u8 bytes);
 
+// Add two byte-buffers of byte-length `length` in LITTLE ENDIAN e.g. 0xDEAD ->
+// "AD DE". Return overflow.
+T_u8 bytes_add(const void *n1, const void *n2, void *nout,
+               const unsigned int bytes);
+
 #endif

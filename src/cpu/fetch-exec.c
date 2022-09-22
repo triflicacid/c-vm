@@ -270,6 +270,12 @@ int cpu_mem_exec(struct CPU *cpu, OPCODE_T opcode, UWORD_T *ip) {
         case OP_ADDF64_REG_REG:
             OP_REG_REG(+, *ip, T_f64);
             return 1;
+        case OP_ADD_MEM_MEM: {
+            T_u8 cry;
+            OP_APPLYF_MEM_MEM_RET(*ip, bytes_add, cry);
+            cpu->regs[REG_FLAG] = cry;
+            return 1;
+        }
         default:  // Unknown instruction
             cpu->err = ERR_UNINST;
             cpu->err_data = opcode;

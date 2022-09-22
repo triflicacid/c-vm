@@ -13,8 +13,9 @@
 #define ERRNO_T int
 
 // Registers: general 0-9, ip
-#define REG_IP 9
-#define REG_COUNT 10
+#define REG_FLAG 9
+#define REG_IP 10
+#define REG_COUNT 11
 
 // Check if memory address is valid. Expects defined `struct CPU *cpu`
 #define MEM_CHECK(addr) (addr >= 0 && addr < cpu->mem_size)

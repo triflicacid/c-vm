@@ -294,5 +294,8 @@
 // Add a 2 registers together AS DOUBLES : r1 = r1 + r2
 // Syntax: `addf64 <reg: u8> <reg: u8>`
 #define OP_ADDF64_REG_REG 0x0095
+// Add two `byte`-length buffers together. Indicate carry.
+// Syntax: `add <bytes: u8> <addr1: uword> <addr2: uword>`
+#define OP_ADD_MEM_MEM 0x0096
 
 #endif

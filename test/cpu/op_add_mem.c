@@ -1,11 +1,6 @@
 #include <stdio.h>
 
-#include "src/cpu/bit-ops.c"
-#include "src/cpu/cpu.c"
-#include "src/cpu/err.c"
-#include "src/cpu/fetch-exec.c"
-#include "src/cpu/opcodes.h"
-#include "src/util.c"
+#include "_include.c"
 
 int main() {
     struct CPU _cpu = cpu_create(512);
@@ -13,6 +8,7 @@ int main() {
 
     const T_u8 bytes1[] = {0xFF, 0xFF};
     const T_u8 bytes2[] = {0xFF, 0xFF};
+    // 0xFF + 0xFF = 0x1FFFE so expect 0xFFF1 overflow 1
     const UWORD_T bytes_addr = 256;
 
     int addr = 0;

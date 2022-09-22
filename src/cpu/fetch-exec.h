@@ -282,7 +282,8 @@
     }
 
 // Instruction syntax `<bytes: u8> <addr1: uword> <addr2: uword>`. In-place
-// modify `addr1` result of `fname(addr1, addr2, addr1, bytes)`
+// modify `addr1` result of `fname(addr1, addr2, addr1, bytes)`. Set `retVar` to
+// return value of `fname`.
 #define OP_APPLYF_MEM_MEM(ip, fname)                     \
     {                                                    \
         T_u8 bytes = MEM_READ(ip, T_u8);                 \
@@ -294,6 +295,22 @@
         void *buf1 = (void *)((T_u8 *)cpu->mem + addr1); \
         void *buf2 = (void *)((T_u8 *)cpu->mem + addr2); \
         fname(buf1, buf2, buf1, bytes);                  \
+    }
+
+// Instruction syntax `<bytes: u8> <addr1: uword> <addr2: uword>`. In-place
+// modify `addr1` result of `fname(addr1, addr2, addr1, bytes)`. Set `retVar` to
+// return value of `fname`.
+#define OP_APPLYF_MEM_MEM_RET(ip, fname, retVar)         \
+    {                                                    \
+        T_u8 bytes = MEM_READ(ip, T_u8);                 \
+        ip += sizeof(T_u8);                              \
+        UWORD_T addr1 = MEM_READ(ip, UWORD_T);           \
+        ip += sizeof(UWORD_T);                           \
+        UWORD_T addr2 = MEM_READ(ip, UWORD_T);           \
+        ip += sizeof(UWORD_T);                           \
+        void *buf1 = (void *)((T_u8 *)cpu->mem + addr1); \
+        void *buf2 = (void *)((T_u8 *)cpu->mem + addr2); \
+        retVar = fname(buf1, buf2, buf1, bytes);         \
     }
 
 /** Begin a fetch-execute cycle, starting at `ip`. Continue until error of HALT.
