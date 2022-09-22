@@ -356,6 +356,27 @@ int cpu_mem_exec(struct CPU *cpu, OPCODE_T opcode, UWORD_T *ip) {
         case OP_DIVF64_REG_REG:
             OP_REG_REG(/, *ip, T_f64);
             return 1;
+        case OP_CMP_REG_REG:
+            CMP_REG_REG(*ip, WORD_T);
+            return 1;
+        case OP_CMPF32_REG_REG:
+            CMP_REG_REG(*ip, T_f32);
+            return 1;
+        case OP_CMPF64_REG_REG:
+            CMP_REG_REG(*ip, T_f64);
+            return 1;
+        case OP_CMP_REG_LIT:
+            CMP_REG_LIT(*ip, WORD_T);
+            return 1;
+        case OP_CMPF32_REG_LIT:
+            CMP_REG_LIT(*ip, T_f32);
+            return 1;
+        case OP_CMPF64_REG_LIT:
+            CMP_REG_LIT(*ip, T_f64);
+            return 1;
+        case OP_CMP_MEM_MEM:
+            CMP_MEM_MEM(*ip);
+            return 1;
         default:  // Unknown instruction
             cpu->err = ERR_UNINST;
             cpu->err_data = opcode;

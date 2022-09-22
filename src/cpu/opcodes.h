@@ -369,4 +369,26 @@
 // Syntax: `divf64 <reg: u8> <reg: u8>`
 #define OP_DIVF64_REG_REG 0x00C5
 
+// Compare two registers, place result in REG_FLAG
+// Syntax: `cmp <r1: u8> <r2: u8>`
+#define OP_CMP_REG_REG 0x00D0
+// Compare two registers, place result in REG_FLAG
+// Syntax: `cmpf32 <r1: u8> <r2: u8>`
+#define OP_CMPF32_REG_REG 0x00D1
+// Compare two registers, place result in REG_FLAG
+// Syntax: `cmpf64 <r1: u8> <r2: u8>`
+#define OP_CMPF64_REG_REG 0x00D2
+// Compare register to a literal, place result in REG_FLAG
+// Syntax: `cmp <r1: u8> <lit: uword>`
+#define OP_CMP_REG_LIT 0x00D3
+// Compare register to a literal, place result in REG_FLAG
+// Syntax: `cmpf32 <r1: u8> <lit: f32>`
+#define OP_CMPF32_REG_LIT 0x00D4
+// Compare register to a literal, place result in REG_FLAG
+// Syntax: `cmpf64 <r1: u8> <lit: f64>`
+#define OP_CMPF64_REG_LIT 0x00D5
+// Compare two n-byte buffers, place result in REG_FLAG
+// Syntax: `cmp <bytes: u8> <addr1: uword> <addr2: uword>`
+#define OP_CMP_MEM_MEM 0x00D6
+
 #endif

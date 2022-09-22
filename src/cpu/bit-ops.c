@@ -47,3 +47,13 @@ T_u8 bytes_add(const void *n1, const void *n2, void *nout,
     }
     return ovfl;
 }
+
+T_u8 bytes_compare(const void *n1, const void *n2, const unsigned int bytes) {
+    for (T_u16 off = bytes; off > 0; --off) {
+        T_u8 a = *((T_u8 *)n1 + off - 1), b = *((T_u8 *)n2 + off - 1);
+        if (a == b) continue;
+        if (a > b) return CMP_GT;
+        return CMP_LT;
+    }
+    return CMP_EQ;
+}

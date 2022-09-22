@@ -337,6 +337,55 @@
         retVar = fname(buf1, buf2, buf1, bytes);         \
     }
 
+#define CMP(a, b) ((a == b) ? CMP_EQ : ((a > b) ? CMP_GT : CMP_LT))
+
+// Compare two registers
+#define CMP_REG_REG(ip, type)                                                  \
+    {                                                                          \
+        T_u8 r1 = MEM_READ(ip, T_u8);                                          \
+        if (r1 >= REG_COUNT) {                                                 \
+            ERR_SET(ERR_REG, r1);                                              \
+        } else {                                                               \
+            ip += sizeof(T_u8);                                                \
+            T_u8 r2 = MEM_READ(ip, T_u8);                                      \
+            if (r2 >= REG_COUNT) {                                             \
+                ERR_SET(ERR_REG, r2);                                          \
+            } else {                                                           \
+                ip += sizeof(T_u8);                                            \
+                cpu->regs[REG_FLAG] =                                          \
+                    CMP(*(type *)(cpu->regs + r1), *(type *)(cpu->regs + r2)); \
+            }                                                                  \
+        }                                                                      \
+    }
+
+// Compare a register and a literal
+#define CMP_REG_LIT(ip, type)                                           \
+    {                                                                   \
+        T_u8 reg = MEM_READ(ip, T_u8);                                  \
+        if (reg >= REG_COUNT) {                                         \
+            ERR_SET(ERR_REG, reg);                                      \
+        } else {                                                        \
+            ip += sizeof(T_u8);                                         \
+            type lit = MEM_READ(ip, type);                              \
+            ip += sizeof(type);                                         \
+            cpu->regs[REG_FLAG] = CMP(*(type *)(cpu->regs + reg), lit); \
+        }                                                               \
+    }
+
+// Compare two memory addresses
+#define CMP_MEM_MEM(ip)                                         \
+    {                                                           \
+        T_u8 bytes = MEM_READ(ip, T_u8);                        \
+        ip += sizeof(T_u8);                                     \
+        UWORD_T addr1 = MEM_READ(ip, UWORD_T);                  \
+        ip += sizeof(UWORD_T);                                  \
+        UWORD_T addr2 = MEM_READ(ip, UWORD_T);                  \
+        ip += sizeof(UWORD_T);                                  \
+        void *buf1 = (void *)((T_u8 *)cpu->mem + addr1);        \
+        void *buf2 = (void *)((T_u8 *)cpu->mem + addr2);        \
+        cpu->regs[REG_FLAG] = bytes_compare(buf1, buf2, bytes); \
+    }
+
 /** Begin a fetch-execute cycle, starting at `ip`. Continue until error of HALT.
  * Return number of cycles. */
 unsigned int cpu_fecycle(struct CPU *cpu);
