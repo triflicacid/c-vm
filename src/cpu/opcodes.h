@@ -389,6 +389,37 @@
 #define OP_CMPF64_REG_LIT 0x00D5
 // Compare two n-byte buffers, place result in REG_FLAG
 // Syntax: `cmp <bytes: u8> <addr1: uword> <addr2: uword>`
-#define OP_CMP_MEM_MEM 0x00D6
+#define OP_CMP_MEM_MEM 0x00DA
+
+// Jump execution to provided memory address (set IP)
+// Syntax: `jmp <addr: uword>`
+#define OP_JMP_LIT 0x00E0
+// Jump execution to address in register (set IP)
+// Syntax: `jmp <reg: u8>`
+#define OP_JMP_REG 0x00E1
+// Jump execution to provided memory address IF comparison is CMP_EQ (set IP)
+// Syntax: `jeq <addr: uword>`
+#define OP_JMP_EQ_LIT 0x00E2
+// Jump execution to address in register IF comparison is CMP_EQ (set IP)
+// Syntax: `jeq <reg: u8>`
+#define OP_JMP_EQ_REG 0x00E3
+// Jump execution to provided memory address IF comparison is CMP_GT (set IP)
+// Syntax: `jgt <addr: uword>`
+#define OP_JMP_GT_LIT 0x00E4
+// Jump execution to address in register IF comparison is CMP_GT (set IP)
+// Syntax: `jgt <reg: u8>`
+#define OP_JMP_GT_REG 0x00E5
+// Jump execution to provided memory address IF comparison is CMP_LT (set IP)
+// Syntax: `jlt <addr: uword>`
+#define OP_JMP_LT_LIT 0x00E6
+// Jump execution to address in register IF comparison is CMP_LT (set IP)
+// Syntax: `jlt <reg: u8>`
+#define OP_JMP_LT_REG 0x00E7
+// Jump execution to provided memory address IF comparison is not CMP_EQ (set
+// IP) Syntax: `jne <addr: uword>`
+#define OP_JMP_NEQ_LIT 0x00E8
+// Jump execution to address in register IF comparison is not CMP_EQ (set IP)
+// Syntax: `jne <reg: u8>`
+#define OP_JMP_NEQ_REG 0x00E9
 
 #endif

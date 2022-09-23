@@ -13,7 +13,11 @@
 #define ERRNO_T int
 
 // Registers: general 0-9, ip
+// Register for flags
 #define REG_FLAG 9
+// Register for comparison operations
+#define REG_CMP 9
+// Instruction pointer
 #define REG_IP 10
 #define REG_COUNT 11
 

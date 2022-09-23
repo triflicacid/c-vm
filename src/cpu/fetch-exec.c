@@ -377,7 +377,38 @@ int cpu_mem_exec(struct CPU *cpu, OPCODE_T opcode, UWORD_T *ip) {
         case OP_CMP_MEM_MEM:
             CMP_MEM_MEM(*ip);
             return 1;
+        case OP_JMP_LIT:
+            SET_LIT(*ip, *ip, UWORD_T);
+            return 1;
+        case OP_JMP_REG:
+            SET_REG(*ip, *ip, UWORD_T);
+            return 1;
+        case OP_JMP_EQ_LIT:
+            JMP_LIT_IF(*ip, ==, CMP_EQ);
+            return 1;
+        case OP_JMP_EQ_REG:
+            JMP_REG_IF(*ip, ==, CMP_EQ);
+            return 1;
+        case OP_JMP_GT_LIT:
+            JMP_LIT_IF(*ip, ==, CMP_GT);
+            return 1;
+        case OP_JMP_GT_REG:
+            JMP_REG_IF(*ip, ==, CMP_GT);
+            return 1;
+        case OP_JMP_LT_LIT:
+            JMP_LIT_IF(*ip, ==, CMP_LT);
+            return 1;
+        case OP_JMP_LT_REG:
+            JMP_REG_IF(*ip, ==, CMP_LT);
+            return 1;
+        case OP_JMP_NEQ_LIT:
+            JMP_LIT_IF(*ip, !=, CMP_EQ);
+            return 1;
+        case OP_JMP_NEQ_REG:
+            JMP_REG_IF(*ip, !=, CMP_EQ);
+            return 1;
         default:  // Unknown instruction
+            printf("ERROR: UNINST at IP = %lli\n", *ip);
             cpu->err = ERR_UNINST;
             cpu->err_data = opcode;
             return 0;
@@ -386,14 +417,11 @@ int cpu_mem_exec(struct CPU *cpu, OPCODE_T opcode, UWORD_T *ip) {
 }
 
 int cpu_exec(struct CPU *cpu) {
-    WORD_T ip = cpu->regs[REG_IP];
-    OPCODE_T instruct = *(OPCODE_T *)((char *)cpu->mem + ip);
-    printf("IP = " WORD_T_FLAG "; instruct = " OPCODE_T_FLAG "\n", ip,
-           instruct);
-    ip += sizeof(OPCODE_T);
-    int cnt = cpu_mem_exec(cpu, instruct, &ip);
+    WORD_T *ip = cpu->regs + REG_IP;
+    OPCODE_T instruct = *(OPCODE_T *)((T_u8 *)cpu->mem + *ip);
+    *ip += sizeof(OPCODE_T);
+    int cnt = cpu_mem_exec(cpu, instruct, ip);
     if (cpu->err != ERR_NONE) return 0;  // If error, DO NOT continue
-    cpu->regs[REG_IP] = ip;
     return cnt;
 }
 

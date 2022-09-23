@@ -24,8 +24,10 @@ void cpu_print_details(struct CPU* cpu) {
     printf("Registers  : %i\n", REG_COUNT);
     printf("  - R ip   : %i\n", REG_IP);
     printf("  - R flag : %i\n", REG_FLAG);
+    printf("  - R cmp  : %i\n", REG_CMP);
     printf("Errno      : 0x%.8X\n", cpu->err);
-    if (cpu->err != 0) printf("Error Data : " WORD_T_FLAG "\n", cpu->err_data);
+    if (cpu->err != ERR_NONE)
+        printf("Error Data : " WORD_T_FLAG "\n", cpu->err_data);
     printf("===============\n");
 }
 

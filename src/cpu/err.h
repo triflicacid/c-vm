@@ -18,8 +18,20 @@
 // Memory OutOfBounds. Address = CPU.err_data
 #define ERR_MEMOOB 1
 
+// MACRO - check for Memory OOB
+#define ERR_CHECK_ADDR(addr)       \
+    if (addr >= cpu->mem_size) {   \
+        ERR_SET(ERR_MEMOOB, addr); \
+    }
+
 // Unknown register offset
 #define ERR_REG 2
+
+// MACRO - check for invalid register
+#define ERR_CHECK_REG(reg)     \
+    if (reg >= REG_COUNT) {    \
+        ERR_SET(ERR_REG, reg); \
+    }
 
 // Unknown instruction. Instruction = .err_data
 #define ERR_UNINST 3

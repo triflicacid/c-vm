@@ -1,9 +1,9 @@
 #ifndef __BIT_OPS__H_
 #define __BIT_OPS__H_
 
-#define CMP_LT 0
-#define CMP_EQ 1
-#define CMP_GT 2
+#define CMP_LT 1
+#define CMP_EQ 2
+#define CMP_GT 3
 
 #include "../util.h"
 

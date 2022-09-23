@@ -9,7 +9,7 @@ int main() {
     int addr = 0;
 
     MEM_WRITE(addr, OPCODE_T, OP_MOV_LIT_REG);
-    MEM_WRITE(addr, WORD_T, -5);
+    MEM_WRITE(addr, WORD_T, 5);
     MEM_WRITE(addr, T_u8, 1);
     MEM_WRITE(addr, OPCODE_T, OP_MOV_LIT_REG);
     MEM_WRITE(addr, WORD_T, -1);
