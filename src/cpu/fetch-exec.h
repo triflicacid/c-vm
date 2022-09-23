@@ -281,6 +281,15 @@
         fname((void *)((T_u8 *)cpu->mem + addr), bytes); \
     }
 
+// Instruction syntax `<bytes: u8> <lit: ...>`. Call `fname`.
+#define OP_APPLYF_LIT(ip, fname)                       \
+    {                                                  \
+        T_u8 bytes = MEM_READ(ip, T_u8);               \
+        ip += sizeof(T_u8);                            \
+        fname((void *)((T_u8 *)cpu->mem + ip), bytes); \
+        ip += bytes;                                   \
+    }
+
 // Instruction syntax `<bytes: u8> <addr1: uword> <addr2: uword>`. In-place
 // modify `addr1` result of `fname(addr1, addr2, addr1, bytes)`. Set `retVar` to
 // return value of `fname`.

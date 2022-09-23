@@ -14,31 +14,6 @@ int cpu_mem_exec(struct CPU *cpu, OPCODE_T opcode, UWORD_T *ip) {
             cpu_mem_print(cpu, 500, 16, 1, 16);
             return 1;
 
-        case OP_PRINT_HEX_MEM:
-            OP_APPLYF_MEM(*ip, print_bytes);
-            return 1;
-        case OP_PRINT_HEX_REG: {
-            T_u8 reg = MEM_READ(*ip, T_u8);
-            *ip += sizeof(T_u8);
-            T_u8 *addr = (T_u8 *)(cpu->regs + reg);
-            for (T_u8 off = 0; off < sizeof(WORD_T); ++off)
-                printf("%.2X ", addr[off]);
-            return 1;
-        }
-        case OP_PRINT_CHARS_MEM:
-            OP_APPLYF_MEM(*ip, print_chars);
-            return 1;
-        case OP_PRINT_CHARS_REG: {
-            T_u8 reg = MEM_READ(*ip, T_u8);
-            *ip += sizeof(T_u8);
-            T_u8 *addr = (T_u8 *)(cpu->regs + reg);
-            for (T_u8 off = 0; off < sizeof(WORD_T); ++off) {
-                T_u8 ch = addr[off];
-                if (ch == '\0') break;
-                printf("%c", ch);
-            }
-            return 1;
-        }
         case OP_NOP:
             return 1;
         case OP_HALT:
@@ -407,10 +382,36 @@ int cpu_mem_exec(struct CPU *cpu, OPCODE_T opcode, UWORD_T *ip) {
         case OP_JMP_NEQ_REG:
             JMP_REG_IF(*ip, !=, CMP_EQ);
             return 1;
+        case OP_PRINT_HEX_MEM:
+            OP_APPLYF_MEM(*ip, print_bytes);
+            return 1;
+        case OP_PRINT_HEX_REG: {
+            T_u8 reg = MEM_READ(*ip, T_u8);
+            *ip += sizeof(T_u8);
+            T_u8 *addr = (T_u8 *)(cpu->regs + reg);
+            for (T_u8 off = 0; off < sizeof(WORD_T); ++off)
+                printf("%.2X ", addr[off]);
+            return 1;
+        }
+        case OP_PRINT_CHARS_MEM:
+            OP_APPLYF_MEM(*ip, print_chars);
+            return 1;
+        case OP_PRINT_CHARS_REG: {
+            T_u8 reg = MEM_READ(*ip, T_u8);
+            *ip += sizeof(T_u8);
+            T_u8 *addr = (T_u8 *)(cpu->regs + reg);
+            for (T_u8 off = 0; off < sizeof(WORD_T); ++off) {
+                T_u8 ch = addr[off];
+                if (ch == '\0') break;
+                printf("%c", ch);
+            }
+            return 1;
+        }
+        case OP_PRINT_CHARS_LIT:
+            OP_APPLYF_LIT(*ip, print_chars);
+            return 1;
         default:  // Unknown instruction
-            printf("ERROR: UNINST at IP = %lli\n", *ip);
-            cpu->err = ERR_UNINST;
-            cpu->err_data = opcode;
+            ERR_SET(ERR_UNINST, opcode);
             return 0;
     }
     return 1;
@@ -421,22 +422,21 @@ int cpu_exec(struct CPU *cpu) {
     OPCODE_T instruct = *(OPCODE_T *)((T_u8 *)cpu->mem + *ip);
     *ip += sizeof(OPCODE_T);
     int cnt = cpu_mem_exec(cpu, instruct, ip);
-    if (cpu->err != ERR_NONE) return 0;  // If error, DO NOT continue
+    if (cpu->regs[REG_ERR] != ERR_NONE) return 0;  // If error, DO NOT continue
     return cnt;
 }
 
 unsigned int cpu_fecycle(struct CPU *cpu) {
-    if (cpu->err) return 0;  // Must be error-clear
+    WORD_T *err = cpu->regs + REG_ERR;
+    if (*err) return 0;  // Must be error-clear
     unsigned int cnt = 1, i = 0;
-    while (cnt && cpu->err == 0) {
+    while (cnt && *err == 0) {
         cnt = cpu_exec(cpu);
         i++;
     }
-    printf("Process finished with code %i after %i cycles.\n", cpu->err, i);
-    if (cpu->err != 0) {
-        printf("\n");
+    printf("Process finished with code %i after %i cycles.\n", *err, i);
+    if (*err != 0) {
         err_print(cpu);
-        ERR_CLEAR();
         printf("\n");
     }
     return i;

@@ -7,7 +7,7 @@
 #include "err.h"
 
 struct CPU cpu_create(UWORD_T mem_size) {
-    struct CPU cpu = {.mem_size = mem_size, .err = 0};
+    struct CPU cpu = {.mem_size = mem_size};
     cpu.mem = malloc(mem_size);
     cpu.regs[REG_IP] = 0;  // Clear IP register
     return cpu;
@@ -19,15 +19,14 @@ void cpu_destroy(struct CPU* cpu) {
 }
 
 void cpu_print_details(struct CPU* cpu) {
+    WORD_T err = cpu->regs[REG_ERR];
+
     printf("===== CPU =====\n");
     printf("Memory Size: " WORD_T_FLAG "\n", cpu->mem_size);
     printf("Registers  : %i\n", REG_COUNT);
-    printf("  - R ip   : %i\n", REG_IP);
-    printf("  - R flag : %i\n", REG_FLAG);
-    printf("  - R cmp  : %i\n", REG_CMP);
-    printf("Errno      : 0x%.8X\n", cpu->err);
-    if (cpu->err != ERR_NONE)
-        printf("Error Data : " WORD_T_FLAG "\n", cpu->err_data);
+    printf("Errno      : 0x%.8X\n", err);
+    if (err != ERR_NONE)
+        printf("Error Data : " WORD_T_FLAG "\n", cpu->regs[REG_FLAG]);
     printf("===============\n");
 }
 
@@ -55,8 +54,7 @@ ERRNO_T cpu_mem_read(struct CPU* cpu, UWORD_T addr_start, void* data,
     for (int off = 0; off < length; ++off) {
         WORD_T addr = addr_start + off;
         if (addr >= cpu->mem_size) {
-            cpu->err = ERR_MEMOOB;
-            cpu->err_data = addr;
+            ERR_SET(ERR_MEMOOB, addr);
             return ERR_MEMOOB;
         }
         ((char*)data)[off] = ((char*)cpu->mem)[addr];
@@ -80,8 +78,7 @@ ERRNO_T cpu_mem_write_array(struct CPU* cpu, UWORD_T addr_start,
     for (int off = 0; off < data_length; ++off) {
         WORD_T addr = addr_start + off;
         if (addr >= cpu->mem_size) {
-            cpu->err = ERR_MEMOOB;
-            cpu->err_data = addr;
+            ERR_SET(ERR_MEMOOB, addr);
             return ERR_MEMOOB;
         }
         ((char*)cpu->mem)[addr] = ((char*)data)[off];
@@ -102,13 +99,37 @@ int cpu_mem_fwrite(struct CPU* cpu, FILE* fp, UWORD_T addr_start,
 
 ERRNO_T cpu_reg_print(struct CPU* cpu) {
     for (int i = 0; i < REG_COUNT; ++i) {
-        if (i == REG_IP)
-            printf("ip");
-        else if (i == REG_FLAG)
-            printf("fg");
-        else
-            printf("r%i", i);
-        printf(" | ");
+        char str[10];
+        switch (i) {
+            case REG_ERR:
+                sprintf(str, REG_ERR_SYM);
+                break;
+            case REG_FLAG:
+                sprintf(str, REG_FLAG_SYM);
+                break;
+            // case REG_CMP:
+            //     sprintf(str, REG_CMP_SYM);
+            //     break;
+            case REG_IP:
+                sprintf(str, REG_IP_SYM);
+                break;
+            case REG_SP:
+                sprintf(str, REG_SP_SYM);
+                break;
+            case REG_FP:
+                sprintf(str, REG_FP_SYM);
+                break;
+            case REG_SSIZE:
+                sprintf(str, REG_SSIZE_SYM);
+                break;
+            case REG_FSIZE:
+                sprintf(str, REG_FSIZE_SYM);
+                break;
+            default:
+                sprintf(str, "r%i", i);
+                break;
+        }
+        printf("%s | ", str);
         if (IS_BIG_ENDIAN)
             for (T_u8 j = 0; j < sizeof(WORD_T); --j)
                 printf("%.2x", *((T_u8*)cpu->regs + i * sizeof(WORD_T) + j));

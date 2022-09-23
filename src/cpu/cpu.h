@@ -14,12 +14,31 @@
 
 // Registers: general 0-9, ip
 // Register for flags
-#define REG_FLAG 9
+#define REG_FLAG 8
+#define REG_FLAG_SYM "fl"
 // Register for comparison operations
-#define REG_CMP 9
+#define REG_CMP 8
+#define REG_CMP_SYM "cmp"
+// Error code
+#define REG_ERR 9
+#define REG_ERR_SYM "er"
 // Instruction pointer
 #define REG_IP 10
-#define REG_COUNT 11
+#define REG_IP_SYM "ip"
+// Stack pointer
+#define REG_SP 11
+#define REG_SP_SYM "sp"
+// Stores size (bytes) of stack
+#define REG_SSIZE 12
+#define REG_SSIZE_SYM "ss"
+// Frame pointer
+#define REG_FP 13
+#define REG_FP_SYM "fp"
+// Store size of current stack frame
+#define REG_FSIZE 14
+#define REG_FSIZE_SYM "fs"
+// Total number of registers
+#define REG_COUNT 15
 
 // Check if memory address is valid. Expects defined `struct CPU *cpu`
 #define MEM_CHECK(addr) (addr >= 0 && addr < cpu->mem_size)
@@ -48,10 +67,8 @@
     (*(type *)((char *)cpu->mem + addr) = value)
 
 struct CPU {
-    WORD_T mem_size;         // Size of .mem
+    UWORD_T mem_size;        // Size of .mem
     void *mem;               // Pointer to start of memory block
-    ERRNO_T err;             // Error number (0 = none)
-    WORD_T err_data;         // Extra error data if error (errno != 0)
     WORD_T regs[REG_COUNT];  // Register memory
 };
 

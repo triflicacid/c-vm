@@ -3,17 +3,14 @@
 #include "cpu.h"
 
 // CPU - set error. Requires `struct CPU *cpu`
-#define ERR_SET(errn, data)   \
-    {                         \
-        cpu->err = errn;      \
-        cpu->err_data = data; \
+#define ERR_SET(errn, data)         \
+    {                               \
+        cpu->regs[REG_ERR] = errn;  \
+        cpu->regs[REG_FLAG] = data; \
     }
 
 // No error
 #define ERR_NONE 0
-
-// Set CPUs error as ERR_NONE. Requires `struct CPU *cpu`.
-#define ERR_CLEAR() (cpu->err = ERR_NONE)
 
 // Memory OutOfBounds. Address = CPU.err_data
 #define ERR_MEMOOB 1
@@ -35,6 +32,20 @@
 
 // Unknown instruction. Instruction = .err_data
 #define ERR_UNINST 3
+
+// Stack underflow
+#define ERR_STACK_UFLOW 4
+
+// Stack overflow
+#define ERR_STACK_OFLOW 5
+
+// Check for stack errors
+#define ERR_CHECK_STACK()                              \
+    if (cpu->regs[REG_SP] >= cpu->mem_size) {          \
+        ERR_SET(ERR_STACK_UFLOW, 0);                   \
+    } else if (cpu->regs[REG_SP] < cpu->stack_bound) { \
+        ERR_SET(ERR_STACK_OFLOW, cpu->regs[REG_SP]);   \
+    }
 
 /** Print error information */
 void err_print(struct CPU *cpu);

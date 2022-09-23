@@ -28,6 +28,9 @@
 // Print up to four characters from a register. Print up until '\0' is found.
 // Syntax: `pcr <reg: u8>`
 #define OP_PRINT_CHARS_REG 0xFFE3
+// PPrint `bytes` characters from a literal
+// Syntax: `pcl <bytes: u8> <lit: ...>`
+#define OP_PRINT_CHARS_LIT 0xFFE4
 
 // Move literal to register.
 // Syntax: `mov <data: word> <register: u8>`
