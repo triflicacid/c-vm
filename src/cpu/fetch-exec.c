@@ -13,6 +13,9 @@ int cpu_mem_exec(struct CPU *cpu, OPCODE_T opcode, UWORD_T *ip) {
         case OP_PMEM:
             cpu_mem_print(cpu, 500, 16, 1, 16);
             return 1;
+        case OP_PSTACK:
+            cpu_stack_print(cpu);
+            return 1;
 
         case OP_NOP:
             return 1;
@@ -382,6 +385,73 @@ int cpu_mem_exec(struct CPU *cpu, OPCODE_T opcode, UWORD_T *ip) {
         case OP_JMP_NEQ_REG:
             JMP_REG_IF(*ip, !=, CMP_EQ);
             return 1;
+        case OP_PUSH_LIT:
+            PUSH_LIT(*ip, WORD_T);
+            return 1;
+        case OP_PUSH8_LIT:
+            PUSH_LIT(*ip, T_u8);
+            return 1;
+        case OP_PUSH16_LIT:
+            PUSH_LIT(*ip, T_u16);
+            return 1;
+        case OP_PUSH32_LIT:
+            PUSH_LIT(*ip, T_u32);
+            return 1;
+        case OP_PUSH64_LIT:
+            PUSH_LIT(*ip, T_u64);
+            return 1;
+        case OP_PUSHN_LIT:
+            PUSHN_LIT(*ip);
+            return 1;
+        case OP_PUSH_MEM:
+            PUSH_MEM(*ip, WORD_T);
+            return 1;
+        case OP_PUSH8_MEM:
+            PUSH_MEM(*ip, T_u8);
+            return 1;
+        case OP_PUSH16_MEM:
+            PUSH_MEM(*ip, T_u16);
+            return 1;
+        case OP_PUSH32_MEM:
+            PUSH_MEM(*ip, T_u32);
+            return 1;
+        case OP_PUSH64_MEM:
+            PUSH_MEM(*ip, T_u64);
+            return 1;
+        case OP_PUSHN_MEM:
+            PUSHN_MEM(*ip);
+            return 1;
+        case OP_PUSH_REG:
+            PUSH_REG(*ip, WORD_T);
+            return 1;
+        case OP_PUSH8_REG:
+            PUSH_REG(*ip, T_u8);
+            return 1;
+        case OP_PUSH16_REG:
+            PUSH_REG(*ip, T_u16);
+            return 1;
+        case OP_PUSH32_REG:
+            PUSH_REG(*ip, T_u32);
+            return 1;
+        case OP_PUSH64_REG:
+            PUSH_REG(*ip, T_u64);
+            return 1;
+        case OP_POP_REG:
+            POP_REG(*ip, WORD_T);
+            return 1;
+        case OP_POP8_REG:
+            POP_REG(*ip, T_u8);
+        case OP_POP16_REG:
+            POP_REG(*ip, T_u16);
+        case OP_POP32_REG:
+            POP_REG(*ip, T_u32);
+        case OP_POP64_REG:
+            POP_REG(*ip, T_u64);
+            return 1;
+        case OP_POPN_MEM:
+            POPN_MEM(*ip);
+            return 1;
+
         case OP_PRINT_HEX_MEM:
             OP_APPLYF_MEM(*ip, print_bytes);
             return 1;

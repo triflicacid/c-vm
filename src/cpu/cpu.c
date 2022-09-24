@@ -10,6 +10,8 @@ struct CPU cpu_create(UWORD_T mem_size) {
     struct CPU cpu = {.mem_size = mem_size};
     cpu.mem = malloc(mem_size);
     cpu.regs[REG_IP] = 0;  // Clear IP register
+    cpu.regs[REG_SP] = mem_size;
+    cpu.regs[REG_FP] = cpu.regs[REG_SP];
     return cpu;
 }
 
@@ -24,6 +26,7 @@ void cpu_print_details(struct CPU* cpu) {
     printf("===== CPU =====\n");
     printf("Memory Size: " WORD_T_FLAG "\n", cpu->mem_size);
     printf("Registers  : %i\n", REG_COUNT);
+    printf("Stack Size : %i\n", cpu->regs[REG_SSIZE]);
     printf("Errno      : 0x%.8X\n", err);
     if (err != ERR_NONE)
         printf("Error Data : " WORD_T_FLAG "\n", cpu->regs[REG_FLAG]);
@@ -148,4 +151,12 @@ void cpu_reg_write(struct CPU* cpu, unsigned int reg_offset, WORD_T value) {
 
 WORD_T cpu_reg_read(struct CPU* cpu, unsigned int reg_offset) {
     return cpu->regs[reg_offset];
+}
+
+void cpu_stack_print(struct CPU* cpu) {
+    printf("[");
+    for (UWORD_T addr = cpu->regs[REG_SP]; addr < cpu->mem_size; ++addr) {
+        printf(" %.2X", *((T_u8*)cpu->mem + addr));
+    }
+    printf("]\n");
 }

@@ -383,6 +383,128 @@
             ip += sizeof(UWORD_T);      \
     }
 
+// Push a literal onto the stack
+#define PUSH_LIT(ip, type)                                                     \
+    {                                                                          \
+        ERR_CHECK_STACK_OFLOW() else {                                         \
+            type lit = MEM_READ(ip, type);                                     \
+            ip += sizeof(type);                                                \
+            *(type *)((T_u8 *)cpu->mem + (cpu->regs[REG_SP] - sizeof(type))) = \
+                lit;                                                           \
+            cpu->regs[REG_SP] -= sizeof(type);                                 \
+            ERR_CHECK_STACK_OFLOW();                                           \
+        }                                                                      \
+    }
+
+// Push a register onto the stack
+#define PUSH_REG(ip, type)                                      \
+    {                                                           \
+        ERR_CHECK_STACK_OFLOW() else {                          \
+            T_u8 reg = MEM_READ(ip, T_u8);                      \
+            ERR_CHECK_REG(reg) else {                           \
+                ip += sizeof(T_u8);                             \
+                *(type *)((T_u8 *)cpu->mem +                    \
+                          (cpu->regs[REG_SP] - sizeof(type))) = \
+                    *(type *)(cpu->regs + reg);                 \
+                cpu->regs[REG_SP] -= sizeof(type);              \
+                ERR_CHECK_STACK_OFLOW();                        \
+            }                                                   \
+        }                                                       \
+    }
+
+// Push value at memory address onto the stack
+#define PUSH_MEM(ip, type)                                             \
+    {                                                                  \
+        ERR_CHECK_STACK_OFLOW() else {                                 \
+            UWORD_T addr = MEM_READ(ip, UWORD_T);                      \
+            ERR_CHECK_ADDR(addr) else {                                \
+                ip += sizeof(UWORD_T);                                 \
+                type value = MEM_READ(addr, type);                     \
+                *(type *)((T_u8 *)cpu->mem +                           \
+                          (cpu->regs[REG_SP] - sizeof(type))) = value; \
+                cpu->regs[REG_SP] -= sizeof(type);                     \
+                ERR_CHECK_STACK_OFLOW();                               \
+            }                                                          \
+        }                                                              \
+    }
+
+// Push n-bytes to the stack: `<bytes: u8> <lit: ...>`
+#define PUSHN_LIT(ip)                                                      \
+    {                                                                      \
+        ERR_CHECK_STACK_OFLOW() else {                                     \
+            T_u8 nbytes = MEM_READ(ip, T_u8);                              \
+            ip += sizeof(nbytes);                                          \
+            for (UWORD_T off = 0; off < nbytes; ++off) {                   \
+                if (ip >= cpu->mem_size) {                                 \
+                    ERR_SET(ERR_MEMOOB, ip);                               \
+                    break;                                                 \
+                }                                                          \
+                *((T_u8 *)cpu->mem + (cpu->regs[REG_SP] - sizeof(T_u8))) = \
+                    *((T_u8 *)cpu->mem + ip);                              \
+                cpu->regs[REG_SP] -= sizeof(T_u8);                         \
+                ip += sizeof(T_u8);                                        \
+            }                                                              \
+        }                                                                  \
+        ERR_CHECK_STACK_OFLOW();                                           \
+    }
+
+// Push n-bytes to the stack: `<bytes: u8> <addr: uword>`
+#define PUSHN_MEM(ip)                                                      \
+    {                                                                      \
+        ERR_CHECK_STACK_OFLOW() else {                                     \
+            T_u8 nbytes = MEM_READ(ip, T_u8);                              \
+            ip += sizeof(nbytes);                                          \
+            UWORD_T addr = MEM_READ(ip, UWORD_T);                          \
+            ip += sizeof(UWORD_T);                                         \
+            for (UWORD_T off = 0; off < nbytes; ++off) {                   \
+                if (addr + off >= cpu->mem_size) {                         \
+                    ERR_SET(ERR_MEMOOB, addr + off);                       \
+                    break;                                                 \
+                }                                                          \
+                *((T_u8 *)cpu->mem + (cpu->regs[REG_SP] - sizeof(T_u8))) = \
+                    *((T_u8 *)cpu->mem + addr + off);                      \
+                cpu->regs[REG_SP] -= sizeof(T_u8);                         \
+            }                                                              \
+        }                                                                  \
+        ERR_CHECK_STACK_OFLOW();                                           \
+    }
+
+// Pop value `type` from stack. Set to `var`.
+#define POP(type, var)                                     \
+    var = *(type *)((T_u8 *)cpu->mem + cpu->regs[REG_SP]); \
+    cpu->regs[REG_SP] += sizeof(type);                     \
+    ERR_CHECK_STACK_UFLOW();
+
+// Pop `type` off stack into register
+#define POP_REG(ip, type)                     \
+    {                                         \
+        T_u8 reg = MEM_READ(ip, T_u8);        \
+        ERR_CHECK_REG(reg) else {             \
+            ip += sizeof(T_u8);               \
+            type val;                         \
+            POP(type, val);                   \
+            *(type *)(cpu->regs + reg) = val; \
+        }                                     \
+    }
+
+// Pop n-bytes from stack and write to memory address
+#define POPN_MEM(ip)                                  \
+    {                                                 \
+        T_u8 nbytes = MEM_READ(ip, T_u8);             \
+        ip += sizeof(T_u8);                           \
+        UWORD_T addr = MEM_READ(ip, UWORD_T);         \
+        ip += sizeof(UWORD_T);                        \
+        T_u8 value;                                   \
+        for (UWORD_T off = 0; off < nbytes; ++off) {  \
+            if (addr + off >= cpu->mem_size) {        \
+                ERR_SET(ERR_MEMOOB, addr + off);      \
+                break;                                \
+            }                                         \
+            POP(T_u8, value);                         \
+            *((T_u8 *)cpu->mem + addr + off) = value; \
+        }                                             \
+    }
+
 /** Begin a fetch-execute cycle, starting at `ip`. Continue until error of HALT.
  * Return number of cycles. */
 unsigned int cpu_fecycle(struct CPU *cpu);

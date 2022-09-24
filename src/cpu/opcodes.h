@@ -10,10 +10,13 @@
 #define OP_NOP 0x0000
 // HALT
 #define OP_HALT 0xFFFF
+
 // DEBUG: PRINT MEMORY
 #define OP_PMEM 0xFFFA
 // DEBUG: PRINT REGISTERS
 #define OP_PREG 0xFFFB
+// DEBUG: PRINT STACK
+#define OP_PSTACK 0xFFFC
 
 // Print hex `bytes` bytes from memory
 // Syntax: `phm <bytes: u8> <addr: uword>`
@@ -424,5 +427,76 @@
 // Jump execution to address in register IF comparison is not CMP_EQ (set IP)
 // Syntax: `jne <reg: u8>`
 #define OP_JMP_NEQ_REG 0x00E9
+
+// Push literal to the stack
+// Syntax: `psh <lit: word>`
+#define OP_PUSH_LIT 0x0100
+// Push 8-bit literal to the stack
+// Syntax: `psh <lit: u8>`
+#define OP_PUSH8_LIT 0x0101
+// Push 16-bit literal to the stack
+// Syntax: `psh <lit: u16>`
+#define OP_PUSH16_LIT 0x0102
+// Push 32-bit literal to the stack
+// Syntax: `psh <lit: u32>`
+#define OP_PUSH32_LIT 0x0103
+// Push 64-bit literal to the stack
+// Syntax: `psh <lit: u64>`
+#define OP_PUSH64_LIT 0x0104
+// Push (n*8)-bit literal to the stack
+// Syntax: `psh <bytes: u8> <lit: ...>`
+#define OP_PUSHN_LIT 0x0105
+// Push value at given address to the stack
+// Syntax: `psh <addr: uword>`
+#define OP_PUSH_MEM 0x0106
+// Push 8-bit value at given address to the stack
+// Syntax: `psh8 <addr: uword>`
+#define OP_PUSH8_MEM 0x0107
+// Push 16-bit value at given address to the stack
+// Syntax: `psh16 <addr: uword>`
+#define OP_PUSH16_MEM 0x0108
+// Push 32-bit value at given address to the stack
+// Syntax: `psh32 <addr: uword>`
+#define OP_PUSH32_MEM 0x0109
+// Push 64-bit value at given address to the stack
+// Syntax: `psh64 <addr: uword>`
+#define OP_PUSH64_MEM 0x010A
+// Push k-bit value at given address to the stack
+// Syntax: `psh <bytes: u8> <addr: ...>`
+#define OP_PUSHN_MEM 0x010B
+// Push register to the stack
+// Syntax: `psh <reg: u8>`
+#define OP_PUSH_REG 0x010C
+// Push first 8-bits of a register to the stack
+// Syntax: `psh8 <reg: u8>`
+#define OP_PUSH8_REG 0x010D
+// Push first 16-bits of a register to the stack
+// Syntax: `psh16 <reg: u8>`
+#define OP_PUSH16_REG 0x010E
+// Push first 32-bits of a register to the stack
+// Syntax: `psh32 <reg: u8>`
+#define OP_PUSH32_REG 0x010F
+// Push first 64-bits of a register to the stack
+// Syntax: `psh64 <reg: u8>`
+#define OP_PUSH64_REG 0x0110
+
+// Pop word from stack and place in register
+// Syntax: `pop <reg: u8>`
+#define OP_POP_REG 0x0111
+// Pop 8 bits from stack and place in register
+// Syntax: `pop8 <reg: u8>`
+#define OP_POP8_REG 0x0112
+// Pop 16 bits from stack and place in register
+// Syntax: `pop16 <reg: u8>`
+#define OP_POP16_REG 0x0113
+// Pop 32 bits from stack and place in register
+// Syntax: `pop32 <reg: u8>`
+#define OP_POP32_REG 0x0114
+// Pop 64 bits from stack and place in register
+// Syntax: `pop64 <reg: u8>`
+#define OP_POP64_REG 0x0115
+// Pop (n*8)-bits from stack and write to memory address
+// Syntax: `pop <bytes: u8> <addr: uword>`
+#define OP_POPN_MEM 0x0116
 
 #endif

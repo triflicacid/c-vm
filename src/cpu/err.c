@@ -29,6 +29,12 @@ void err_print(struct CPU *cpu) {
             case ERR_STACK_UFLOW:
                 printf("ERROR: Stack underflow\n");
                 break;
+            case ERR_STACK_OFLOW:
+                printf(
+                    "ERROR: Stack overflow - address "
+                    "%.8X is out-of-bounds (stack lower bound: %.8X)\n",
+                    data, cpu->mem_size - cpu->regs[REG_SSIZE]);
+                break;
             default:
                 break;
         }

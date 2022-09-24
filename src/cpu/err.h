@@ -39,12 +39,16 @@
 // Stack overflow
 #define ERR_STACK_OFLOW 5
 
-// Check for stack errors
-#define ERR_CHECK_STACK()                              \
-    if (cpu->regs[REG_SP] >= cpu->mem_size) {          \
-        ERR_SET(ERR_STACK_UFLOW, 0);                   \
-    } else if (cpu->regs[REG_SP] < cpu->stack_bound) { \
-        ERR_SET(ERR_STACK_OFLOW, cpu->regs[REG_SP]);   \
+// Check for stack overflow
+#define ERR_CHECK_STACK_OFLOW()                                         \
+    if (cpu->regs[REG_SP] < cpu->mem_size - 1 - cpu->regs[REG_SSIZE]) { \
+        ERR_SET(ERR_STACK_OFLOW, cpu->regs[REG_SP]);                    \
+    }
+
+// Check for stack underflow
+#define ERR_CHECK_STACK_UFLOW()               \
+    if (cpu->regs[REG_SP] >= cpu->mem_size) { \
+        ERR_SET(ERR_STACK_UFLOW, 0);          \
     }
 
 /** Print error information */

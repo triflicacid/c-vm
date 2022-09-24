@@ -119,4 +119,7 @@ int cpu_mem_exec(struct CPU *cpu, OPCODE_T opcode, UWORD_T *ip);
  * execution. */
 int cpu_exec(struct CPU *cpu);
 
+/** Print the contents of a CPUs stack */
+void cpu_stack_print(struct CPU *cpu);
+
 #endif
