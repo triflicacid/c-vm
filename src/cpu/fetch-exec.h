@@ -2,6 +2,8 @@
 #ifndef __FETCH_EXEC__H_
 #define __FETCH_EXEC__H_
 
+#include <conio.h>
+
 #include "../util.h"
 #include "cpu.h"
 #include "err.h"

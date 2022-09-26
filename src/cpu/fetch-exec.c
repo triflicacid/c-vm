@@ -497,6 +497,15 @@ int cpu_mem_exec(struct CPU *cpu, OPCODE_T opcode, UWORD_T *ip) {
         case OP_PRINT_CHARS_LIT:
             OP_APPLYF_LIT(*ip, print_chars);
             return 1;
+        case OP_GET_CHAR: {
+            T_u8 reg = MEM_READ(*ip, T_u8);
+            ERR_CHECK_REG(reg) else {
+                *ip += sizeof(T_u8);
+                char c = getch();
+                cpu->regs[reg] = c;
+            }
+            return 1;
+        }
         default:  // Unknown instruction
             ERR_SET(ERR_UNINST, opcode);
             return 0;

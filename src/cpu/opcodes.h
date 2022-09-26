@@ -35,6 +35,10 @@
 // Syntax: `pcl <bytes: u8> <lit: ...>`
 #define OP_PRINT_CHARS_LIT 0xFFE4
 
+// Get character from STDIN and write to register
+// Syntax: `icr <reg: u8>`
+#define OP_GET_CHAR 0xFFD0
+
 // Move literal to register.
 // Syntax: `mov <data: word> <register: u8>`
 #define OP_MOV_LIT_REG 0x0010
