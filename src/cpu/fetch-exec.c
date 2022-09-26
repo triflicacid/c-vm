@@ -451,6 +451,23 @@ int cpu_mem_exec(struct CPU *cpu, OPCODE_T opcode, UWORD_T *ip) {
         case OP_POPN_MEM:
             POPN_MEM(*ip);
             return 1;
+        case OP_CALL_LIT: {
+            UWORD_T lit = MEM_READ(*ip, UWORD_T);
+            *ip += sizeof(UWORD_T);
+            cpu_stackframe_push(cpu);
+            *ip = lit;
+            return 1;
+        }
+        case OP_CALL_REG: {
+            T_u8 reg = MEM_READ(*ip, T_u8);
+            *ip += sizeof(T_u8);
+            cpu_stackframe_push(cpu);
+            *ip = cpu->regs[reg];
+            return 1;
+        }
+        case OP_RET:
+            cpu_stackframe_pop(cpu);
+            return 1;
 
         case OP_PRINT_HEX_MEM:
             OP_APPLYF_MEM(*ip, print_bytes);
@@ -510,4 +527,49 @@ unsigned int cpu_fecycle(struct CPU *cpu) {
         printf("\n");
     }
     return i;
+}
+
+void cpu_stackframe_push(struct CPU *cpu) {
+    UWORD_T *err = cpu->regs + REG_ERR;
+
+    // Push general purpose registers
+    for (T_u8 off = 0; off < REG_RESV; ++off) {
+        PUSH(WORD_T, cpu->regs[off]);
+        if (*err != ERR_NONE) return;
+    }
+
+    // Push instruction pointer
+    PUSH(UWORD_T, cpu->regs[REG_IP]);
+    if (*err != ERR_NONE) return;
+
+    // Record stack frame size
+    UWORD_T frame_size = cpu->regs[REG_FP] - cpu->regs[REG_SP];
+    PUSH(UWORD_T, frame_size + sizeof(UWORD_T));
+    if (*err != ERR_NONE) return;
+
+    // Move frame pointer
+    cpu->regs[REG_FP] = cpu->regs[REG_SP];
+}
+
+void cpu_stackframe_pop(struct CPU *cpu) {
+    UWORD_T *err = cpu->regs + REG_ERR;
+
+    // Get frame size
+    UWORD_T frame_size;
+    POP(UWORD_T, frame_size);
+    if (*err != ERR_NONE) return;
+
+    // Pop IP
+    UWORD_T ip;
+    POP(UWORD_T, ip);
+    if (*err != ERR_NONE) return;
+    cpu->regs[REG_IP] = ip;
+
+    // Pop general purpose registers
+    for (T_u8 off = REG_RESV; off > 0; --off) {
+        POP(UWORD_T, cpu->regs[off - 1]);
+        if (*err != ERR_NONE) return;
+    }
+
+    cpu->regs[REG_FP] += frame_size;
 }

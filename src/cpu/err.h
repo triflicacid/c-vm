@@ -46,9 +46,9 @@
     }
 
 // Check for stack underflow
-#define ERR_CHECK_STACK_UFLOW()               \
-    if (cpu->regs[REG_SP] >= cpu->mem_size) { \
-        ERR_SET(ERR_STACK_UFLOW, 0);          \
+#define ERR_CHECK_STACK_UFLOW()              \
+    if (cpu->regs[REG_SP] > cpu->mem_size) { \
+        ERR_SET(ERR_STACK_UFLOW, 0);         \
     }
 
 /** Print error information */

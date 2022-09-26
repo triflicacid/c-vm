@@ -499,4 +499,15 @@
 // Syntax: `pop <bytes: u8> <addr: uword>`
 #define OP_POPN_MEM 0x0116
 
+// Call literal
+// Syntax: `cal <lit: uword>`
+#define OP_CALL_LIT 0x0120
+// Call value in register
+// Syntax: `cal <reg: u8>`
+#define OP_CALL_REG 0x0121
+
+// Return from subroutine
+// Syntax: `ret`
+#define OP_RET 0x012A
+
 #endif

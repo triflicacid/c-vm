@@ -14,31 +14,30 @@
 
 // Registers: general 0-9, ip
 // Register for flags
-#define REG_FLAG 8
+#define REG_FLAG 9
 #define REG_FLAG_SYM "fl"
 // Register for comparison operations
-#define REG_CMP 8
+#define REG_CMP 9
 #define REG_CMP_SYM "cmp"
 // Error code
-#define REG_ERR 9
+#define REG_ERR 10
 #define REG_ERR_SYM "er"
 // Instruction pointer
-#define REG_IP 10
+#define REG_IP 11
 #define REG_IP_SYM "ip"
 // Stack pointer
-#define REG_SP 11
+#define REG_SP 12
 #define REG_SP_SYM "sp"
 // Stores size (bytes) of stack
-#define REG_SSIZE 12
+#define REG_SSIZE 13
 #define REG_SSIZE_SYM "ss"
 // Frame pointer
-#define REG_FP 13
+#define REG_FP 14
 #define REG_FP_SYM "fp"
-// Store size of current stack frame
-#define REG_FSIZE 14
-#define REG_FSIZE_SYM "fs"
 // Total number of registers
 #define REG_COUNT 15
+// Preserve first `n` registers
+#define REG_RESV 5
 
 // Check if memory address is valid. Expects defined `struct CPU *cpu`
 #define MEM_CHECK(addr) (addr >= 0 && addr < cpu->mem_size)

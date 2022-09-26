@@ -125,9 +125,6 @@ ERRNO_T cpu_reg_print(struct CPU* cpu) {
             case REG_SSIZE:
                 sprintf(str, REG_SSIZE_SYM);
                 break;
-            case REG_FSIZE:
-                sprintf(str, REG_FSIZE_SYM);
-                break;
             default:
                 sprintf(str, "r%i", i);
                 break;
@@ -155,8 +152,10 @@ WORD_T cpu_reg_read(struct CPU* cpu, unsigned int reg_offset) {
 
 void cpu_stack_print(struct CPU* cpu) {
     printf("[");
-    for (UWORD_T addr = cpu->regs[REG_SP]; addr < cpu->mem_size; ++addr) {
+    for (UWORD_T i = 1, addr = cpu->regs[REG_SP]; addr < cpu->mem_size;
+         ++addr, ++i) {
         printf(" %.2X", *((T_u8*)cpu->mem + addr));
+        if (i % 20 == 0) printf("\n");
     }
     printf("]\n");
 }
