@@ -3,6 +3,7 @@
 #include <math.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 
 #include "err.h"
 
@@ -148,6 +149,18 @@ void cpu_reg_write(struct CPU* cpu, unsigned int reg_offset, WORD_T value) {
 
 WORD_T cpu_reg_read(struct CPU* cpu, unsigned int reg_offset) {
     return cpu->regs[reg_offset];
+}
+
+T_i8 cpu_reg_offset_from_string(const char* string) {
+    if (string[0] == 'r') return string[1] - '0';
+    if (strcmp(string, REG_FLAG_SYM) == 0) return REG_FLAG;
+    if (strcmp(string, REG_CMP_SYM) == 0) return REG_CMP;
+    if (strcmp(string, REG_ERR_SYM) == 0) return REG_ERR;
+    if (strcmp(string, REG_IP_SYM) == 0) return REG_IP;
+    if (strcmp(string, REG_SP_SYM) == 0) return REG_SP;
+    if (strcmp(string, REG_SSIZE_SYM) == 0) return REG_SSIZE;
+    if (strcmp(string, REG_FP_SYM) == 0) return REG_FP;
+    return -1;
 }
 
 void cpu_stack_print(struct CPU* cpu) {

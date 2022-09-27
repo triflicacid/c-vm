@@ -108,6 +108,9 @@ void cpu_reg_write(struct CPU *cpu, unsigned int reg_offset, WORD_T value);
 /** Get contents of register Instruction Pointer */
 WORD_T cpu_reg_read(struct CPU *cpu, unsigned int reg_offset);
 
+/** Given a register mnemonic, return its offset, or -1 */
+T_i8 cpu_reg_offset_from_string(const char *string);
+
 /** Execute given opcode. If needed, fetched data from cpu.mem, using `ip`
  * as the inst instruction pointer (on invocation, if in contiguous memory, `ip`
  * must point to cell AFTER instruction). `ip` is changed accordingly. Return
