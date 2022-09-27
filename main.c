@@ -8,23 +8,26 @@
 #include "src/cpu/opcodes.h"
 #include "src/util.c"
 
+#define BUF_SIZE 0x1FF
+
 int main(int argc, char **argv) {
-    struct CPU _cpu = cpu_create(0xFFF);
-    struct CPU *cpu = &_cpu;
-    cpu->regs[REG_SSIZE] = 0x1FF;
+    T_u8 buffer[BUF_SIZE];
 
     FILE *fp =
         fopen((argc > 1 && strlen(argv[1]) > 0) ? argv[1] : "source.asm", "r");
-    struct Assemble o =
-        assemble(fp, cpu->mem, cpu->mem_size - cpu->regs[REG_SSIZE] * 2);
+    struct Assemble o = assemble(fp, buffer, BUF_SIZE);
     fclose(fp);
 
-    printf("-----\n");
-    printf("Buffer Offset: %i\n", o.buf_offset);
-    printf("Line         : %i\n", o.line);
-    printf("Col          : %i\n", o.col);
+    if (o.errc != ASM_ERR_NONE) printf("\n");
+    printf("Buffer Offset: %u\n", o.buf_offset);
+    printf("Line         : %u\n", o.line);
+    printf("Col          : %u\n", o.col);
     printf("Errno        : %i\n", o.errc);
 
-    cpu_destroy(cpu);
-    printf("Done.");
+    if (argc > 2) {
+        fp = fopen(argv[2], "w");
+        fwrite(buffer, o.buf_offset, 1, fp);
+        fclose(fp);
+        printf("\nWritten %u bytes to file '%s'\n", o.buf_offset, argv[2]);
+    }
 }
