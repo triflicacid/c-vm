@@ -23,6 +23,22 @@
 #define RET_MEMOV(bytes) \
     if (*buf_offset + bytes >= buf_size) return ASM_ERR_MEMORY;
 
+// Write instruction to machine code with 2 arguments
+#define WRITE_INST2(opcode, type1, type2)                        \
+    RET_MEMOV(sizeof(OPCODE_T) + sizeof(type1) + sizeof(type2)); \
+    BUF_WRITE(*buf_offset, OPCODE_T, opcode);                    \
+    BUF_WRITE(*buf_offset, type1, args[0].data);                 \
+    BUF_WRITE(*buf_offset, type2, args[1].data);
+
+// Write instruction to machine code with 3 arguments
+#define WRITE_INST3(opcode, type1, type2, type3)                 \
+    RET_MEMOV(sizeof(OPCODE_T) + sizeof(type1) + sizeof(type2) + \
+              sizeof(type3));                                    \
+    BUF_WRITE(*buf_offset, OPCODE_T, opcode);                    \
+    BUF_WRITE(*buf_offset, type1, args[0].data);                 \
+    BUF_WRITE(*buf_offset, type2, args[1].data);                 \
+    BUF_WRITE(*buf_offset, type2, args[2].data);
+
 struct Assemble {
     unsigned int buf_offset;  // Final buffer offset reached
     unsigned int line;        // Assembly source line reached

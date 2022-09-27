@@ -135,52 +135,71 @@ int decode_instruction(void *buf, unsigned int buf_size,
                        struct AsmArgument *args, unsigned int argc) {
     if (strcmp(mnemonic, "hlt") == 0) {
         if (argc == 0) {
+            RET_MEMOV(sizeof(OPCODE_T));
             BUF_WRITE(*buf_offset, OPCODE_T, OP_HALT);
+        } else
+            return ASM_ERR_OPERAND;
+    } else if (strcmp(mnemonic, "and") == 0) {
+        if (argc == 2 && args[0].type == ASM_ARG_REG &&
+            args[1].type == ASM_ARG_LIT) {
+            WRITE_INST2(OP_AND_REG_LIT, T_u8, WORD_T);
+        } else if (argc == 2 && args[0].type == ASM_ARG_REG &&
+                   args[1].type == ASM_ARG_REG) {
+            WRITE_INST2(OP_AND_REG_REG, T_u8, T_u8);
+        } else if (argc == 3 && args[0].type == ASM_ARG_LIT &&
+                   args[1].type == ASM_ARG_ADDR &&
+                   args[2].type == ASM_ARG_ADDR) {
+            WRITE_INST3(OP_AND_REG_REG, T_u8, UWORD_T, UWORD_T);
         } else
             return ASM_ERR_OPERAND;
     } else if (strcmp(mnemonic, "mov") == 0) {
         if (argc == 2 && args[0].type == ASM_ARG_LIT &&
             args[1].type == ASM_ARG_REG) {
-            RET_MEMOV(sizeof(OPCODE_T) + sizeof(WORD_T) + sizeof(T_u8));
-            BUF_WRITE(*buf_offset, OPCODE_T, OP_MOV_LIT_REG);
-            BUF_WRITE(*buf_offset, WORD_T, args[0].data);
-            BUF_WRITE(*buf_offset, T_u8, args[1].data);
+            WRITE_INST2(OP_MOV_LIT_REG, WORD_T, T_u8);
         } else if (argc == 2 && args[0].type == ASM_ARG_LIT &&
                    args[1].type == ASM_ARG_ADDR) {
-            RET_MEMOV(sizeof(OPCODE_T) + sizeof(WORD_T) + sizeof(UWORD_T));
-            BUF_WRITE(*buf_offset, OPCODE_T, OP_MOV_LIT_REG);
-            BUF_WRITE(*buf_offset, WORD_T, args[0].data);
-            BUF_WRITE(*buf_offset, UWORD_T, args[1].data);
+            WRITE_INST2(OP_MOV_LIT_MEM, WORD_T, UWORD_T);
         } else if (argc == 2 && args[0].type == ASM_ARG_ADDR &&
                    args[1].type == ASM_ARG_REG) {
-            RET_MEMOV(sizeof(OPCODE_T) + sizeof(UWORD_T) + sizeof(T_u8));
-            BUF_WRITE(*buf_offset, OPCODE_T, OP_MOV_MEM_REG);
-            BUF_WRITE(*buf_offset, UWORD_T, args[0].data);
-            BUF_WRITE(*buf_offset, T_u8, args[1].data);
+            WRITE_INST2(OP_MOV_MEM_REG, UWORD_T, T_u8);
         } else if (argc == 2 && args[0].type == ASM_ARG_REG &&
                    args[1].type == ASM_ARG_ADDR) {
-            RET_MEMOV(sizeof(OPCODE_T) + sizeof(T_u8) + sizeof(UWORD_T));
-            BUF_WRITE(*buf_offset, OPCODE_T, OP_MOV_REG_MEM);
-            BUF_WRITE(*buf_offset, T_u8, args[0].data);
-            BUF_WRITE(*buf_offset, UWORD_T, args[1].data);
+            WRITE_INST2(OP_MOV_REG_MEM, T_u8, UWORD_T);
         } else if (argc == 2 && args[0].type == ASM_ARG_REGPTR &&
                    args[1].type == ASM_ARG_REG) {
-            RET_MEMOV(sizeof(OPCODE_T) + sizeof(T_u8) + sizeof(T_u8));
-            BUF_WRITE(*buf_offset, OPCODE_T, OP_MOV_REGPTR_REG);
-            BUF_WRITE(*buf_offset, T_u8, args[0].data);
-            BUF_WRITE(*buf_offset, T_u8, args[1].data);
+            WRITE_INST2(OP_MOV_REGPTR_REG, T_u8, T_u8);
         } else if (argc == 2 && args[0].type == ASM_ARG_REG &&
                    args[1].type == ASM_ARG_REGPTR) {
-            RET_MEMOV(sizeof(OPCODE_T) + sizeof(T_u8) + sizeof(T_u8));
-            BUF_WRITE(*buf_offset, OPCODE_T, OP_MOV_REG_REGPTR);
-            BUF_WRITE(*buf_offset, T_u8, args[0].data);
-            BUF_WRITE(*buf_offset, T_u8, args[1].data);
+            WRITE_INST2(OP_MOV_REG_REGPTR, T_u8, T_u8);
         } else if (argc == 2 && args[0].type == ASM_ARG_REG &&
                    args[1].type == ASM_ARG_REG) {
-            RET_MEMOV(sizeof(OPCODE_T) + sizeof(T_u8) + sizeof(T_u8));
-            BUF_WRITE(*buf_offset, OPCODE_T, OP_MOV_REG_REG);
-            BUF_WRITE(*buf_offset, T_u8, args[0].data);
-            BUF_WRITE(*buf_offset, T_u8, args[1].data);
+            WRITE_INST2(OP_MOV_REG_REG, T_u8, T_u8);
+        } else
+            return ASM_ERR_OPERAND;
+    } else if (strcmp(mnemonic, "or") == 0) {
+        if (argc == 2 && args[0].type == ASM_ARG_REG &&
+            args[1].type == ASM_ARG_LIT) {
+            WRITE_INST2(OP_OR_REG_LIT, T_u8, WORD_T);
+        } else if (argc == 2 && args[0].type == ASM_ARG_REG &&
+                   args[1].type == ASM_ARG_REG) {
+            WRITE_INST2(OP_OR_REG_REG, T_u8, T_u8);
+        } else if (argc == 3 && args[0].type == ASM_ARG_LIT &&
+                   args[1].type == ASM_ARG_ADDR &&
+                   args[2].type == ASM_ARG_ADDR) {
+            WRITE_INST3(OP_OR_REG_REG, T_u8, UWORD_T, UWORD_T);
+        } else
+            return ASM_ERR_OPERAND;
+    } else if (strcmp(mnemonic, "xor") == 0) {
+        if (argc == 2 && args[0].type == ASM_ARG_REG &&
+            args[1].type == ASM_ARG_LIT) {
+            WRITE_INST2(OP_XOR_REG_LIT, T_u8, WORD_T);
+        } else if (argc == 2 && args[0].type == ASM_ARG_REG &&
+                   args[1].type == ASM_ARG_REG) {
+            WRITE_INST2(OP_XOR_REG_REG, T_u8, T_u8);
+        } else if (argc == 3 && args[0].type == ASM_ARG_LIT &&
+                   args[1].type == ASM_ARG_ADDR &&
+                   args[2].type == ASM_ARG_ADDR) {
+            WRITE_INST3(OP_XOR_REG_REG, T_u8, UWORD_T, UWORD_T);
         } else
             return ASM_ERR_OPERAND;
     } else
