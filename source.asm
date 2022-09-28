@@ -1,2 +1,2 @@
-sll r2, r3
+mov DEADh, r1
 hlt

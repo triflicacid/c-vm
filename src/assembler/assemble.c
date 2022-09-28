@@ -58,22 +58,17 @@ struct Assemble assemble(FILE *fp, void *buf, unsigned int buf_size) {
 
             if (spos == 0)  // No arguments
                 break;
-            else if (IS_CHAR(astr[0])) {  // Register?
+            else if (astr[0] == '-' || astr[0] == '+' || IS_DIGIT(astr[0]) ||
+                     IS_CHAR(astr[0])) {  // Literal/Register
                 T_i8 reg_off = cpu_reg_offset_from_string(astr);
-                if (reg_off == -1) {  // Unknown register
-                    printf(
-                        "ERROR! Line %i, column %i:\nUnknown register '%s'\n",
-                        *line, *pos, astr);
-                    out.errc = ASM_ERR_REG;
-                    return out;
+                if (reg_off == -1) {  // Parse as literal
+                    T_i64 lit = str_to_int(astr, spos);
+                    args[i].type = ASM_ARG_LIT;
+                    args[i].data = lit;
+                } else {
+                    args[i].type = ASM_ARG_REG;
+                    args[i].data = reg_off;
                 }
-                args[i].type = ASM_ARG_REG;
-                args[i].data = reg_off;
-            } else if (astr[0] == '-' || astr[0] == '+' ||
-                       IS_DIGIT(astr[0])) {  // Literal
-                T_i64 lit = str_to_int(astr, spos);
-                args[i].type = ASM_ARG_LIT;
-                args[i].data = lit;
             } else if (astr[0] == '[') {  // Address/Register pointer
                 if (astr[spos - 1] != ']') {
                     printf(
@@ -161,6 +156,56 @@ int decode_instruction(void *buf, unsigned int buf_size,
                    args[1].type == ASM_ARG_ADDR &&
                    args[2].type == ASM_ARG_ADDR) {
             WRITE_INST3(OP_AND_REG_REG, T_u8, UWORD_T, UWORD_T);
+        } else
+            return ASM_ERR_ARGS;
+    } else if (strcmp(mnemonic, "ci8i16") == 0) {
+        if (argc == 1 && args[0].type == ASM_ARG_REG) {
+            WRITE_INST1(OP_CVT_i8_i16, T_u8);
+        } else
+            return ASM_ERR_ARGS;
+    } else if (strcmp(mnemonic, "ci16i8") == 0) {
+        if (argc == 1 && args[0].type == ASM_ARG_REG) {
+            WRITE_INST1(OP_CVT_i16_i8, T_u8);
+        } else
+            return ASM_ERR_ARGS;
+    } else if (strcmp(mnemonic, "ci16i32") == 0) {
+        if (argc == 1 && args[0].type == ASM_ARG_REG) {
+            WRITE_INST1(OP_CVT_i16_i32, T_u8);
+        } else
+            return ASM_ERR_ARGS;
+    } else if (strcmp(mnemonic, "ci32i16") == 0) {
+        if (argc == 1 && args[0].type == ASM_ARG_REG) {
+            WRITE_INST1(OP_CVT_i32_i16, T_u8);
+        } else
+            return ASM_ERR_ARGS;
+    } else if (strcmp(mnemonic, "ci32i64") == 0) {
+        if (argc == 1 && args[0].type == ASM_ARG_REG) {
+            WRITE_INST1(OP_CVT_i32_i64, T_u8);
+        } else
+            return ASM_ERR_ARGS;
+    } else if (strcmp(mnemonic, "ci64i32") == 0) {
+        if (argc == 1 && args[0].type == ASM_ARG_REG) {
+            WRITE_INST1(OP_CVT_i64_i32, T_u8);
+        } else
+            return ASM_ERR_ARGS;
+    } else if (strcmp(mnemonic, "ci32f32") == 0) {
+        if (argc == 1 && args[0].type == ASM_ARG_REG) {
+            WRITE_INST1(OP_CVT_i32_f32, T_u8);
+        } else
+            return ASM_ERR_ARGS;
+    } else if (strcmp(mnemonic, "cf32i32") == 0) {
+        if (argc == 1 && args[0].type == ASM_ARG_REG) {
+            WRITE_INST1(OP_CVT_f32_i32, T_u8);
+        } else
+            return ASM_ERR_ARGS;
+    } else if (strcmp(mnemonic, "ci64f64") == 0) {
+        if (argc == 1 && args[0].type == ASM_ARG_REG) {
+            WRITE_INST1(OP_CVT_i64_f64, T_u8);
+        } else
+            return ASM_ERR_ARGS;
+    } else if (strcmp(mnemonic, "cf64i64") == 0) {
+        if (argc == 1 && args[0].type == ASM_ARG_REG) {
+            WRITE_INST1(OP_CVT_f64_i64, T_u8);
         } else
             return ASM_ERR_ARGS;
     } else if (strcmp(mnemonic, "mov") == 0) {
