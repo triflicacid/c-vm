@@ -26,6 +26,13 @@ Below is the full list of instructions supported by the assembler.
 | cf32i32 | OP_CVT_f32_i32 | `<reg: u8>` | Convert value in register from 32-bit float to 32-bit integer | `cf32i32 r2` |
 | ci64f64 | OP_CVT_i64_f64 | `<reg: u8>` | Convert value in register from 64-bit integer to 64-bit float | `ci64f64 r2` |
 | cf64i64 | OP_CVT_f64_i64 | `<reg: u8>` | Convert value in register from 64-bit float to 64-bit integer | `cf64i64 r2` |
+| cmp | OP_CMP_REG_REG | `<reg: u8>`, `<reg: u8>` | Compare the value of two registers. Set `REG_CMP` appropriately. | `cmp r1, r2` |
+| cmp | OP_CMP_REG_LIT | `<reg: u8>`, `<lit: word>` | Compare the value of a register to a literal. Set `REG_CMP` appropriately. | `cmp r1, 10` |
+| cmp | OP_CMP_MEM_MEM | `<bytes: u8>`, `<addr1: uword>`, `<addr2: uword>` | Compare the value of two n-byte buffers. Set `REG_CMP` appropriately. | `cmp 12, [200], [212]` |
+| cmpf32 | OP_CMPF32_REG_REG | `<reg: u8>`, `<reg: u8>` | Compare the value of two registers as 32-bit floats. Set `REG_CMP` appropriately. | `cmpf32 r1, r2` |
+| cmpf32 | OP_CMPF32_REG_LIT | `<reg: u8>`, `<lit: f32>` | Compare the value of two registers as 32-bit floats. Set `REG_CMP` appropriately. | `cmpf32 r1, 10` |
+| cmpf64 | OP_CMPF64_REG_REG | `<reg: u8>`, `<reg: u8>` | Compare the value of two registers as 64-bit floats. Set `REG_CMP` appropriately. | `cmpf64 r1, r2` |
+| cmpf64 | OP_CMPF64_REG_LIT | `<reg: u8>`, `<lit: f64>` | Compare the value of two registers as 64-bit floats. Set `REG_CMP` appropriately. | `cmpf64 r1, 10` |
 | div | OP_DIV_REG_LIT | `<reg: u8>`, `<lit: word>` | Divide a register by a literal as integers. Store remainder in `REG_FLAG`. | `div r1, 10` |
 | div | OP_DIV_REG_REG | `<reg: u8>`, `<reg: u8>` | Divide two registers as integers, storing the result in the first register. Store remainder in `REG_FLAG`. | `div r1, r2` |
 | divf32 | OP_DIVF32_REG_LIT | `<reg: u8>`, `<lit: f32>` | Divide a register by a literal as 32-bit floats | `divf32 r1, 10` |
@@ -33,6 +40,18 @@ Below is the full list of instructions supported by the assembler.
 | divf64 | OP_DIVF64_REG_LIT | `<reg: u8>`, `<lit: f64>` | Divide a register by a literal as 64-bit floats | `divf64 r1, 10` |
 | divf64 | OP_DIVF64_REG_REG | `<reg: u8>`, `<reg: u8>` | Divide two registers as 64-bit floats, storing the result in the first register | `divf64 r1, r2` |
 | hlt | OP_HALT | | Stop execution | `hlt` |
+
+| jmp | OP_JMP_LIT | `<lit: uword>` | Jump to a given literal address | `jmp 100h` |
+| jmp | OP_JMP_REG | `<reg: u8>` | Jump to a given address in a register | `jmp r3` |
+| jeq | OP_JMP_EQ_LIT | `<lit: uword>` | Jump to a given literal address if last comparison is `CMP_EQ` | `jeq 100h` |
+| jeq | OP_JMP_EQ_REG | `<reg: u8>` | Jump to a given address in a register if last comparison is `CMP_EQ` | `jeq r3` |
+| jne | OP_JMP_NEQ_LIT | `<lit: uword>` | Jump to a given literal address if last comparison is not `CMP_EQ` | `jne 100h` |
+| jne | OP_JMP_NEQ_REG | `<reg: u8>` | Jump to a given address in a register if last comparison is not `CMP_EQ` | `jne r3` |
+| jlt | OP_JMP_LT_LIT | `<lit: uword>` | Jump to a given literal address if last comparison is `CMP_LT` | `jlt 100h` |
+| jlt | OP_JMP_LT_REG | `<reg: u8>` | Jump to a given address in a register if last comparison is `CMP_LT` | `jlt r3` |
+| jgt | OP_JMP_GT_LIT | `<lit: uword>` | Jump to a given literal address if last comparison is `CMP_GT` | `jgt 100h` |
+| jgt | OP_JMP_GT_REG | `<reg: u8>` | Jump to a given address in a register if last comparison is `CMP_GT` | `jgt r3` |
+
 | mov | OP_MOV_LIT_REG | `<lit: word>`, `<reg: u8>` | Move literal word into register `reg` | `mov 100h, r3` |
 | mov | OP_MOV_LIT_MEM | `<lit: word>`, `<addr: uword>` | Move literal to address | `mov 100h, [128]` |
 | mov | OP_MOV_MEM_REG | `<addr: uword>`, `<reg: u8>` | Move value at address to register | `mov [1Fh], r2` |
@@ -69,3 +88,10 @@ Below is the full list of instructions supported by the assembler.
 | xor | OP_XOR_REG_LIT | `<reg: u8>`, `<lit: word>` | Compute bitwise XOR of register and literal and place the result in register | `xor r1, 101b` |
 | xor | OP_XOR_REG_REG | `<reg: u8>`, `<reg: u8>` | Compute bitwise XOR of two registers and place sthe result in the first register | `xor r1, r2` |
 | xor | OP_XOR_MEM_MEM | `<bytes: u8>`, `<addr: uword>`, `<addr: uword>` | Compute bitwise XOR of two `byte`-length buffers at the addresses and store result in the first address | `xor 12, [200], [212]` |
+
+## Notes
+
+- Comparison Operations. Compare `a` to `b`, and set `REG_CMP` appropriately:
+  - `a < b` : `CMP_LT`
+  - `a = b` : `CMP_EQ`
+  - `a > b` : `CMP_GT`

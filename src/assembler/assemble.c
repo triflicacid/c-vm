@@ -250,6 +250,37 @@ int decode_instruction(void *buf, unsigned int buf_size,
             WRITE_INST1(OP_CVT_f64_i64, T_u8);
         } else
             return ASM_ERR_ARGS;
+    } else if (strcmp(mnemonic, "cmp") == 0) {
+        if (argc == 2 && args[0].type == ASM_ARG_REG &&
+            args[1].type == ASM_ARG_LIT) {
+            WRITE_INST2(OP_CMP_REG_LIT, T_u8, WORD_T);
+        } else if (argc == 2 && args[0].type == ASM_ARG_REG &&
+                   args[1].type == ASM_ARG_REG) {
+            WRITE_INST2(OP_CMP_REG_REG, T_u8, T_u8);
+        } else if (argc == 3 && args[0].type == ASM_ARG_LIT &&
+                   args[1].type == ASM_ARG_ADDR &&
+                   args[2].type == ASM_ARG_ADDR) {
+            WRITE_INST3(OP_CMP_MEM_MEM, T_u8, UWORD_T, UWORD_T);
+        } else
+            return ASM_ERR_ARGS;
+    } else if (strcmp(mnemonic, "cmpf32") == 0) {
+        if (argc == 2 && args[0].type == ASM_ARG_REG &&
+            args[1].type == ASM_ARG_LIT) {
+            WRITE_INST2(OP_CMPF32_REG_LIT, T_u8, T_f32);
+        } else if (argc == 2 && args[0].type == ASM_ARG_REG &&
+                   args[1].type == ASM_ARG_REG) {
+            WRITE_INST2(OP_CMPF32_REG_REG, T_u8, T_u8);
+        } else
+            return ASM_ERR_ARGS;
+    } else if (strcmp(mnemonic, "cmpf64") == 0) {
+        if (argc == 2 && args[0].type == ASM_ARG_REG &&
+            args[1].type == ASM_ARG_LIT) {
+            WRITE_INST2(OP_CMPF64_REG_LIT, T_u8, T_f64);
+        } else if (argc == 2 && args[0].type == ASM_ARG_REG &&
+                   args[1].type == ASM_ARG_REG) {
+            WRITE_INST2(OP_CMPF64_REG_REG, T_u8, T_u8);
+        } else
+            return ASM_ERR_ARGS;
     } else if (strcmp(mnemonic, "div") == 0) {
         if (argc == 2 && args[0].type == ASM_ARG_REG &&
             args[1].type == ASM_ARG_LIT) {
@@ -275,6 +306,41 @@ int decode_instruction(void *buf, unsigned int buf_size,
         } else if (argc == 2 && args[0].type == ASM_ARG_REG &&
                    args[1].type == ASM_ARG_REG) {
             WRITE_INST2(OP_DIVF64_REG_REG, T_u8, T_u8);
+        } else
+            return ASM_ERR_ARGS;
+    } else if (strcmp(mnemonic, "jmp") == 0) {
+        if (argc == 1 && args[0].type == ASM_ARG_REG) {
+            WRITE_INST1(OP_JMP_REG, T_u8);
+        } else if (argc == 1 && args[0].type == ASM_ARG_LIT) {
+            WRITE_INST1(OP_JMP_LIT, UWORD_T);
+        } else
+            return ASM_ERR_ARGS;
+    } else if (strcmp(mnemonic, "jeq") == 0) {
+        if (argc == 1 && args[0].type == ASM_ARG_REG) {
+            WRITE_INST1(OP_JMP_EQ_REG, T_u8);
+        } else if (argc == 1 && args[0].type == ASM_ARG_LIT) {
+            WRITE_INST1(OP_JMP_EQ_LIT, UWORD_T);
+        } else
+            return ASM_ERR_ARGS;
+    } else if (strcmp(mnemonic, "jne") == 0) {
+        if (argc == 1 && args[0].type == ASM_ARG_REG) {
+            WRITE_INST1(OP_JMP_NEQ_REG, T_u8);
+        } else if (argc == 1 && args[0].type == ASM_ARG_LIT) {
+            WRITE_INST1(OP_JMP_NEQ_LIT, UWORD_T);
+        } else
+            return ASM_ERR_ARGS;
+    } else if (strcmp(mnemonic, "jlt") == 0) {
+        if (argc == 1 && args[0].type == ASM_ARG_REG) {
+            WRITE_INST1(OP_JMP_LT_REG, T_u8);
+        } else if (argc == 1 && args[0].type == ASM_ARG_LIT) {
+            WRITE_INST1(OP_JMP_LT_LIT, UWORD_T);
+        } else
+            return ASM_ERR_ARGS;
+    } else if (strcmp(mnemonic, "jgt") == 0) {
+        if (argc == 1 && args[0].type == ASM_ARG_REG) {
+            WRITE_INST1(OP_JMP_GT_REG, T_u8);
+        } else if (argc == 1 && args[0].type == ASM_ARG_LIT) {
+            WRITE_INST1(OP_JMP_GT_LIT, UWORD_T);
         } else
             return ASM_ERR_ARGS;
     } else if (strcmp(mnemonic, "mov") == 0) {
