@@ -317,7 +317,7 @@ int cpu_mem_exec(struct CPU *cpu, OPCODE_T opcode, UWORD_T *ip) {
             OP_REG_REG(*, *ip, T_f64);
             return 1;
         case OP_DIV_REG_LIT:
-            OP_REG_LIT(/, *ip, WORD_T);
+            OP_REG_LIT_REG(/, %, *ip, WORD_T, REG_FLAG);
             return 1;
         case OP_DIVF32_REG_LIT:
             OP_REG_LIT(/, *ip, T_f32);

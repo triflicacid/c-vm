@@ -156,6 +156,37 @@ int decode_instruction(void *buf, unsigned int buf_size,
             BUF_WRITE(*buf_offset, OPCODE_T, OP_HALT);
         } else
             return ASM_ERR_ARGS;
+    } else if (strcmp(mnemonic, "add") == 0) {
+        if (argc == 2 && args[0].type == ASM_ARG_REG &&
+            args[1].type == ASM_ARG_LIT) {
+            WRITE_INST2(OP_ADD_REG_LIT, T_u8, WORD_T);
+        } else if (argc == 2 && args[0].type == ASM_ARG_REG &&
+                   args[1].type == ASM_ARG_REG) {
+            WRITE_INST2(OP_ADD_REG_REG, T_u8, T_u8);
+        } else if (argc == 3 && args[0].type == ASM_ARG_LIT &&
+                   args[1].type == ASM_ARG_ADDR &&
+                   args[2].type == ASM_ARG_ADDR) {
+            WRITE_INST3(OP_ADD_MEM_MEM, T_u8, UWORD_T, UWORD_T);
+        } else
+            return ASM_ERR_ARGS;
+    } else if (strcmp(mnemonic, "addf32") == 0) {
+        if (argc == 2 && args[0].type == ASM_ARG_REG &&
+            args[1].type == ASM_ARG_LIT) {
+            WRITE_INST2(OP_ADDF32_REG_LIT, T_u8, T_f32);
+        } else if (argc == 2 && args[0].type == ASM_ARG_REG &&
+                   args[1].type == ASM_ARG_REG) {
+            WRITE_INST2(OP_ADDF32_REG_REG, T_u8, T_u8);
+        } else
+            return ASM_ERR_ARGS;
+    } else if (strcmp(mnemonic, "addf64") == 0) {
+        if (argc == 2 && args[0].type == ASM_ARG_REG &&
+            args[1].type == ASM_ARG_LIT) {
+            WRITE_INST2(OP_ADDF64_REG_LIT, T_u8, T_f64);
+        } else if (argc == 2 && args[0].type == ASM_ARG_REG &&
+                   args[1].type == ASM_ARG_REG) {
+            WRITE_INST2(OP_ADDF64_REG_REG, T_u8, T_u8);
+        } else
+            return ASM_ERR_ARGS;
     } else if (strcmp(mnemonic, "and") == 0) {
         if (argc == 2 && args[0].type == ASM_ARG_REG &&
             args[1].type == ASM_ARG_LIT) {
@@ -219,6 +250,33 @@ int decode_instruction(void *buf, unsigned int buf_size,
             WRITE_INST1(OP_CVT_f64_i64, T_u8);
         } else
             return ASM_ERR_ARGS;
+    } else if (strcmp(mnemonic, "div") == 0) {
+        if (argc == 2 && args[0].type == ASM_ARG_REG &&
+            args[1].type == ASM_ARG_LIT) {
+            WRITE_INST2(OP_DIV_REG_LIT, T_u8, WORD_T);
+        } else if (argc == 2 && args[0].type == ASM_ARG_REG &&
+                   args[1].type == ASM_ARG_REG) {
+            WRITE_INST2(OP_DIV_REG_REG, T_u8, T_u8);
+        } else
+            return ASM_ERR_ARGS;
+    } else if (strcmp(mnemonic, "divf32") == 0) {
+        if (argc == 2 && args[0].type == ASM_ARG_REG &&
+            args[1].type == ASM_ARG_LIT) {
+            WRITE_INST2(OP_DIVF32_REG_LIT, T_u8, T_f32);
+        } else if (argc == 2 && args[0].type == ASM_ARG_REG &&
+                   args[1].type == ASM_ARG_REG) {
+            WRITE_INST2(OP_DIVF32_REG_REG, T_u8, T_u8);
+        } else
+            return ASM_ERR_ARGS;
+    } else if (strcmp(mnemonic, "divf64") == 0) {
+        if (argc == 2 && args[0].type == ASM_ARG_REG &&
+            args[1].type == ASM_ARG_LIT) {
+            WRITE_INST2(OP_DIVF64_REG_LIT, T_u8, T_f64);
+        } else if (argc == 2 && args[0].type == ASM_ARG_REG &&
+                   args[1].type == ASM_ARG_REG) {
+            WRITE_INST2(OP_DIVF64_REG_REG, T_u8, T_u8);
+        } else
+            return ASM_ERR_ARGS;
     } else if (strcmp(mnemonic, "mov") == 0) {
         if (argc == 2 && args[0].type == ASM_ARG_LIT &&
             args[1].type == ASM_ARG_REG) {
@@ -241,6 +299,33 @@ int decode_instruction(void *buf, unsigned int buf_size,
         } else if (argc == 2 && args[0].type == ASM_ARG_REG &&
                    args[1].type == ASM_ARG_REG) {
             WRITE_INST2(OP_MOV_REG_REG, T_u8, T_u8);
+        } else
+            return ASM_ERR_ARGS;
+    } else if (strcmp(mnemonic, "mul") == 0) {
+        if (argc == 2 && args[0].type == ASM_ARG_REG &&
+            args[1].type == ASM_ARG_LIT) {
+            WRITE_INST2(OP_MUL_REG_LIT, T_u8, WORD_T);
+        } else if (argc == 2 && args[0].type == ASM_ARG_REG &&
+                   args[1].type == ASM_ARG_REG) {
+            WRITE_INST2(OP_MUL_REG_REG, T_u8, T_u8);
+        } else
+            return ASM_ERR_ARGS;
+    } else if (strcmp(mnemonic, "mulf32") == 0) {
+        if (argc == 2 && args[0].type == ASM_ARG_REG &&
+            args[1].type == ASM_ARG_LIT) {
+            WRITE_INST2(OP_MULF32_REG_LIT, T_u8, T_f32);
+        } else if (argc == 2 && args[0].type == ASM_ARG_REG &&
+                   args[1].type == ASM_ARG_REG) {
+            WRITE_INST2(OP_MULF32_REG_REG, T_u8, T_u8);
+        } else
+            return ASM_ERR_ARGS;
+    } else if (strcmp(mnemonic, "mulf64") == 0) {
+        if (argc == 2 && args[0].type == ASM_ARG_REG &&
+            args[1].type == ASM_ARG_LIT) {
+            WRITE_INST2(OP_MULF64_REG_LIT, T_u8, T_f64);
+        } else if (argc == 2 && args[0].type == ASM_ARG_REG &&
+                   args[1].type == ASM_ARG_REG) {
+            WRITE_INST2(OP_MULF64_REG_REG, T_u8, T_u8);
         } else
             return ASM_ERR_ARGS;
     } else if (strcmp(mnemonic, "neg") == 0) {
@@ -304,6 +389,33 @@ int decode_instruction(void *buf, unsigned int buf_size,
         } else if (argc == 2 && args[0].type == ASM_ARG_REG &&
                    args[1].type == ASM_ARG_REG) {
             WRITE_INST2(OP_LRSHIFT_LIT, T_u8, T_u8);
+        } else
+            return ASM_ERR_ARGS;
+    } else if (strcmp(mnemonic, "sub") == 0) {
+        if (argc == 2 && args[0].type == ASM_ARG_REG &&
+            args[1].type == ASM_ARG_LIT) {
+            WRITE_INST2(OP_SUB_REG_LIT, T_u8, WORD_T);
+        } else if (argc == 2 && args[0].type == ASM_ARG_REG &&
+                   args[1].type == ASM_ARG_REG) {
+            WRITE_INST2(OP_SUB_REG_REG, T_u8, T_u8);
+        } else
+            return ASM_ERR_ARGS;
+    } else if (strcmp(mnemonic, "subf32") == 0) {
+        if (argc == 2 && args[0].type == ASM_ARG_REG &&
+            args[1].type == ASM_ARG_LIT) {
+            WRITE_INST2(OP_SUBF32_REG_LIT, T_u8, T_f32);
+        } else if (argc == 2 && args[0].type == ASM_ARG_REG &&
+                   args[1].type == ASM_ARG_REG) {
+            WRITE_INST2(OP_SUBF32_REG_REG, T_u8, T_u8);
+        } else
+            return ASM_ERR_ARGS;
+    } else if (strcmp(mnemonic, "subf64") == 0) {
+        if (argc == 2 && args[0].type == ASM_ARG_REG &&
+            args[1].type == ASM_ARG_LIT) {
+            WRITE_INST2(OP_SUBF64_REG_LIT, T_u8, T_f64);
+        } else if (argc == 2 && args[0].type == ASM_ARG_REG &&
+                   args[1].type == ASM_ARG_REG) {
+            WRITE_INST2(OP_SUBF64_REG_REG, T_u8, T_u8);
         } else
             return ASM_ERR_ARGS;
     } else if (strcmp(mnemonic, "xor") == 0) {

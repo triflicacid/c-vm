@@ -6,6 +6,13 @@ Below is the full list of instructions supported by the assembler.
 
 | Mnemonic | Fully Qualified Name | Arguments | Description | Example |
 | - | - | - | - | - |
+| add | OP_ADD_REG_LIT | `<reg: u8>`, `<lit: word>` | Add a register and a literal as integers | `add r1, 10` |
+| add | OP_ADD_REG_REG | `<reg: u8>`, `<reg: u8>` | Add two registers as integers, storing the result in the first register | `add r1, r2` |
+| add | OP_ADD_MEM_MEM | `<bytes: u8>`, `<addr1: uword>`, `<addr2: uword>` | Add two n-bytes buffers at the addresses and store result at the first address | `add 128, [200], [328]` |
+| addf32 | OP_ADDF32_REG_LIT | `<reg: u8>`, `<lit: f32>` | Add a register and a literal as 32-bit floats | `addf32 r1, 10` |
+| addf32 | OP_ADDF32_REG_REG | `<reg: u8>`, `<reg: u8>` | Add two registers as 32-bit floats, storing the result in the first register | `addf32 r1, r2` |
+| addf64 | OP_ADDF64_REG_LIT | `<reg: u8>`, `<lit: f64>` | Add a register and a literal as 64-bit floats | `addf64 r1, 10` |
+| addf64 | OP_ADDF64_REG_REG | `<reg: u8>`, `<reg: u8>` | Add two registers as 64-bit floats, storing the result in the first register | `addf64 r1, r2` |
 | and | OP_AND_REG_LIT | `<reg: u8>`, `<lit: word>` | Compute bitwise AND of register and literal and place the result in register | `and r1, 101b` |
 | and | OP_AND_REG_REG | `<reg: u8>`, `<reg: u8>` | Compute bitwise AND of two registers and place in the first register | `and r1, r2` |
 | and | OP_AND_MEM_MEM | `<bytes: u8>`, `<addr: uword>`, `<addr: uword>` | Compute bitwise AND of two `byte`-length buffers at the addresses and store result in the first address | `and 12, [200], [212]` |
@@ -19,6 +26,12 @@ Below is the full list of instructions supported by the assembler.
 | cf32i32 | OP_CVT_f32_i32 | `<reg: u8>` | Convert value in register from 32-bit float to 32-bit integer | `cf32i32 r2` |
 | ci64f64 | OP_CVT_i64_f64 | `<reg: u8>` | Convert value in register from 64-bit integer to 64-bit float | `ci64f64 r2` |
 | cf64i64 | OP_CVT_f64_i64 | `<reg: u8>` | Convert value in register from 64-bit float to 64-bit integer | `cf64i64 r2` |
+| div | OP_DIV_REG_LIT | `<reg: u8>`, `<lit: word>` | Divide a register by a literal as integers. Store remainder in `REG_FLAG`. | `div r1, 10` |
+| div | OP_DIV_REG_REG | `<reg: u8>`, `<reg: u8>` | Divide two registers as integers, storing the result in the first register. Store remainder in `REG_FLAG`. | `div r1, r2` |
+| divf32 | OP_DIVF32_REG_LIT | `<reg: u8>`, `<lit: f32>` | Divide a register by a literal as 32-bit floats | `divf32 r1, 10` |
+| divf32 | OP_DIVF32_REG_REG | `<reg: u8>`, `<reg: u8>` | Divide two registers as 32-bit floats, storing the result in the first register | `divf32 r1, r2` |
+| divf64 | OP_DIVF64_REG_LIT | `<reg: u8>`, `<lit: f64>` | Divide a register by a literal as 64-bit floats | `divf64 r1, 10` |
+| divf64 | OP_DIVF64_REG_REG | `<reg: u8>`, `<reg: u8>` | Divide two registers as 64-bit floats, storing the result in the first register | `divf64 r1, r2` |
 | hlt | OP_HALT | | Stop execution | `hlt` |
 | mov | OP_MOV_LIT_REG | `<lit: word>`, `<reg: u8>` | Move literal word into register `reg` | `mov 100h, r3` |
 | mov | OP_MOV_LIT_MEM | `<lit: word>`, `<addr: uword>` | Move literal to address | `mov 100h, [128]` |
@@ -27,6 +40,12 @@ Below is the full list of instructions supported by the assembler.
 | mov | OP_MOV_REGPTR_REG | `<regptr: u8>`, `<reg: u8>` | Move value at memory address stored in first register to second register | `mov [r1], r2` |
 | mov | OP_MOV_REG_REGPTR | `<reg: u8>`, `<regptr: u8>` | Move value in first register to memory address stored in the second register | `mov r1, [r2]` |
 | mov | OP_MOV_REG_REG | `<reg: u8>`, `<reg: u8>` | Move value in first register to second register | `mov r1, r2` |
+| mul | OP_MUL_REG_LIT | `<reg: u8>`, `<lit: word>` | Multiply a register by a literal as integers | `mul r1, 10` |
+| mul | OP_MUL_REG_REG | `<reg: u8>`, `<reg: u8>` | Multiply two registers as integers, storing the result in the first register | `mul r1, r2` |
+| mulf32 | OP_MULF32_REG_LIT | `<reg: u8>`, `<lit: f32>` | Multiply a register by a literal as 32-bit floats | `mulf32 r1, 10` |
+| mulf32 | OP_MULF32_REG_REG | `<reg: u8>`, `<reg: u8>` | Multiply two registers as 32-bit floats, storing the result in the first register | `mulf32 r1, r2` |
+| mulf64 | OP_MULF64_REG_LIT | `<reg: u8>`, `<lit: f64>` | Multiply a register by a literal as 64-bit floats | `mulf64 r1, 10` |
+| mulf64 | OP_MULF64_REG_REG | `<reg: u8>`, `<reg: u8>` | Multiply two registers as 64-bit floats, storing the result in the first register | `mulf64 r1, r2` |
 | neg | OP_NEG | `<reg: u8>` | Negate value in register (twos complement) | `neg r3` |
 | negf32 | OP_NEGF32 | `<reg: u8>` | Negate 32-bit floating point value in register | `negf32 r3` |
 | negf64 | OP_NEGF64 | `<reg: u8>` | Negate 64-bit floating point value in register | `negf64 r3` |
@@ -41,6 +60,12 @@ Below is the full list of instructions supported by the assembler.
 | sll | OP_LLSHIFT_REG | `<reg: u8>`, `<reg: u8>` | Logically shift value in register left n-bits, where `n` is value in the second register | `sll r2, r3` |
 | slr | OP_LRSHIFT_LIT | `<reg: u8>`, `<lit: u8>` | Logically shift value in register right `lit` bits | `slr r2, 3` |
 | slr | OP_LRSHIFT_REG | `<reg: u8>`, `<reg: u8>` | Logically shift value in register right n-bits, where `n` is value in the second register | `slr r2, r3` |
+| sub | OP_SUB_REG_LIT | `<reg: u8>`, `<lit: word>` | Subtract a literal from a register as integers | `sub r1, 10` |
+| sub | OP_SUB_REG_REG | `<reg: u8>`, `<reg: u8>` | Subtract two registers as integers, storing the result in the first register | `sub r1, r2` |
+| subf32 | OP_SUBF32_REG_LIT | `<reg: u8>`, `<lit: f32>` | Subtract a literal from a register as 32-bit floats | `subf32 r1, 10` |
+| subf32 | OP_SUBF32_REG_REG | `<reg: u8>`, `<reg: u8>` | Subtract two registers as 32-bit floats, storing the result in the first register | `subf32 r1, r2` |
+| subf64 | OP_SUBF64_REG_LIT | `<reg: u8>`, `<lit: f64>` | Subtract a literal from a register as 64-bit floats | `subf64 r1, 10` |
+| subf64 | OP_SUBF64_REG_REG | `<reg: u8>`, `<reg: u8>` | Subtract two registers as 64-bit floats, storing the result in the first register | `subf64 r1, r2` |
 | xor | OP_XOR_REG_LIT | `<reg: u8>`, `<lit: word>` | Compute bitwise XOR of register and literal and place the result in register | `xor r1, 101b` |
 | xor | OP_XOR_REG_REG | `<reg: u8>`, `<reg: u8>` | Compute bitwise XOR of two registers and place sthe result in the first register | `xor r1, r2` |
 | xor | OP_XOR_MEM_MEM | `<bytes: u8>`, `<addr: uword>`, `<addr: uword>` | Compute bitwise XOR of two `byte`-length buffers at the addresses and store result in the first address | `xor 12, [200], [212]` |

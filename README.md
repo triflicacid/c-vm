@@ -9,6 +9,7 @@ For more informations, see `docs/`, `tests/`.
 - Basic assembler (*in progress*)
 
 ### TODO
+- Assembler: floating-point literals
 - Print to STDOUT (using memory mapping to map characters?)
 - Opcode documentation? (explained in `opcodes.h` - maybe write a more general overview?)
 

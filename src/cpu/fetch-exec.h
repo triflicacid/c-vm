@@ -172,6 +172,22 @@
         }                                           \
     }
 
+// Perform operation between register and a literal in type `type` : r1 = r1 op1
+// lit, r3 = r1 op2 lit
+#define OP_REG_LIT_REG(op1, op2, ip, type, r2)             \
+    {                                                      \
+        T_u8 r1 = MEM_READ(ip, T_u8);                      \
+        ERR_CHECK_REG(r1) else {                           \
+            ip += sizeof(T_u8);                            \
+            type lit = MEM_READ(ip, type);                 \
+            ip += sizeof(type);                            \
+            type v1 = (*(type *)(cpu->regs + r1)) op1 lit; \
+            type v2 = (*(type *)(cpu->regs + r1)) op2 lit; \
+            cpu->regs[r1] = *(WORD_T *)&v1;                \
+            cpu->regs[r2] = *(WORD_T *)&v2;                \
+        }                                                  \
+    }
+
 // Perform operation between register and literal : reg = reg op lit. Coerce
 // `reg` and `lit` to type `type`
 #define OP_REG_LIT_TYPE(op, ip, type)                   \
