@@ -220,10 +220,10 @@ int cpu_mem_exec(struct CPU *cpu, OPCODE_T opcode, UWORD_T *ip) {
         case OP_ARSHIFT_REG:
             ARS_REG(*ip);
             return 1;
-        case OP_LSHIFT_LIT:
+        case OP_LLSHIFT_LIT:
             OP_REG_LIT(<<, *ip, T_u8);
             return 1;
-        case OP_LSHIFT_REG:
+        case OP_LLSHIFT_REG:
             OP_REG_REG(<<, *ip, WORD_T);
             return 1;
         case OP_CVT_i8_i16:

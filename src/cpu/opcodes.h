@@ -263,10 +263,10 @@
 
 // Shifts left register by a literal amount.
 // Syntax: `sll <reg: u8> <lit: u8>`
-#define OP_LSHIFT_LIT 0x007E
+#define OP_LLSHIFT_LIT 0x007E
 // Shifts left register by a register' value.
 // Syntax: `sll <reg: u8> <reg: u8>`
-#define OP_LSHIFT_REG 0x007F
+#define OP_LLSHIFT_REG 0x007F
 
 // Convert i8 to i16 in register.
 // Syntax: `ci8i16 <reg: u8>`
