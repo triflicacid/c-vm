@@ -7,21 +7,27 @@
 #include "../util.h"
 
 #define ASM_MAX_LINE_LENGTH 1000
-#define ASM_MAX_MNEMONIC_LENGTH 15
-#define ASM_MAX_ARGS 10
-#define ASM_MAX_BYTES 1048576
+#define ASM_MAX_MNEMONIC_LENGTH 8
+#define ASM_MAX_ARGS 5
 
 #define ASM_ARG_LIT 0
 #define ASM_ARG_ADDR 1
 #define ASM_ARG_REG 2
 #define ASM_ARG_REGPTR 3
 
-#define IS_WHITESPACE(c) \
+// Is instruction/argument seperator?
+#define IS_SEPERATOR(c) \
     (c == ' ' || c == '\t' || c == '\n' || c == '\r' || c == ',')
 
 // Return if memory overflow
 #define RET_MEMOV(bytes) \
     if (*buf_offset + bytes >= buf_size) return ASM_ERR_MEMORY;
+
+// Write instruction to machine code with 1 argument
+#define WRITE_INST1(opcode, type)               \
+    RET_MEMOV(sizeof(OPCODE_T) + sizeof(type)); \
+    BUF_WRITE(*buf_offset, OPCODE_T, opcode);   \
+    BUF_WRITE(*buf_offset, type, args[0].data);
 
 // Write instruction to machine code with 2 arguments
 #define WRITE_INST2(opcode, type1, type2)                        \

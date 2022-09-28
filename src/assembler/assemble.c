@@ -22,12 +22,12 @@ struct Assemble assemble(FILE *fp, void *buf, unsigned int buf_size) {
         *pos = 0;
 
         // Eat leading whitespace
-        for (; *pos < slen && IS_WHITESPACE(string[*pos]); ++(*pos))
+        for (; *pos < slen && IS_SEPERATOR(string[*pos]); ++(*pos))
             ;
 
         // Get mnemonic
         int moff = 0;
-        for (; *pos < slen && !IS_WHITESPACE(string[*pos]); ++(*pos), ++moff)
+        for (; *pos < slen && !IS_SEPERATOR(string[*pos]); ++(*pos), ++moff)
             mnemonic[moff] = string[*pos];
         mnemonic[moff] = '\0';
 
@@ -35,12 +35,23 @@ struct Assemble assemble(FILE *fp, void *buf, unsigned int buf_size) {
 
         // Get arguments
         for (int i = 0; *pos < slen; ++i, ++nargs) {
+            // If exceeded maximum argument count...
+            if (nargs >= ASM_MAX_ARGS) {
+                out.errc = ASM_ERR_GENERIC;
+                printf(
+                    "ERROR! Line %i, column %i:\nArgument count for '%s' "
+                    "exceeded\n",
+                    *line, *pos, mnemonic);
+                return out;
+            }
+
             // Eat whitespace
-            for (; *pos < slen && IS_WHITESPACE(string[*pos]); ++(*pos))
+            for (; *pos < slen && IS_SEPERATOR(string[*pos]); ++(*pos))
                 ;
+
+            // Extract content up to whitespace or ","
             int spos = 0;
-            for (; *pos < slen && !IS_WHITESPACE(string[*pos]);
-                 ++spos, ++(*pos))
+            for (; *pos < slen && !IS_SEPERATOR(string[*pos]); ++spos, ++(*pos))
                 astr[spos] = string[*pos];
             astr[spos] = '\0';
             printf(" - Arg: '%s'\n", astr);
@@ -117,8 +128,8 @@ struct Assemble assemble(FILE *fp, void *buf, unsigned int buf_size) {
                    *pos, mnemonic);
             out.errc = errc;
             return out;
-        } else if (errc == ASM_ERR_OPERAND) {
-            printf("ERROR! Line %i, column %i:\nUnknown operand(s) for '%s'\n",
+        } else if (errc == ASM_ERR_ARGS) {
+            printf("ERROR! Line %i, column %i:\nUnknown argument(s) for '%s'\n",
                    *line, *pos, mnemonic);
             out.errc = errc;
             return out;
@@ -138,7 +149,7 @@ int decode_instruction(void *buf, unsigned int buf_size,
             RET_MEMOV(sizeof(OPCODE_T));
             BUF_WRITE(*buf_offset, OPCODE_T, OP_HALT);
         } else
-            return ASM_ERR_OPERAND;
+            return ASM_ERR_ARGS;
     } else if (strcmp(mnemonic, "and") == 0) {
         if (argc == 2 && args[0].type == ASM_ARG_REG &&
             args[1].type == ASM_ARG_LIT) {
@@ -151,7 +162,7 @@ int decode_instruction(void *buf, unsigned int buf_size,
                    args[2].type == ASM_ARG_ADDR) {
             WRITE_INST3(OP_AND_REG_REG, T_u8, UWORD_T, UWORD_T);
         } else
-            return ASM_ERR_OPERAND;
+            return ASM_ERR_ARGS;
     } else if (strcmp(mnemonic, "mov") == 0) {
         if (argc == 2 && args[0].type == ASM_ARG_LIT &&
             args[1].type == ASM_ARG_REG) {
@@ -175,7 +186,30 @@ int decode_instruction(void *buf, unsigned int buf_size,
                    args[1].type == ASM_ARG_REG) {
             WRITE_INST2(OP_MOV_REG_REG, T_u8, T_u8);
         } else
-            return ASM_ERR_OPERAND;
+            return ASM_ERR_ARGS;
+    } else if (strcmp(mnemonic, "neg") == 0) {
+        if (argc == 1 && args[0].type == ASM_ARG_REG) {
+            WRITE_INST1(OP_NEG, T_u8);
+        } else
+            return ASM_ERR_ARGS;
+    } else if (strcmp(mnemonic, "negf32") == 0) {
+        if (argc == 1 && args[0].type == ASM_ARG_REG) {
+            WRITE_INST1(OP_NEGF32, T_u8);
+        } else
+            return ASM_ERR_ARGS;
+    } else if (strcmp(mnemonic, "negf64") == 0) {
+        if (argc == 1 && args[0].type == ASM_ARG_REG) {
+            WRITE_INST1(OP_NEGF64, T_u8);
+        } else
+            return ASM_ERR_ARGS;
+    } else if (strcmp(mnemonic, "not") == 0) {
+        if (argc == 1 && args[0].type == ASM_ARG_REG) {
+            WRITE_INST1(OP_NOT_REG, T_u8);
+        } else if (argc == 2 && args[0].type == ASM_ARG_LIT &&
+                   args[1].type == ASM_ARG_ADDR) {
+            WRITE_INST2(OP_NOT_MEM, T_u8, UWORD_T);
+        } else
+            return ASM_ERR_ARGS;
     } else if (strcmp(mnemonic, "or") == 0) {
         if (argc == 2 && args[0].type == ASM_ARG_REG &&
             args[1].type == ASM_ARG_LIT) {
@@ -188,7 +222,7 @@ int decode_instruction(void *buf, unsigned int buf_size,
                    args[2].type == ASM_ARG_ADDR) {
             WRITE_INST3(OP_OR_REG_REG, T_u8, UWORD_T, UWORD_T);
         } else
-            return ASM_ERR_OPERAND;
+            return ASM_ERR_ARGS;
     } else if (strcmp(mnemonic, "xor") == 0) {
         if (argc == 2 && args[0].type == ASM_ARG_REG &&
             args[1].type == ASM_ARG_LIT) {
@@ -201,9 +235,8 @@ int decode_instruction(void *buf, unsigned int buf_size,
                    args[2].type == ASM_ARG_ADDR) {
             WRITE_INST3(OP_XOR_REG_REG, T_u8, UWORD_T, UWORD_T);
         } else
-            return ASM_ERR_OPERAND;
+            return ASM_ERR_ARGS;
     } else
         return ASM_ERR_MNEMONIC;
-    if (*buf_offset >= buf_size) return ASM_ERR_MEMORY;
     return ASM_ERR_NONE;
 }

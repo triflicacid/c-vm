@@ -24,7 +24,7 @@ int main(int argc, char **argv) {
     printf("Col          : %u\n", o.col);
     printf("Errno        : %i\n", o.errc);
 
-    if (argc > 2) {
+    if (o.buf_offset != 0 && argc > 2) {
         fp = fopen(argv[2], "w");
         fwrite(buffer, o.buf_offset, 1, fp);
         fclose(fp);

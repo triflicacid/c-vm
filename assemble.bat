@@ -1,0 +1,1 @@
+.\main.exe source.asm source.bin

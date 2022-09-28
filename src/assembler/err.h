@@ -21,7 +21,7 @@
 // Assembler: unknown mnemonic
 #define ASM_ERR_MNEMONIC 6
 
-// Assembler: invalid operand combination
-#define ASM_ERR_OPERAND 7
+// Assembler: invalid argument combination
+#define ASM_ERR_ARGS 7
 
 #endif

@@ -195,7 +195,7 @@ int cpu_mem_exec(struct CPU *cpu, OPCODE_T opcode, UWORD_T *ip) {
         case OP_XOR_MEM_MEM:
             OP_APPLYF_MEM_MEM(*ip, bitwise_xor);
             return 1;
-        case OP_NOT:
+        case OP_NOT_REG:
             OP_REG(~, , *ip, WORD_T);
             return 1;
         case OP_NOT_MEM:

@@ -232,7 +232,7 @@
 
 // Computer bitwise NOT of register, and stores back in register.
 // Syntax: `not <register: u8>`
-#define OP_NOT 0x0070
+#define OP_NOT_REG 0x0070
 // Computer bitwise NOT of value `bytes` long starting at address.
 // Syntax: `not <bytes: u8> <addr: unsigned wort>`
 #define OP_NOT_MEM 0x0071
