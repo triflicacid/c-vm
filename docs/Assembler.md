@@ -8,11 +8,10 @@ The assembler takes in a file of assembly code and outputs its equivalent machin
 
 To execute the assembler, first compile it by running `compile.bat`.
 
-Then, execute `./main.exe [src] [out]` where
-  - `src` is the path to the assembly source file to assemble. If none is provided, `file="source.asm"`.
-  - `out` is the path to the output file. `src` **must** be present. If none is provided, doesn't write to output.
-
-Example: `./main.exe source.asm source.bin` assembles `source.asm` into `source.bin`
+Then, execute `./main.exe [src] [-o out] [-p]` where
+  - `src` is the path to the assembly source file to assemble. If none is provided, it is defaulted to `source.asm`.
+  - `-o` specifies an output file. If none is provided, is id defaulted to `source.bin`.
+  - `-p` switches on detail. Detail about the source file, line/col reached, error messages etc... are printed. If disabled, only the error number is printed.
 
 ## Syntax
 

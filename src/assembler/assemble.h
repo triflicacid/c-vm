@@ -59,7 +59,8 @@ struct AsmArgument {
 };
 
 /** Assemble file into a buffer */
-struct Assemble assemble(FILE *fp, void *buf, unsigned int buf_size);
+struct Assemble assemble(FILE *fp, void *buf, unsigned int buf_size,
+                         unsigned int print_errors);
 
 /** Convert a mnemonic and array of AsmArguments to machine code. Return erro
  * code. */

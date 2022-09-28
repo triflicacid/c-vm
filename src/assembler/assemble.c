@@ -6,7 +6,8 @@
 #include "../cpu/opcodes.h"
 #include "err.h"
 
-struct Assemble assemble(FILE *fp, void *buf, unsigned int buf_size) {
+struct Assemble assemble(FILE *fp, void *buf, unsigned int buf_size,
+                         unsigned int print_errors) {
     struct Assemble out = {
         .buf_offset = 0, .col = 0, .errc = ASM_ERR_NONE, .line = 0};
     char string[ASM_MAX_LINE_LENGTH];        // Line buffer
@@ -49,10 +50,11 @@ struct Assemble assemble(FILE *fp, void *buf, unsigned int buf_size) {
             // If exceeded maximum argument count...
             if (nargs >= ASM_MAX_ARGS) {
                 out.errc = ASM_ERR_GENERIC;
-                printf(
-                    "ERROR! Line %i, column %i:\nArgument count for '%s' "
-                    "exceeded\n",
-                    *line, *pos, mnemonic);
+                if (print_errors)
+                    printf(
+                        "ERROR! Line %i, column %i:\nArgument count for '%s' "
+                        "exceeded\n",
+                        *line, *pos, mnemonic);
                 return out;
             }
 
@@ -82,11 +84,12 @@ struct Assemble assemble(FILE *fp, void *buf, unsigned int buf_size) {
                 }
             } else if (astr[0] == '[') {  // Address/Register pointer
                 if (astr[spos - 1] != ']') {
-                    printf(
-                        "ERROR! Line %i, column %i:\nExpected ']' after "
-                        "address expression: "
-                        "'%s' <-- ]\n",
-                        *line, *pos, astr);
+                    if (print_errors)
+                        printf(
+                            "ERROR! Line %i, column %i:\nExpected ']' after "
+                            "address expression: "
+                            "'%s' <-- ]\n",
+                            *line, *pos, astr);
                     out.errc = ASM_ERR_ADDR;
                     return out;
                 }
@@ -94,10 +97,11 @@ struct Assemble assemble(FILE *fp, void *buf, unsigned int buf_size) {
                     astr[spos - 1] = '\0';  // Remove ']'
                     T_i8 reg_off = cpu_reg_offset_from_string(astr + 1);
                     if (reg_off == -1) {  // Unknown register
-                        printf(
-                            "ERROR! Line %i, column %i:\nUnknown register "
-                            "pointer '[%s]'\n",
-                            *line, *pos, astr + 1);
+                        if (print_errors)
+                            printf(
+                                "ERROR! Line %i, column %i:\nUnknown register "
+                                "pointer '[%s]'\n",
+                                *line, *pos, astr + 1);
                         out.errc = ASM_ERR_REG;
                         return out;
                     }
@@ -109,10 +113,11 @@ struct Assemble assemble(FILE *fp, void *buf, unsigned int buf_size) {
                     args[i].data = addr;
                 }
             } else {  // Unknown argument form
-                printf(
-                    "ERROR! Line %i, column %i:\nUnknown argument format "
-                    "'%s'\n",
-                    *line, *pos, astr);
+                if (print_errors)
+                    printf(
+                        "ERROR! Line %i, column %i:\nUnknown argument format "
+                        "'%s'\n",
+                        *line, *pos, astr);
                 out.errc = ASM_ERR_ARG;
                 return out;
             }
@@ -123,20 +128,25 @@ struct Assemble assemble(FILE *fp, void *buf, unsigned int buf_size) {
         int errc =
             decode_instruction(buf, buf_size, buf_off, mnemonic, args, nargs);
         if (errc == ASM_ERR_MEMORY) {
-            printf(
-                "ERROR! Line %i, column %i:\nNot enough memory - %ub limit "
-                "reached\n",
-                *line, *pos, buf_size);
+            if (print_errors)
+                printf(
+                    "ERROR! Line %i, column %i:\nNot enough memory - %ub limit "
+                    "reached\n",
+                    *line, *pos, buf_size);
             out.errc = errc;
             return out;
         } else if (errc == ASM_ERR_MNEMONIC) {
-            printf("ERROR! Line %i, column %i:\nUnknown mnemonic '%s'\n", *line,
-                   *pos, mnemonic);
+            if (print_errors)
+                printf("ERROR! Line %i, column %i:\nUnknown mnemonic '%s'\n",
+                       *line, *pos, mnemonic);
             out.errc = errc;
             return out;
         } else if (errc == ASM_ERR_ARGS) {
-            printf("ERROR! Line %i, column %i:\nUnknown argument(s) for '%s'\n",
-                   *line, *pos, mnemonic);
+            if (print_errors)
+                printf(
+                    "ERROR! Line %i, column %i:\nUnknown argument(s) for "
+                    "'%s'\n",
+                    *line, *pos, mnemonic);
             out.errc = errc;
             return out;
         }
