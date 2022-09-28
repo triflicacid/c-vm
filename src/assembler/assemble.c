@@ -18,12 +18,23 @@ struct Assemble assemble(FILE *fp, void *buf, unsigned int buf_size) {
     while (1) {
         if (!fgets(string, sizeof(string), fp)) break;
         // printf("Line %u: %s\n", line, string);
-        int nargs = 0, *pos = &out.col, slen = strlen(string);
+        int nargs = 0, *pos = &out.col, slen = 0;
         *pos = 0;
+
+        // Calculate string length
+        for (T_u16 i = 0; string[i] != '\0' && string[i] != ';'; ++i, ++slen)
+            ;
 
         // Eat leading whitespace
         for (; *pos < slen && IS_SEPERATOR(string[*pos]); ++(*pos))
             ;
+
+        // Empty line?
+        if (*pos == slen) {
+            printf("Line %i, length %i (empty)\n", *line, slen);
+            ++(*line);
+            continue;
+        }
 
         // Get mnemonic
         int moff = 0;
@@ -31,7 +42,7 @@ struct Assemble assemble(FILE *fp, void *buf, unsigned int buf_size) {
             mnemonic[moff] = string[*pos];
         mnemonic[moff] = '\0';
 
-        printf("Line %i, mnemonic '%s'\n", *line, mnemonic);
+        printf("Line %i, length %i, mnemonic '%s'\n", *line, slen, mnemonic);
 
         // Get arguments
         for (int i = 0; *pos < slen; ++i, ++nargs) {

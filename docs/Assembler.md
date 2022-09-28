@@ -16,7 +16,7 @@ Example: `./main.exe source.asm source.bin` assembles `source.asm` into `source.
 
 ## Syntax
 
-Assembly source files are read line-by-line.
+Assembly source files are read line-by-line, and have the following syntax: `[mnemonic [...args]] [; Comment]`. Trailing whitespace is removed, and blank/empty lines are ignored.
 
 Instructions come in the form `mnemonic [...args]` where the arguments consist of a space- or comma-seperated list of:
   - `nnn`, where `nnn` is a number, represents a **literal**
@@ -25,6 +25,8 @@ Instructions come in the form `mnemonic [...args]` where the arguments consist o
   - `[abc]`, where `abc` is a string of characters, represents a **register pointer**. The string is translated to its corresponsing register offset or, if it is not recognised, will result in an error.
 
 See `Instructions.md` for a list of all implemeted instructions.
+
+Comments start with a `;`, with everything after the semi-colon being ignored up until the next line
 
 ### Numeric Values
 
@@ -36,8 +38,3 @@ Numeric values consist of a sequence of digits optionally suffixed by a radix in
 
 The validity of the digits is dependent upon the radix chosen e.g. `Fh` is valid, but `F` is not.
 
-### Comments
-
-**THIS IS NOT YET IMPLEMENTED**
-
-Comments start with a `;`, with everything after the semi-colon being ignored up until the next lien
