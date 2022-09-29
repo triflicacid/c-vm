@@ -40,7 +40,6 @@ Below is the full list of instructions supported by the assembler.
 | divf64 | OP_DIVF64_REG_LIT | `<reg: u8>`, `<lit: f64>` | Divide a register by a literal as 64-bit floats | `divf64 r1, 10` |
 | divf64 | OP_DIVF64_REG_REG | `<reg: u8>`, `<reg: u8>` | Divide two registers as 64-bit floats, storing the result in the first register | `divf64 r1, r2` |
 | hlt | OP_HALT | | Stop execution | `hlt` |
-
 | jmp | OP_JMP_LIT | `<lit: uword>` | Jump to a given literal address | `jmp 100h` |
 | jmp | OP_JMP_REG | `<reg: u8>` | Jump to a given address in a register | `jmp r3` |
 | jeq | OP_JMP_EQ_LIT | `<lit: uword>` | Jump to a given literal address if last comparison is `CMP_EQ` | `jeq 100h` |
@@ -51,14 +50,23 @@ Below is the full list of instructions supported by the assembler.
 | jlt | OP_JMP_LT_REG | `<reg: u8>` | Jump to a given address in a register if last comparison is `CMP_LT` | `jlt r3` |
 | jgt | OP_JMP_GT_LIT | `<lit: uword>` | Jump to a given literal address if last comparison is `CMP_GT` | `jgt 100h` |
 | jgt | OP_JMP_GT_REG | `<reg: u8>` | Jump to a given address in a register if last comparison is `CMP_GT` | `jgt r3` |
-
 | mov | OP_MOV_LIT_REG | `<lit: word>`, `<reg: u8>` | Move literal word into register `reg` | `mov 100h, r3` |
 | mov | OP_MOV_LIT_MEM | `<lit: word>`, `<addr: uword>` | Move literal to address | `mov 100h, [128]` |
 | mov | OP_MOV_MEM_REG | `<addr: uword>`, `<reg: u8>` | Move value at address to register | `mov [1Fh], r2` |
+| mov8 | OP_MOV8_MEM_REG | `<addr: uword>`, `<reg: u8>` | Move 8-bit value at address to register | `mov8 [1Fh], r2` |
+| mov16 | OP_MOV16_MEM_REG | `<addr: uword>`, `<reg: u8>` | Move 16-bit value at address to register | `mov16 [1Fh], r2` |
+| mov32 | OP_MOV32_MEM_REG | `<addr: uword>`, `<reg: u8>` | Move 32-bit value at address to register | `mov32 [1Fh], r2` |
+| mov64 | OP_MOV64_MEM_REG | `<addr: uword>`, `<reg: u8>` | Move 64-bit value at address to register | `mov64 [1Fh], r2` |
 | mov | OP_MOV_REG_MEM | `<reg: u8>`, `<addr: uword>` | Move value in register to address | `mov r2, [1Fh]` |
+| mov8 | OP_MOV8_REG_MEM | `<reg: u8>`, `<addr: uword>` | Move 8-bit value from register to the address | `mov8 r2, [1Fh]` |
+| mov16 | OP_MOV16_REG_MEM | `<reg: u8>`, `<addr: uword>` | Move 16-bit valuefrom register to the address | `mov16 r2, [1Fh]` |
+| mov32 | OP_MOV32_REG_MEM | `<reg: u8>`, `<addr: uword>` | Move 32-bit valuefrom register to the address | `mov32 r2, [1Fh]` |
+| mov64 | OP_MOV64_REG_MEM | `<reg: u8>`, `<addr: uword>` | Move 64-bit valuefrom register to the address | `mov64 r2, [1Fh]` |
+
 | mov | OP_MOV_REGPTR_REG | `<regptr: u8>`, `<reg: u8>` | Move value at memory address stored in first register to second register | `mov [r1], r2` |
 | mov | OP_MOV_REG_REGPTR | `<reg: u8>`, `<regptr: u8>` | Move value in first register to memory address stored in the second register | `mov r1, [r2]` |
 | mov | OP_MOV_REG_REG | `<reg: u8>`, `<reg: u8>` | Move value in first register to second register | `mov r1, r2` |
+
 | mul | OP_MUL_REG_LIT | `<reg: u8>`, `<lit: word>` | Multiply a register by a literal as integers | `mul r1, 10` |
 | mul | OP_MUL_REG_REG | `<reg: u8>`, `<reg: u8>` | Multiply two registers as integers, storing the result in the first register | `mul r1, r2` |
 | mulf32 | OP_MULF32_REG_LIT | `<reg: u8>`, `<lit: f32>` | Multiply a register by a literal as 32-bit floats | `mulf32 r1, 10` |

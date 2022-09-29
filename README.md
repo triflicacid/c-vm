@@ -7,6 +7,7 @@ For more informations, see `docs/`, `tests/`.
 ## Components
 - Basic "CPU"
 - Basic assembler (*in progress*)
+  - Source is `assemble.c`. See `docs/Assembler.md` for more.
 
 ### TODO
 - Assembler: floating-point literals

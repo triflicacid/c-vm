@@ -1,57 +1,68 @@
+#include "src/assembler/assemble.c"
+
 #include <stdio.h>
 
-#include "src/assembler/assemble.c"
-#include "src/cpu/bit-ops.c"
 #include "src/cpu/cpu.c"
-#include "src/cpu/err.c"
-#include "src/cpu/fetch-exec.c"
 #include "src/cpu/opcodes.h"
 #include "src/util.c"
 
-#define BUF_SIZE 0x1FF
-
 int main(int argc, char **argv) {
-    T_u8 buffer[0x1FF];
-
     char *file_in, *file_out;
     int is_file_in = 0, is_file_out = 0, do_detail = 0;
+    unsigned long long buf_size = 1000000;
     for (int i = 1; i < argc; ++i) {
         if (argv[i][0] == '-') {
             switch (argv[i][1]) {
-                case 'o':
-                    is_file_out = 1;
+                case 'o':  // Out file
                     i++;
+                    if (i >= argc) {
+                        printf("-o: expected file path\n");
+                        return -1;
+                    }
+                    is_file_out = 1;
                     file_out = argv[i];
                     break;
-                case 'p':
+                case 'b':  // Set buffer size
+                    i++;
+                    if (i >= argc) {
+                        printf("-b: expected number\n");
+                        return -1;
+                    }
+                    buf_size = strtoull(
+                        argv[i], (char **)(argv[i] + strlen(argv[0])), 10);
+                    break;
+                case 'p':  // Print detail
                     do_detail = !do_detail;
                     break;
                 default:
                     printf("Unknown option '%s'\n", argv[i]);
-                    return 1;
+                    return -1;
             }
         } else if (!is_file_in) {
             is_file_in = 1;
             file_in = argv[i];
         } else {
             printf("Unknown argument '%s'\n", argv[i]);
-            return 1;
+            return -1;
         }
     }
+
+    char *buffer = (char *)malloc(buf_size);
 
     if (do_detail)
         printf("Reading source file '%s'\n\n",
                is_file_in ? file_in : "source.asm");
     FILE *fp = fopen(is_file_in ? file_in : "source.asm", "r");
-    struct Assemble o = assemble(fp, buffer, sizeof(buffer), do_detail);
+    struct Assemble o = assemble(fp, buffer, buf_size, do_detail);
     fclose(fp);
 
     if (do_detail) {
         if (o.errc != ASM_ERR_NONE) printf("\n");
-        printf("Buffer Offset: %u\n", o.buf_offset);
-        printf("Line         : %u\n", o.line);
-        printf("Col          : %u\n", o.col);
-        printf("Errno        : %i\n", o.errc);
+        printf("Buffer Size : %llu\n", buf_size);
+        printf("Buffer Used : %u\n", o.buf_offset);
+        printf("Line        : %u\n", o.line);
+        printf("Col         : %u\n", o.col);
+        printf("Errno       : %i\n", o.errc);
     } else {
         printf("%i", o.errc);
     }
@@ -64,6 +75,8 @@ int main(int argc, char **argv) {
             printf("\nWritten %u bytes to file '%s'\n", o.buf_offset,
                    is_file_out ? file_out : "source.bin");
     }
+
+    free(buffer);
 
     return o.errc;
 }

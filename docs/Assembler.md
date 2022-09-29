@@ -4,13 +4,14 @@ The assembler takes in a file of assembly code and outputs its equivalent machin
 
 ## Execution
 
-**This is open to change**
+The source file is `assemble.c`.
 
-To execute the assembler, first compile it by running `compile.bat`.
+To compile, run `gcc assemble.c -o assemble.exe`.
 
-Then, execute `./main.exe [src] [-o out] [-p]` where
+To execute, run `./assemble.exe [src] [options]` where
   - `src` is the path to the assembly source file to assemble. If none is provided, it is defaulted to `source.asm`.
-  - `-o` specifies an output file. If none is provided, is id defaulted to `source.bin`.
+  - `-b <size>` sets the buffer size to `size` bytes. This is the maximum machine code file size. Default is 1MB.
+  - `-o <file>` specifies an output file. If none is provided, is id defaulted to `source.bin`.
   - `-p` switches on detail. Detail about the source file, line/col reached, error messages etc... are printed. If disabled, only the error number is printed.
 
 ## Syntax

@@ -377,6 +377,42 @@ int decode_instruction(void *buf, unsigned int buf_size,
             WRITE_INST2(OP_MOV_REG_REG, T_u8, T_u8);
         } else
             return ASM_ERR_ARGS;
+    } else if (strcmp(mnemonic, "mov8") == 0) {
+        if (argc == 2 && args[0].type == ASM_ARG_ADDR &&
+            args[1].type == ASM_ARG_REG) {
+            WRITE_INST2(OP_MOV8_MEM_REG, T_u8, WORD_T);
+        } else if (argc == 2 && args[0].type == ASM_ARG_REG &&
+                   args[1].type == ASM_ARG_ADDR) {
+            WRITE_INST2(OP_MOV8_REG_MEM, T_u8, WORD_T);
+        } else
+            return ASM_ERR_ARGS;
+    } else if (strcmp(mnemonic, "mov16") == 0) {
+        if (argc == 2 && args[0].type == ASM_ARG_ADDR &&
+            args[1].type == ASM_ARG_REG) {
+            WRITE_INST2(OP_MOV16_MEM_REG, T_u8, WORD_T);
+        } else if (argc == 2 && args[0].type == ASM_ARG_REG &&
+                   args[1].type == ASM_ARG_ADDR) {
+            WRITE_INST2(OP_MOV16_REG_MEM, T_u8, WORD_T);
+        } else
+            return ASM_ERR_ARGS;
+    } else if (strcmp(mnemonic, "mov32") == 0) {
+        if (argc == 2 && args[0].type == ASM_ARG_ADDR &&
+            args[1].type == ASM_ARG_REG) {
+            WRITE_INST2(OP_MOV32_MEM_REG, T_u8, WORD_T);
+        } else if (argc == 2 && args[0].type == ASM_ARG_REG &&
+                   args[1].type == ASM_ARG_ADDR) {
+            WRITE_INST2(OP_MOV32_REG_MEM, T_u8, WORD_T);
+        } else
+            return ASM_ERR_ARGS;
+    } else if (strcmp(mnemonic, "mov64") == 0) {
+        if (argc == 2 && args[0].type == ASM_ARG_ADDR &&
+            args[1].type == ASM_ARG_REG) {
+            WRITE_INST2(OP_MOV64_MEM_REG, T_u8, WORD_T);
+        } else if (argc == 2 && args[0].type == ASM_ARG_REG &&
+                   args[1].type == ASM_ARG_ADDR) {
+            WRITE_INST2(OP_MOV64_REG_MEM, T_u8, WORD_T);
+        } else
+            return ASM_ERR_ARGS;
     } else if (strcmp(mnemonic, "mul") == 0) {
         if (argc == 2 && args[0].type == ASM_ARG_REG &&
             args[1].type == ASM_ARG_LIT) {
