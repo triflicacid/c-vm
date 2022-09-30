@@ -11,6 +11,14 @@ mov16 r2, [1Fh]
 mov32 r2, [1Fh]
 mov64 r2, [1Fh]
 mov [r1], r2
+mov8 [r1], r2
+mov16 [r1], r2
+mov32 [r1], r2
+mov64 [r1], r2
 mov r1, [r2]
+mov8 r1, [r2]
+mov16 r1, [r2]
+mov32 r1, [r2]
+mov64 r1, [r2]
 mov r1, r2
 hlt

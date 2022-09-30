@@ -210,16 +210,16 @@
 // Syntax: `xor <register: u8> <data: word>`
 #define OP_XOR_REG_LIT 0x0060
 // Computer 8-bit bitwise XOR of register ^ literal, and store in register.
-// Syntax: `xor <register: u8> <data: word>`
+// Syntax: `xor <register: u8> <data: u8>`
 #define OP_XOR8_REG_LIT 0x0061
 // Computer 16-bit bitwise XOR of register ^ literal, and store in register.
-// Syntax: `xor <register: u8> <data: word>`
+// Syntax: `xor <register: u8> <data: u16>`
 #define OP_XOR16_REG_LIT 0x0062
 // Computer 32-bit bitwise XOR of register ^ literal, and store in register.
-// Syntax: `xor <register: u8> <data: word>`
+// Syntax: `xor <register: u8> <data: u32>`
 #define OP_XOR32_REG_LIT 0x0063
 // Computer 64-bit bitwise XOR of register ^ literal, and store in register.
-// Syntax: `xor <register: u8> <data: word>`
+// Syntax: `xor <register: u8> <data: u64>`
 #define OP_XOR64_REG_LIT 0x0064
 
 // Computer bitwise XOR of register1 ^ register2, and store in register1.

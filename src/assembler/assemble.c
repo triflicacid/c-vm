@@ -18,7 +18,6 @@ struct Assemble assemble(FILE *fp, void *buf, unsigned int buf_size,
     unsigned int *line = &out.line, *buf_off = &out.buf_offset;
     while (1) {
         if (!fgets(string, sizeof(string), fp)) break;
-        // printf("Line %u: %s\n", line, string);
         int nargs = 0, *pos = &out.col, slen = 0;
         *pos = 0;
 
@@ -32,7 +31,7 @@ struct Assemble assemble(FILE *fp, void *buf, unsigned int buf_size,
 
         // Empty line?
         if (*pos == slen) {
-            printf("Line %i, length %i (empty)\n", *line, slen);
+            // printf("Line %i, length %i (empty)\n", *line, slen);
             ++(*line);
             continue;
         }
@@ -43,7 +42,7 @@ struct Assemble assemble(FILE *fp, void *buf, unsigned int buf_size,
             mnemonic[moff] = string[*pos];
         mnemonic[moff] = '\0';
 
-        printf("Line %i, length %i, mnemonic '%s'\n", *line, slen, mnemonic);
+        // printf("Line %i, length %i, mnemonic '%s'\n", *line, slen, mnemonic);
 
         // Get arguments
         for (int i = 0; *pos < slen; ++i, ++nargs) {
@@ -67,7 +66,7 @@ struct Assemble assemble(FILE *fp, void *buf, unsigned int buf_size,
             for (; *pos < slen && !IS_SEPERATOR(string[*pos]); ++spos, ++(*pos))
                 astr[spos] = string[*pos];
             astr[spos] = '\0';
-            printf(" - Arg: '%s'\n", astr);
+            // printf(" - Arg: '%s'\n", astr);
 
             if (spos == 0)  // No arguments
                 break;
@@ -122,7 +121,8 @@ struct Assemble assemble(FILE *fp, void *buf, unsigned int buf_size,
                 return out;
             }
 
-            printf(" -   Type: %u, data: %lli\n", args[i].type, args[i].data);
+            // printf(" -   Type: %u, data: %lli\n", args[i].type,
+            // args[i].data);
         }
 
         int errc =
@@ -208,6 +208,30 @@ int decode_instruction(void *buf, unsigned int buf_size,
                    args[1].type == ASM_ARG_ADDR &&
                    args[2].type == ASM_ARG_ADDR) {
             WRITE_INST3(OP_AND_REG_REG, T_u8, UWORD_T, UWORD_T);
+        } else
+            return ASM_ERR_ARGS;
+    } else if (strcmp(mnemonic, "and8") == 0) {
+        if (argc == 2 && args[0].type == ASM_ARG_REG &&
+            args[1].type == ASM_ARG_LIT) {
+            WRITE_INST2(OP_AND8_REG_LIT, T_u8, T_u8);
+        } else
+            return ASM_ERR_ARGS;
+    } else if (strcmp(mnemonic, "and16") == 0) {
+        if (argc == 2 && args[0].type == ASM_ARG_REG &&
+            args[1].type == ASM_ARG_LIT) {
+            WRITE_INST2(OP_AND16_REG_LIT, T_u8, T_u16);
+        } else
+            return ASM_ERR_ARGS;
+    } else if (strcmp(mnemonic, "and32") == 0) {
+        if (argc == 2 && args[0].type == ASM_ARG_REG &&
+            args[1].type == ASM_ARG_LIT) {
+            WRITE_INST2(OP_AND32_REG_LIT, T_u8, T_u32);
+        } else
+            return ASM_ERR_ARGS;
+    } else if (strcmp(mnemonic, "and64") == 0) {
+        if (argc == 2 && args[0].type == ASM_ARG_REG &&
+            args[1].type == ASM_ARG_LIT) {
+            WRITE_INST2(OP_AND64_REG_LIT, T_u8, T_u64);
         } else
             return ASM_ERR_ARGS;
     } else if (strcmp(mnemonic, "ci8i16") == 0) {
@@ -384,6 +408,12 @@ int decode_instruction(void *buf, unsigned int buf_size,
         } else if (argc == 2 && args[0].type == ASM_ARG_REG &&
                    args[1].type == ASM_ARG_ADDR) {
             WRITE_INST2(OP_MOV8_REG_MEM, T_u8, WORD_T);
+        } else if (argc == 2 && args[0].type == ASM_ARG_REGPTR &&
+                   args[1].type == ASM_ARG_REG) {
+            WRITE_INST2(OP_MOV8_REGPTR_REG, T_u8, T_u8);
+        } else if (argc == 2 && args[0].type == ASM_ARG_REG &&
+                   args[1].type == ASM_ARG_REGPTR) {
+            WRITE_INST2(OP_MOV8_REG_REGPTR, T_u8, T_u8);
         } else
             return ASM_ERR_ARGS;
     } else if (strcmp(mnemonic, "mov16") == 0) {
@@ -393,6 +423,12 @@ int decode_instruction(void *buf, unsigned int buf_size,
         } else if (argc == 2 && args[0].type == ASM_ARG_REG &&
                    args[1].type == ASM_ARG_ADDR) {
             WRITE_INST2(OP_MOV16_REG_MEM, T_u8, WORD_T);
+        } else if (argc == 2 && args[0].type == ASM_ARG_REGPTR &&
+                   args[1].type == ASM_ARG_REG) {
+            WRITE_INST2(OP_MOV16_REGPTR_REG, T_u8, T_u8);
+        } else if (argc == 2 && args[0].type == ASM_ARG_REG &&
+                   args[1].type == ASM_ARG_REGPTR) {
+            WRITE_INST2(OP_MOV16_REG_REGPTR, T_u8, T_u8);
         } else
             return ASM_ERR_ARGS;
     } else if (strcmp(mnemonic, "mov32") == 0) {
@@ -402,6 +438,12 @@ int decode_instruction(void *buf, unsigned int buf_size,
         } else if (argc == 2 && args[0].type == ASM_ARG_REG &&
                    args[1].type == ASM_ARG_ADDR) {
             WRITE_INST2(OP_MOV32_REG_MEM, T_u8, WORD_T);
+        } else if (argc == 2 && args[0].type == ASM_ARG_REGPTR &&
+                   args[1].type == ASM_ARG_REG) {
+            WRITE_INST2(OP_MOV32_REGPTR_REG, T_u8, T_u8);
+        } else if (argc == 2 && args[0].type == ASM_ARG_REG &&
+                   args[1].type == ASM_ARG_REGPTR) {
+            WRITE_INST2(OP_MOV32_REG_REGPTR, T_u8, T_u8);
         } else
             return ASM_ERR_ARGS;
     } else if (strcmp(mnemonic, "mov64") == 0) {
@@ -411,6 +453,12 @@ int decode_instruction(void *buf, unsigned int buf_size,
         } else if (argc == 2 && args[0].type == ASM_ARG_REG &&
                    args[1].type == ASM_ARG_ADDR) {
             WRITE_INST2(OP_MOV64_REG_MEM, T_u8, WORD_T);
+        } else if (argc == 2 && args[0].type == ASM_ARG_REGPTR &&
+                   args[1].type == ASM_ARG_REG) {
+            WRITE_INST2(OP_MOV64_REGPTR_REG, T_u8, T_u8);
+        } else if (argc == 2 && args[0].type == ASM_ARG_REG &&
+                   args[1].type == ASM_ARG_REGPTR) {
+            WRITE_INST2(OP_MOV64_REG_REGPTR, T_u8, T_u8);
         } else
             return ASM_ERR_ARGS;
     } else if (strcmp(mnemonic, "mul") == 0) {
@@ -474,6 +522,30 @@ int decode_instruction(void *buf, unsigned int buf_size,
                    args[1].type == ASM_ARG_ADDR &&
                    args[2].type == ASM_ARG_ADDR) {
             WRITE_INST3(OP_OR_REG_REG, T_u8, UWORD_T, UWORD_T);
+        } else
+            return ASM_ERR_ARGS;
+    } else if (strcmp(mnemonic, "or8") == 0) {
+        if (argc == 2 && args[0].type == ASM_ARG_REG &&
+            args[1].type == ASM_ARG_LIT) {
+            WRITE_INST2(OP_OR8_REG_LIT, T_u8, T_u8);
+        } else
+            return ASM_ERR_ARGS;
+    } else if (strcmp(mnemonic, "or16") == 0) {
+        if (argc == 2 && args[0].type == ASM_ARG_REG &&
+            args[1].type == ASM_ARG_LIT) {
+            WRITE_INST2(OP_OR16_REG_LIT, T_u8, T_u16);
+        } else
+            return ASM_ERR_ARGS;
+    } else if (strcmp(mnemonic, "or32") == 0) {
+        if (argc == 2 && args[0].type == ASM_ARG_REG &&
+            args[1].type == ASM_ARG_LIT) {
+            WRITE_INST2(OP_OR32_REG_LIT, T_u8, T_u32);
+        } else
+            return ASM_ERR_ARGS;
+    } else if (strcmp(mnemonic, "or64") == 0) {
+        if (argc == 2 && args[0].type == ASM_ARG_REG &&
+            args[1].type == ASM_ARG_LIT) {
+            WRITE_INST2(OP_OR64_REG_LIT, T_u8, T_u64);
         } else
             return ASM_ERR_ARGS;
     } else if (strcmp(mnemonic, "sar") == 0) {
@@ -541,6 +613,30 @@ int decode_instruction(void *buf, unsigned int buf_size,
                    args[1].type == ASM_ARG_ADDR &&
                    args[2].type == ASM_ARG_ADDR) {
             WRITE_INST3(OP_XOR_REG_REG, T_u8, UWORD_T, UWORD_T);
+        } else
+            return ASM_ERR_ARGS;
+    } else if (strcmp(mnemonic, "xor8") == 0) {
+        if (argc == 2 && args[0].type == ASM_ARG_REG &&
+            args[1].type == ASM_ARG_LIT) {
+            WRITE_INST2(OP_XOR8_REG_LIT, T_u8, T_u8);
+        } else
+            return ASM_ERR_ARGS;
+    } else if (strcmp(mnemonic, "xor16") == 0) {
+        if (argc == 2 && args[0].type == ASM_ARG_REG &&
+            args[1].type == ASM_ARG_LIT) {
+            WRITE_INST2(OP_XOR16_REG_LIT, T_u8, T_u16);
+        } else
+            return ASM_ERR_ARGS;
+    } else if (strcmp(mnemonic, "xor32") == 0) {
+        if (argc == 2 && args[0].type == ASM_ARG_REG &&
+            args[1].type == ASM_ARG_LIT) {
+            WRITE_INST2(OP_XOR32_REG_LIT, T_u8, T_u32);
+        } else
+            return ASM_ERR_ARGS;
+    } else if (strcmp(mnemonic, "xor64") == 0) {
+        if (argc == 2 && args[0].type == ASM_ARG_REG &&
+            args[1].type == ASM_ARG_LIT) {
+            WRITE_INST2(OP_XOR64_REG_LIT, T_u8, T_u64);
         } else
             return ASM_ERR_ARGS;
     } else

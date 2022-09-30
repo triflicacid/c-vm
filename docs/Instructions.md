@@ -14,6 +14,10 @@ Below is the full list of instructions supported by the assembler.
 | addf64 | OP_ADDF64_REG_LIT | `<reg: u8>`, `<lit: f64>` | Add a register and a literal as 64-bit floats | `addf64 r1, 10` |
 | addf64 | OP_ADDF64_REG_REG | `<reg: u8>`, `<reg: u8>` | Add two registers as 64-bit floats, storing the result in the first register | `addf64 r1, r2` |
 | and | OP_AND_REG_LIT | `<reg: u8>`, `<lit: word>` | Compute bitwise AND of register and literal and place the result in register | `and r1, 101b` |
+| and8 | OP_AND8_REG_LIT | `<reg: u8>`, `<lit: u8>` | Compute bitwise AND of register and 8-bit literal and place the result in register | `and8 r1, 101b` |
+| and16 | OP_AND16_REG_LIT | `<reg: u8>`, `<lit: u16>` | Compute bitwise AND of register and 16-bit literal and place the result in register | `and16 r1, 101b` |
+| and32 | OP_AND32_REG_LIT | `<reg: u8>`, `<lit: u32>` | Compute bitwise AND of register and 32-bit literal and place the result in register | `and32 r1, 101b` |
+| and64 | OP_AND64_REG_LIT | `<reg: u8>`, `<lit: u64>` | Compute bitwise AND of register and 64-bit literal and place the result in register | `and64 r1, 101b` |
 | and | OP_AND_REG_REG | `<reg: u8>`, `<reg: u8>` | Compute bitwise AND of two registers and place in the first register | `and r1, r2` |
 | and | OP_AND_MEM_MEM | `<bytes: u8>`, `<addr: uword>`, `<addr: uword>` | Compute bitwise AND of two `byte`-length buffers at the addresses and store result in the first address | `and 12, [200], [212]` |
 | ci8i16 | OP_CVT_i8_i16 | `<reg: u8>` | Convert value in register from 8-bit integer to 16-bit integer | `ci8i16 r2` |
@@ -62,11 +66,17 @@ Below is the full list of instructions supported by the assembler.
 | mov16 | OP_MOV16_REG_MEM | `<reg: u8>`, `<addr: uword>` | Move 16-bit valuefrom register to the address | `mov16 r2, [1Fh]` |
 | mov32 | OP_MOV32_REG_MEM | `<reg: u8>`, `<addr: uword>` | Move 32-bit valuefrom register to the address | `mov32 r2, [1Fh]` |
 | mov64 | OP_MOV64_REG_MEM | `<reg: u8>`, `<addr: uword>` | Move 64-bit valuefrom register to the address | `mov64 r2, [1Fh]` |
-
 | mov | OP_MOV_REGPTR_REG | `<regptr: u8>`, `<reg: u8>` | Move value at memory address stored in first register to second register | `mov [r1], r2` |
+| mov8 | OP_MOV8_REGPTR_REG | `<regptr: u8>`, `<reg: u8>` | Move 8-bit value at memory address stored in first register to second register | `mov8 [r1], r2` |
+| mov16 | OP_MOV16_REGPTR_REG | `<regptr: u8>`, `<reg: u8>` | Move 16-bit value at memory address stored in first register to second register | `mov16 [r1], r2` |
+| mov32 | OP_MOV32_REGPTR_REG | `<regptr: u8>`, `<reg: u8>` | Move 32-bit value at memory address stored in first register to second register | `mov32 [r1], r2` |
+| mov64 | OP_MOV64_REGPTR_REG | `<regptr: u8>`, `<reg: u8>` | Move 64-bit value at memory address stored in first register to second register | `mov64 [r1], r2` |
 | mov | OP_MOV_REG_REGPTR | `<reg: u8>`, `<regptr: u8>` | Move value in first register to memory address stored in the second register | `mov r1, [r2]` |
+| mov8 | OP_MOV8_REG_REGPTR | `<reg: u8>`, `<regptr: u8>` | Move 8-bit value in first register to memory address stored in the second register | `mov8 r1, [r2]` |
+| mov16 | OP_MOV16_REG_REGPTR | `<reg: u8>`, `<regptr: u8>` | Move 16-bit value in first register to memory address stored in the second register | `mov16 r1, [r2]` |
+| mov32 | OP_MOV32_REG_REGPTR | `<reg: u8>`, `<regptr: u8>` | Move 32-bit value in first register to memory address stored in the second register | `mov32 r1, [r2]` |
+| mov64 | OP_MOV64_REG_REGPTR | `<reg: u8>`, `<regptr: u8>` | Move 64-bit value in first register to memory address stored in the second register | `mov64 r1, [r2]` |
 | mov | OP_MOV_REG_REG | `<reg: u8>`, `<reg: u8>` | Move value in first register to second register | `mov r1, r2` |
-
 | mul | OP_MUL_REG_LIT | `<reg: u8>`, `<lit: word>` | Multiply a register by a literal as integers | `mul r1, 10` |
 | mul | OP_MUL_REG_REG | `<reg: u8>`, `<reg: u8>` | Multiply two registers as integers, storing the result in the first register | `mul r1, r2` |
 | mulf32 | OP_MULF32_REG_LIT | `<reg: u8>`, `<lit: f32>` | Multiply a register by a literal as 32-bit floats | `mulf32 r1, 10` |
@@ -79,6 +89,10 @@ Below is the full list of instructions supported by the assembler.
 | not | OP_NOT_REG | `<reg: u8>` | Compute bitwise NOT of a register in-place | `not r3` |
 | not | OP_NOT_MEM | `<bytes: u8>`, `<addr: uword>` | Compute bitwise NOT of a `byte`-length buffer at given address in-place | `not 128, [100]` |
 | or | OP_OR_REG_LIT | `<reg: u8>`, `<lit: word>` | Compute bitwise OR of register and literal and place the result in register | `or r1, 101b` |
+| or8 | OP_OR8_REG_LIT | `<reg: u8>`, `<lit: u8>` | Compute bitwise OR of register and 8-bit literal and place the result in register | `or8 r1, 101b` |
+| or16 | OP_OR16_REG_LIT | `<reg: u8>`, `<lit: u16>` | Compute bitwise OR of register and 16-bit literal and place the result in register | `or16 r1, 101b` |
+| or32 | OP_OR32_REG_LIT | `<reg: u8>`, `<lit: u32>` | Compute bitwise OR of register and 32-bit literal and place the result in register | `or32 r1, 101b` |
+| or64 | OP_OR64_REG_LIT | `<reg: u8>`, `<lit: u64>` | Compute bitwise OR of register and 64-bit literal and place the result in register | `or64 r1, 101b` |
 | or | OP_OR_REG_REG | `<reg: u8>`, `<reg: u8>` | Compute bitwise OR of two registers and place sthe result in the first register | `or r1, r2` |
 | or | OP_OR_MEM_MEM | `<bytes: u8>`, `<addr: uword>`, `<addr: uword>` | Compute bitwise OR of two `byte`-length buffers at the addresses and store result in the first address | `or 12, [200], [212]` |
 | sar | OP_ARSHIFT_LIT | `<reg: u8>`, `<lit: u8>` | Arithmetically shift value in register right `lit` bits | `sar r2, 3` |
@@ -94,6 +108,10 @@ Below is the full list of instructions supported by the assembler.
 | subf64 | OP_SUBF64_REG_LIT | `<reg: u8>`, `<lit: f64>` | Subtract a literal from a register as 64-bit floats | `subf64 r1, 10` |
 | subf64 | OP_SUBF64_REG_REG | `<reg: u8>`, `<reg: u8>` | Subtract two registers as 64-bit floats, storing the result in the first register | `subf64 r1, r2` |
 | xor | OP_XOR_REG_LIT | `<reg: u8>`, `<lit: word>` | Compute bitwise XOR of register and literal and place the result in register | `xor r1, 101b` |
+| xor8 | OP_XOR8_REG_LIT | `<reg: u8>`, `<lit: u8>` | Compute bitwise XOR of register and 8-bit literal and place the result in register | `xor8 r1, 101b` |
+| xor16 | OP_XOR16_REG_LIT | `<reg: u8>`, `<lit: u16>` | Compute bitwise XOR of register and 16-bit literal and place the result in register | `xor16 r1, 101b` |
+| xor32 | OP_XOR32_REG_LIT | `<reg: u8>`, `<lit: u32>` | Compute bitwise XOR of register and 32-bit literal and place the result in register | `xor32 r1, 101b` |
+| xor64 | OP_XOR64_REG_LIT | `<reg: u8>`, `<lit: u64>` | Compute bitwise XOR of register and 64-bit literal and place the result in register | `xor64 r1, 101b` |
 | xor | OP_XOR_REG_REG | `<reg: u8>`, `<reg: u8>` | Compute bitwise XOR of two registers and place sthe result in the first register | `xor r1, r2` |
 | xor | OP_XOR_MEM_MEM | `<bytes: u8>`, `<addr: uword>`, `<addr: uword>` | Compute bitwise XOR of two `byte`-length buffers at the addresses and store result in the first address | `xor 12, [200], [212]` |
 
