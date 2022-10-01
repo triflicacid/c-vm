@@ -46,6 +46,7 @@ Below is the full list of instructions supported by the assembler.
 | divf64 | OP_DIVF64_REG_LIT | `<reg: u8>`, `<lit: f64>` | Divide a register by a literal as 64-bit floats | `divf64 r1, 10` |
 | divf64 | OP_DIVF64_REG_REG | `<reg: u8>`, `<reg: u8>` | Divide two registers as 64-bit floats, storing the result in the first register | `divf64 r1, r2` |
 | hlt | OP_HALT | | Stop execution | `hlt` |
+| inp | OP_GET_CHAR | `<reg: u8>` | Get character input from STDIN and store in register | `inp r1` |
 | jmp | OP_JMP_LIT | `<lit: uword>` | Jump to a given literal address | `jmp 100h` |
 | jmp | OP_JMP_REG | `<reg: u8>` | Jump to a given address in a register | `jmp r3` |
 | jeq | OP_JMP_EQ_LIT | `<lit: uword>` | Jump to a given literal address if last comparison is `CMP_EQ` | `jeq 100h` |
@@ -109,6 +110,12 @@ Below is the full list of instructions supported by the assembler.
 | pop64 | OP_POP64_REGPTR | `<regptr: u8>` | Pop 64-bit value from the stack and load into address in register | `pop64 [r1]` |
 | pop | OP_POPN_REGPTR | `<bytes: u8>`, `<regptr: u8>` | Pop n-byte value from the stack and load into address in register | `pop 12, [r1]` |
 | pop | OP_POPN_MEM | `<bytes: u8>`, `<addr: uword>` | Pop n-byte value from the stack and load into address | `pop 12, [100]` |
+
+| prc | OP_PRINT_CHARS_MEM | `<bytes: u8>`, `<addr: uword>` | Print n-bytes as ASCII characters to STDOUT from an address | `prc 12, [100]` |
+| prc | OP_PRINT_CHARS_REG | `<reg: u8>` | Print bytes as ASCII characters to STDOUT from a register until a NULL byte is encountered | `prc r1` |
+| prh | OP_PRINT_HEX_MEM | `<bytes: u8>`, `<addr: uword>` | Print n-bytes as hexadecimal to STDOUT from an address | `prh 12, [100]` |
+| prh | OP_PRINT_HEX_REG | `<reg: u8>` | Print bytes as hexadecimal to STDOUT from a register until a NULL byte is encountered | `prh r1` |
+| prs | OP_PSTACK | | [**TEMP**] Print bytes of the stack | `prs` |
 | psh | OP_PUSH_LIT | `<lit: word>` | Push a literal onto the stack | `psh 101` |
 | psh8 | OP_PUSH8_LIT | `<lit: u8>` | Push an 8-bit literal onto the stack | `psh8 101` |
 | psh16 | OP_PUSH16_LIT | `<lit: u16>` | Push a 16-bit literal onto the stack | `psh16 101` |
@@ -131,7 +138,7 @@ Below is the full list of instructions supported by the assembler.
 | psh32 | OP_PUSH32_REGPTR | `<reg: u8>` | Push 32-bit value at memory address stored in register onto the stack | `psh32 [r1]` |
 | psh64 | OP_PUSH64_REGPTR | `<reg: u8>` | Push 64-bit value at memory address stored in register onto the stack | `psh64 [r1]` |
 | psh | OP_PUSHN_REGPTR | `<bytes: u8>`, `<reg: n>` | Push n-byte value at memory address stored in register onto the stack | `psh 12, [r1]` |
-| ret | OP_RET | N/A | Return from a subroutine | `ret` |
+| ret | OP_RET | | Return from a subroutine | `ret` |
 | sar | OP_ARSHIFT_LIT | `<reg: u8>`, `<lit: u8>` | Arithmetically shift value in register right `lit` bits | `sar r2, 3` |
 | sar | OP_ARSHIFT_REG | `<reg: u8>`, `<reg: u8>` | Arithmetically shift value in register right n-bits, where `n` is value in the second register | `sar r2, r3` |
 | sll | OP_LLSHIFT_LIT | `<reg: u8>`, `<lit: u8>` | Logically shift value in register left `lit` bits | `sll r2, 3` |

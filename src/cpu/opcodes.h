@@ -15,28 +15,29 @@
 #define OP_PMEM 0xFFFA
 // DEBUG: PRINT REGISTERS
 #define OP_PREG 0xFFFB
-// DEBUG: PRINT STACK
+// DEBUG: Print contents of the stack as hexadecimal
+// Syntax: `prs`
 #define OP_PSTACK 0xFFFC
 
 // Print hex `bytes` bytes from memory
-// Syntax: `phm <bytes: u8> <addr: uword>`
+// Syntax: `prh <bytes: u8> <addr: uword>`
 #define OP_PRINT_HEX_MEM 0xFFE0
 // Print hex `bytes` bytes from register
-// Syntax: `phr <reg: u8>`
+// Syntax: `prh <reg: u8>`
 #define OP_PRINT_HEX_REG 0xFFE1
 
 // Print `bytes` characters from memory
-// Syntax: `pcm <bytes: u8> <addr: uword>`
+// Syntax: `prc <bytes: u8> <addr: uword>`
 #define OP_PRINT_CHARS_MEM 0xFFE2
 // Print up to four characters from a register. Print up until '\0' is found.
-// Syntax: `pcr <reg: u8>`
+// Syntax: `prc <reg: u8>`
 #define OP_PRINT_CHARS_REG 0xFFE3
-// PPrint `bytes` characters from a literal
-// Syntax: `pcl <bytes: u8> <lit: ...>`
+// Print `bytes` characters from a literal
+// Syntax: `prc <bytes: u8> <lit: ...>`
 #define OP_PRINT_CHARS_LIT 0xFFE4
 
 // Get character from STDIN and write to register
-// Syntax: `icr <reg: u8>`
+// Syntax: `inp <reg: u8>`
 #define OP_GET_CHAR 0xFFD0
 
 // Move literal to register.
