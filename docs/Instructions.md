@@ -20,6 +20,8 @@ Below is the full list of instructions supported by the assembler.
 | and64 | OP_AND64_REG_LIT | `<reg: u8>`, `<lit: u64>` | Compute bitwise AND of register and 64-bit literal and place the result in register | `and64 r1, 101b` |
 | and | OP_AND_REG_REG | `<reg: u8>`, `<reg: u8>` | Compute bitwise AND of two registers and place in the first register | `and r1, r2` |
 | and | OP_AND_MEM_MEM | `<bytes: u8>`, `<addr: uword>`, `<addr: uword>` | Compute bitwise AND of two `byte`-length buffers at the addresses and store result in the first address | `and 12, [200], [212]` |
+| cal | OP_CALL_LIT | `<lit: uword>` | Call procedure starting at address `lit` | `cal 100` |
+| cal | OP_CALL_REG | `<reg: u8>` | Call procedure starting at address stored in register (as unsigned int) | `cal r1` |
 | ci8i16 | OP_CVT_i8_i16 | `<reg: u8>` | Convert value in register from 8-bit integer to 16-bit integer | `ci8i16 r2` |
 | ci16i8 | OP_CVT_i16_i8 | `<reg: u8>` | Convert value in register from 16-bit integer to 8-bit integer | `ci16i8 r2` |
 | ci16i32 | OP_CVT_i16_i32 | `<reg: u8>` | Convert value in register from 16-bit integer to 32-bit integer | `ci16i32 r2` |
@@ -95,7 +97,6 @@ Below is the full list of instructions supported by the assembler.
 | or64 | OP_OR64_REG_LIT | `<reg: u8>`, `<lit: u64>` | Compute bitwise OR of register and 64-bit literal and place the result in register | `or64 r1, 101b` |
 | or | OP_OR_REG_REG | `<reg: u8>`, `<reg: u8>` | Compute bitwise OR of two registers and place sthe result in the first register | `or r1, r2` |
 | or | OP_OR_MEM_MEM | `<bytes: u8>`, `<addr: uword>`, `<addr: uword>` | Compute bitwise OR of two `byte`-length buffers at the addresses and store result in the first address | `or 12, [200], [212]` |
-
 | pop | OP_POP_REG | `<reg: u8>` | Pop value from the stack and load into register | `pop r1` |
 | pop8 | OP_POP8_REG | `<reg: u8>` | Pop 8-bit value from the stack and load into register | `pop8 r1` |
 | pop16 | OP_POP16_REG | `<reg: u8>` | Pop 16-bit value from the stack and load into register | `pop16 r1` |
@@ -108,7 +109,6 @@ Below is the full list of instructions supported by the assembler.
 | pop64 | OP_POP64_REGPTR | `<regptr: u8>` | Pop 64-bit value from the stack and load into address in register | `pop64 [r1]` |
 | pop | OP_POPN_REGPTR | `<bytes: u8>`, `<regptr: u8>` | Pop n-byte value from the stack and load into address in register | `pop 12, [r1]` |
 | pop | OP_POPN_MEM | `<bytes: u8>`, `<addr: uword>` | Pop n-byte value from the stack and load into address | `pop 12, [100]` |
-
 | psh | OP_PUSH_LIT | `<lit: word>` | Push a literal onto the stack | `psh 101` |
 | psh8 | OP_PUSH8_LIT | `<lit: u8>` | Push an 8-bit literal onto the stack | `psh8 101` |
 | psh16 | OP_PUSH16_LIT | `<lit: u16>` | Push a 16-bit literal onto the stack | `psh16 101` |
@@ -131,6 +131,7 @@ Below is the full list of instructions supported by the assembler.
 | psh32 | OP_PUSH32_REGPTR | `<reg: u8>` | Push 32-bit value at memory address stored in register onto the stack | `psh32 [r1]` |
 | psh64 | OP_PUSH64_REGPTR | `<reg: u8>` | Push 64-bit value at memory address stored in register onto the stack | `psh64 [r1]` |
 | psh | OP_PUSHN_REGPTR | `<bytes: u8>`, `<reg: n>` | Push n-byte value at memory address stored in register onto the stack | `psh 12, [r1]` |
+| ret | OP_RET | N/A | Return from a subroutine | `ret` |
 | sar | OP_ARSHIFT_LIT | `<reg: u8>`, `<lit: u8>` | Arithmetically shift value in register right `lit` bits | `sar r2, 3` |
 | sar | OP_ARSHIFT_REG | `<reg: u8>`, `<reg: u8>` | Arithmetically shift value in register right n-bits, where `n` is value in the second register | `sar r2, r3` |
 | sll | OP_LLSHIFT_LIT | `<reg: u8>`, `<lit: u8>` | Logically shift value in register left `lit` bits | `sll r2, 3` |

@@ -234,6 +234,13 @@ int decode_instruction(void *buf, unsigned int buf_size,
             WRITE_INST2(OP_AND64_REG_LIT, T_u8, T_u64);
         } else
             return ASM_ERR_ARGS;
+    } else if (strcmp(mnemonic, "cal") == 0) {
+        if (argc == 1 && args[0].type == ASM_ARG_LIT) {
+            WRITE_INST1(OP_CALL_LIT, UWORD_T);
+        } else if (argc == 1 && args[0].type == ASM_ARG_REG) {
+            WRITE_INST1(OP_CALL_REG, T_u8);
+        } else
+            return ASM_ERR_ARGS;
     } else if (strcmp(mnemonic, "ci8i16") == 0) {
         if (argc == 1 && args[0].type == ASM_ARG_REG) {
             WRITE_INST1(OP_CVT_i8_i16, T_u8);
@@ -648,6 +655,13 @@ int decode_instruction(void *buf, unsigned int buf_size,
             WRITE_INST1(OP_PUSH64_REG, T_u8);
         } else if (argc == 1 && args[0].type == ASM_ARG_REGPTR) {
             WRITE_INST1(OP_PUSH64_REGPTR, T_u8);
+        } else
+            return ASM_ERR_ARGS;
+    } else if (strcmp(mnemonic, "ret") == 0) {
+        if (argc == 0) {
+            BUF_WRITE(*buf_offset, OPCODE_T, OP_RET);
+        } else if (argc == 1 && args[0].type == ASM_ARG_REG) {
+            WRITE_INST1(OP_CALL_REG, T_u8);
         } else
             return ASM_ERR_ARGS;
     } else if (strcmp(mnemonic, "sar") == 0) {
