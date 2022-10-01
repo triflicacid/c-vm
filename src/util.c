@@ -22,6 +22,6 @@ T_i64 str_to_int(const char *string, int length) {
             radix = 10;
             break;
     }
-    if (IS_CHAR(string[length - 1])) --length;
-    return strtoll(string, (char **)(string + length), radix);
+    // if (IS_CHAR(string[length - 1])) --length;
+    return strtoll(string, (char **)0, radix);
 }

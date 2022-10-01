@@ -115,6 +115,7 @@ Below is the full list of instructions supported by the assembler.
 | prc | OP_PRINT_CHARS_REG | `<reg: u8>` | Print bytes as ASCII characters to STDOUT from a register until a NULL byte is encountered | `prc r1` |
 | prh | OP_PRINT_HEX_MEM | `<bytes: u8>`, `<addr: uword>` | Print n-bytes as hexadecimal to STDOUT from an address | `prh 12, [100]` |
 | prh | OP_PRINT_HEX_REG | `<reg: u8>` | Print bytes as hexadecimal to STDOUT from a register until a NULL byte is encountered | `prh r1` |
+| prr | OP_PREG | | [**TEMP**] Print each register's value | `prr` |
 | prs | OP_PSTACK | | [**TEMP**] Print bytes of the stack | `prs` |
 | psh | OP_PUSH_LIT | `<lit: word>` | Push a literal onto the stack | `psh 101` |
 | psh8 | OP_PUSH8_LIT | `<lit: u8>` | Push an 8-bit literal onto the stack | `psh8 101` |

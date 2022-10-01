@@ -622,6 +622,11 @@ int decode_instruction(void *buf, unsigned int buf_size,
             BUF_WRITE(*buf_offset, OPCODE_T, OP_PSTACK);
         } else
             return ASM_ERR_ARGS;
+    } else if (strcmp(mnemonic, "prr") == 0) {
+        if (argc == 0) {
+            BUF_WRITE(*buf_offset, OPCODE_T, OP_PREG);
+        } else
+            return ASM_ERR_ARGS;
     } else if (strcmp(mnemonic, "psh") == 0) {
         if (argc == 1 && args[0].type == ASM_ARG_LIT) {
             WRITE_INST1(OP_PUSH_LIT, WORD_T);
