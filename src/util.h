@@ -23,13 +23,19 @@
 
 #define IS_DIGIT(n) (n >= '0' && n <= '9')
 
-// Macro - easy memory write. Requires variable `void *buf`. `offset` is
+// Macro - easy buffer write. Requires variable `void *buf`. `offset` is
 // incremented by `sizeof(type)`
 #define BUF_WRITE(offset, type, value)             \
     {                                              \
         (*(type *)((char *)buf + offset) = value); \
         (offset += sizeof(type));                  \
     }
+
+// Macro - easy buffer write. Requires variable `void *buf`. `offset` is
+// incremented by `sizeof(type * bytes)`. `ptr` points to start of block to move
+// (`void*`)
+#define BUF_WRITE_BYTES(offset, ptr, bytes) \
+    for (T_u8 i = 0; i < bytes; ++i) BUF_WRITE(offset, T_u8, *((T_u8 *)ptr + i))
 
 /** String to `long long` */
 T_i64 str_to_int(const char *string, int length);

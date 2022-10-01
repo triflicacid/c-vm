@@ -10,6 +10,7 @@ For more informations, see `docs/`, `tests/`.
   - Source is `assemble.c`. See `docs/Assembler.md` for more.
 
 ### TODO
+- CPU: implement instructions OP_PUSH_REGPTR, OP_POP_REGPTR
 - Assembler: floating-point literals
 - Print to STDOUT (using memory mapping to map characters?)
 - Opcode documentation? (explained in `opcodes.h` - maybe write a more general overview?)

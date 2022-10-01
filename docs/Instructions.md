@@ -95,6 +95,42 @@ Below is the full list of instructions supported by the assembler.
 | or64 | OP_OR64_REG_LIT | `<reg: u8>`, `<lit: u64>` | Compute bitwise OR of register and 64-bit literal and place the result in register | `or64 r1, 101b` |
 | or | OP_OR_REG_REG | `<reg: u8>`, `<reg: u8>` | Compute bitwise OR of two registers and place sthe result in the first register | `or r1, r2` |
 | or | OP_OR_MEM_MEM | `<bytes: u8>`, `<addr: uword>`, `<addr: uword>` | Compute bitwise OR of two `byte`-length buffers at the addresses and store result in the first address | `or 12, [200], [212]` |
+
+| pop | OP_POP_REG | `<reg: u8>` | Pop value from the stack and load into register | `pop r1` |
+| pop8 | OP_POP8_REG | `<reg: u8>` | Pop 8-bit value from the stack and load into register | `pop8 r1` |
+| pop16 | OP_POP16_REG | `<reg: u8>` | Pop 16-bit value from the stack and load into register | `pop16 r1` |
+| pop32 | OP_POP32_REG | `<reg: u8>` | Pop 32-bit value from the stack and load into register | `pop32 r1` |
+| pop64 | OP_POP64_REG | `<reg: u8>` | Pop 64-bit value from the stack and load into register | `pop64 r1` |
+| pop | OP_POP_REGPTR | `<regptr: u8>` | Pop value from the stack and load into address in register | `pop [r1]` |
+| pop8 | OP_POP8_REGPTR | `<regptr: u8>` | Pop 8-bit value from the stack and load into address in register | `pop8 [r1]` |
+| pop16 | OP_POP16_REGPTR | `<regptr: u8>` | Pop 16-bit value from the stack and load into address in register | `pop16 [r1]` |
+| pop32 | OP_POP32_REGPTR | `<regptr: u8>` | Pop 32-bit value from the stack and load into address in register | `pop32 [r1]` |
+| pop64 | OP_POP64_REGPTR | `<regptr: u8>` | Pop 64-bit value from the stack and load into address in register | `pop64 [r1]` |
+| pop | OP_POPN_REGPTR | `<bytes: u8>`, `<regptr: u8>` | Pop n-byte value from the stack and load into address in register | `pop 12, [r1]` |
+| pop | OP_POPN_MEM | `<bytes: u8>`, `<addr: uword>` | Pop n-byte value from the stack and load into address | `pop 12, [100]` |
+
+| psh | OP_PUSH_LIT | `<lit: word>` | Push a literal onto the stack | `psh 101` |
+| psh8 | OP_PUSH8_LIT | `<lit: u8>` | Push an 8-bit literal onto the stack | `psh8 101` |
+| psh16 | OP_PUSH16_LIT | `<lit: u16>` | Push a 16-bit literal onto the stack | `psh16 101` |
+| psh32 | OP_PUSH32_LIT | `<lit: u32>` | Push a 32-bit literal onto the stack | `psh32 101` |
+| psh64 | OP_PUSH64_LIT | `<lit: u64>` | Push a 64-bit literal onto the stack | `psh64 101` |
+| psh | OP_PUSH_MEM | `<addr: uword>` | Push value at memory address onto the stack | `psh [100]` |
+| psh8 | OP_PUSH8_MEM | `<addr: uword>` | Push 8-bit value at memory address onto the stack | `psh8 [100]` |
+| psh16 | OP_PUSH16_MEM | `<addr: uword>` | Push 16-bit value at memory address onto the stack | `psh16 [100]` |
+| psh32 | OP_PUSH32_MEM | `<addr: uword>` | Push 32-bit value at memory address onto the stack | `psh32 [100]` |
+| psh64 | OP_PUSH64_MEM | `<addr: uword>` | Push 64-bit value at memory address onto the stack | `psh64 [100]` |
+| psh | OP_PUSHN_MEM | `<bytes: u8>`, `<addr: uword>` | Push `n`-byte value at memory address onto the stack | `psh 12, [100]` |
+| psh | OP_PUSH_REG | `<reg: u8>` | Push value in register onto the stack | `psh r1` |
+| psh8 | OP_PUSH8_REG | `<reg: u8>` | Push 8-bit value in register onto the stack | `psh8 r1` |
+| psh16 | OP_PUSH16_REG | `<reg: u8>` | Push 16-bit value in register onto the stack | `psh16 r1` |
+| psh32 | OP_PUSH32_REG | `<reg: u8>` | Push 32-bit value in register onto the stack | `psh32 r1` |
+| psh64 | OP_PUSH64_REG | `<reg: u8>` | Push 64-bit value in register onto the stack | `psh64 r1` |
+| psh | OP_PUSH_REGPTR | `<reg: u8>` | Push value at memory address stored in register onto the stack | `psh [r1]` |
+| psh8 | OP_PUSH8_REGPTR | `<reg: u8>` | Push 8-bit value at memory address stored in register onto the stack | `psh8 [r1]` |
+| psh16 | OP_PUSH16_REGPTR | `<reg: u8>` | Push 16-bit value at memory address stored in register onto the stack | `psh16 [r1]` |
+| psh32 | OP_PUSH32_REGPTR | `<reg: u8>` | Push 32-bit value at memory address stored in register onto the stack | `psh32 [r1]` |
+| psh64 | OP_PUSH64_REGPTR | `<reg: u8>` | Push 64-bit value at memory address stored in register onto the stack | `psh64 [r1]` |
+| psh | OP_PUSHN_REGPTR | `<bytes: u8>`, `<reg: n>` | Push n-byte value at memory address stored in register onto the stack | `psh 12, [r1]` |
 | sar | OP_ARSHIFT_LIT | `<reg: u8>`, `<lit: u8>` | Arithmetically shift value in register right `lit` bits | `sar r2, 3` |
 | sar | OP_ARSHIFT_REG | `<reg: u8>`, `<reg: u8>` | Arithmetically shift value in register right n-bits, where `n` is value in the second register | `sar r2, r3` |
 | sll | OP_LLSHIFT_LIT | `<reg: u8>`, `<lit: u8>` | Logically shift value in register left `lit` bits | `sll r2, 3` |
