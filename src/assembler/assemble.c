@@ -2,6 +2,7 @@
 
 #include <stdlib.h>
 
+#include "../cpu/bit-ops.c"
 #include "../cpu/cpu.h"
 #include "../cpu/opcodes.h"
 #include "err.h"
@@ -26,7 +27,7 @@ struct Assemble assemble(FILE *fp, void *buf, unsigned int buf_size,
             ;
 
         // Eat leading whitespace
-        for (; *pos < slen && IS_SEPERATOR(string[*pos]); ++(*pos))
+        for (; *pos < slen && IS_WHITESPACE(string[*pos]); ++(*pos))
             ;
 
         // Empty line?
@@ -38,14 +39,14 @@ struct Assemble assemble(FILE *fp, void *buf, unsigned int buf_size,
 
         // Get mnemonic
         int moff = 0;
-        for (; *pos < slen && !IS_SEPERATOR(string[*pos]); ++(*pos), ++moff)
+        for (; *pos < slen && !IS_WHITESPACE(string[*pos]); ++(*pos), ++moff)
             mnemonic[moff] = string[*pos];
         mnemonic[moff] = '\0';
 
-        // printf("Line %i, length %i, mnemonic '%s'\n", *line, slen, mnemonic);
+        printf("Line %i, length %i, mnemonic '%s'\n", *line, slen, mnemonic);
 
         // Get arguments
-        for (int i = 0; *pos < slen; ++i, ++nargs) {
+        for (int i = 0; *pos < slen;) {
             // If exceeded maximum argument count...
             if (nargs >= ASM_MAX_ARGS) {
                 out.errc = ASM_ERR_GENERIC;
@@ -58,20 +59,50 @@ struct Assemble assemble(FILE *fp, void *buf, unsigned int buf_size,
             }
 
             // Eat whitespace
-            for (; *pos < slen && IS_SEPERATOR(string[*pos]); ++(*pos))
+            for (; *pos < slen && IS_WHITESPACE(string[*pos]); ++(*pos))
                 ;
 
             // Extract content up to whitespace or ","
             int spos = 0;
             for (; *pos < slen && !IS_SEPERATOR(string[*pos]); ++spos, ++(*pos))
                 astr[spos] = string[*pos];
+            if (string[*pos] == ',') (*pos)++;
             astr[spos] = '\0';
-            // printf(" - Arg: '%s'\n", astr);
+            printf(" - Arg: '%s'\n", astr);
 
-            if (spos == 0)  // No arguments
-                break;
-            else if (astr[0] == '-' || astr[0] == '+' || IS_DIGIT(astr[0]) ||
-                     IS_CHAR(astr[0])) {  // Literal/Register
+            if (spos == 0) {  // No argument
+                continue;
+            } else if (astr[0] == '\'') {  // CHARACTER LITERAL
+                int j = 0, k = 0;
+                char data[sizeof(UWORD_T)];
+                while (j < sizeof(data) && k < spos && astr[k] == '\'') {
+                    if (astr[k + 1] == '\\') {  // Escape sequence
+                        char *ptr = astr + k + 2;
+                        long long val = decode_escape_seq(&ptr);
+                        data[j] = (char)val;
+                        k = ptr - astr + 1;
+                    } else {
+                        if (astr[k + 2] == '\'') {
+                            data[j] = astr[k + 1];
+                            k += 3;
+                        } else {
+                            if (print_errors)
+                                printf(
+                                    "ERROR! Line %i, column %i:\nExpected ' "
+                                    "after character expression "
+                                    "%s <-- '\n",
+                                    *line, *pos, astr);
+                            out.errc = ASM_ERR_ADDR;
+                            return out;
+                        }
+                    }
+                    j++;
+                    while (IS_WHITESPACE(astr[k])) ++k;
+                }
+                args[i].type = ASM_ARG_LIT;
+                args[i].data = bytes_to_int(data, j + 1);
+            } else if (astr[0] == '-' || astr[0] == '+' || IS_DIGIT(astr[0]) ||
+                       IS_CHAR(astr[0])) {  // Literal/Register
                 T_i8 reg_off = cpu_reg_offset_from_string(astr);
                 if (reg_off == -1) {  // Parse as literal
                     T_i64 lit = str_to_int(astr, spos);
@@ -121,8 +152,9 @@ struct Assemble assemble(FILE *fp, void *buf, unsigned int buf_size,
                 return out;
             }
 
-            // printf(" -   Type: %u, data: %lli\n", args[i].type,
-            // args[i].data);
+            printf(" -   Type: %u, data: %lli\n", args[i].type, args[i].data);
+            ++i;
+            ++nargs;
         }
 
         int errc =

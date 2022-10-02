@@ -23,6 +23,7 @@ Instructions come in the form `mnemonic [...args]` where the arguments consist o
   - `[nnn]`, where `nnn` is a number, represents an **address**
   - `abc`, where `abc` is a string of characters, represents a **register**. The string is translated to its corresponsing register offset or, if it is not recognised, will result in an error.
   - `[abc]`, where `abc` is a string of characters, represents a **register pointer**. The string is translated to its corresponsing register offset or, if it is not recognised, will result in an error.
+  - `'c'`, where `c` is a character (or escape sequence), represents a **literal**. If multiple character literals follow eachother, they will be concatenated to an integer.
 
 See `Instructions.md` for a list of all implemeted instructions.
 

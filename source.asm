@@ -1,3 +1,3 @@
-mov 65, r1
+mov '\x41' '!', r1
 prc r1
 hlt

@@ -15,9 +15,11 @@
 #define ASM_ARG_REG 2
 #define ASM_ARG_REGPTR 3
 
+// Is whitespace?
+#define IS_WHITESPACE(c) (c == ' ' || c == '\t' || c == '\n' || c == '\r')
+
 // Is instruction/argument seperator?
-#define IS_SEPERATOR(c) \
-    (c == ' ' || c == '\t' || c == '\n' || c == '\r' || c == ',')
+#define IS_SEPERATOR(c) (c == ',')
 
 // Return if memory overflow
 #define RET_MEMOV(bytes) \
@@ -27,23 +29,23 @@
 #define WRITE_INST1(opcode, type)               \
     RET_MEMOV(sizeof(OPCODE_T) + sizeof(type)); \
     BUF_WRITE(*buf_offset, OPCODE_T, opcode);   \
-    BUF_WRITE(*buf_offset, type, args[0].data);
+    BUF_WRITE(*buf_offset, type, (type)args[0].data);
 
 // Write instruction to machine code with 2 arguments
 #define WRITE_INST2(opcode, type1, type2)                        \
     RET_MEMOV(sizeof(OPCODE_T) + sizeof(type1) + sizeof(type2)); \
     BUF_WRITE(*buf_offset, OPCODE_T, opcode);                    \
-    BUF_WRITE(*buf_offset, type1, args[0].data);                 \
-    BUF_WRITE(*buf_offset, type2, args[1].data);
+    BUF_WRITE(*buf_offset, type1, (type1)args[0].data);          \
+    BUF_WRITE(*buf_offset, type2, (type2)args[1].data);
 
 // Write instruction to machine code with 3 arguments
 #define WRITE_INST3(opcode, type1, type2, type3)                 \
     RET_MEMOV(sizeof(OPCODE_T) + sizeof(type1) + sizeof(type2) + \
               sizeof(type3));                                    \
     BUF_WRITE(*buf_offset, OPCODE_T, opcode);                    \
-    BUF_WRITE(*buf_offset, type1, args[0].data);                 \
-    BUF_WRITE(*buf_offset, type2, args[1].data);                 \
-    BUF_WRITE(*buf_offset, type2, args[2].data);
+    BUF_WRITE(*buf_offset, type1, (type1)args[0].data);          \
+    BUF_WRITE(*buf_offset, type2, (type2)args[1].data);          \
+    BUF_WRITE(*buf_offset, type3, (type3)args[2].data);
 
 struct Assemble {
     unsigned int buf_offset;  // Final buffer offset reached

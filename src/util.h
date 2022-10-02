@@ -19,9 +19,18 @@
       }){.u16 = 1}    \
           .c)
 
+// Is [A-Za-z]
 #define IS_CHAR(c) ((c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z'))
 
+// Is [0-9]
 #define IS_DIGIT(n) (n >= '0' && n <= '9')
+
+// Is an octal character?
+#define IS_OCTAL(n) (n >= '0' && n <= '8')
+
+// Is a hexadecimal character?
+#define IS_HEX(n) \
+    ((n >= '0' && n <= '9') || (n >= 'A' && n <= 'F') || (n >= 'a' && n <= 'f'))
 
 // Macro - easy buffer write. Requires variable `void *buf`. `offset` is
 // incremented by `sizeof(type)`
@@ -39,5 +48,12 @@
 
 /** String to `long long` */
 T_i64 str_to_int(const char *string, int length);
+
+/** Decode escape sequence '\...'. Pass in pointer. Return character extracted
+ * (or -1), and adjust pointer. */
+long long decode_escape_seq(char **ptr);
+
+/** Byte array to integer (little-endian) */
+T_u64 bytes_to_int(char *ptr, int len);
 
 #endif
