@@ -43,7 +43,7 @@ struct Assemble assemble(FILE *fp, void *buf, unsigned int buf_size,
             mnemonic[moff] = string[*pos];
         mnemonic[moff] = '\0';
 
-        printf("Line %i, length %i, mnemonic '%s'\n", *line, slen, mnemonic);
+        // printf("Line %i, length %i, mnemonic '%s'\n", *line, slen, mnemonic);
 
         // Get arguments
         for (int i = 0; *pos < slen;) {
@@ -68,7 +68,7 @@ struct Assemble assemble(FILE *fp, void *buf, unsigned int buf_size,
                 astr[spos] = string[*pos];
             if (string[*pos] == ',') (*pos)++;
             astr[spos] = '\0';
-            printf(" - Arg: '%s'\n", astr);
+            // printf(" - Arg: '%s'\n", astr);
 
             if (spos == 0) {  // No argument
                 continue;
@@ -92,12 +92,28 @@ struct Assemble assemble(FILE *fp, void *buf, unsigned int buf_size,
                                     "after character expression "
                                     "%s <-- '\n",
                                     *line, *pos, astr);
-                            out.errc = ASM_ERR_ADDR;
+                            out.errc = ASM_ERR_GENERIC;
                             return out;
                         }
                     }
                     j++;
                     while (IS_WHITESPACE(astr[k])) ++k;
+                }
+                args[i].type = ASM_ARG_LIT;
+                args[i].data = bytes_to_int(data, j + 1);
+            } else if (astr[0] == '\"') {  // STRING LITERAL
+                int j = 0, k = 1;
+                char data[sizeof(UWORD_T)];
+                while (j < sizeof(data) && k < spos && astr[k] != '\"') {
+                    if (astr[k] == '\\') {  // Escape sequence
+                        char *ptr = astr + k + 1;
+                        long long val = decode_escape_seq(&ptr);
+                        data[j] = (char)val;
+                        k = ptr - astr + 1;
+                    } else {
+                        data[j] = astr[k++];
+                    }
+                    j++;
                 }
                 args[i].type = ASM_ARG_LIT;
                 args[i].data = bytes_to_int(data, j + 1);
@@ -152,7 +168,8 @@ struct Assemble assemble(FILE *fp, void *buf, unsigned int buf_size,
                 return out;
             }
 
-            printf(" -   Type: %u, data: %lli\n", args[i].type, args[i].data);
+            // printf(" -   Type: %u, data: %lli\n", args[i].type,
+            // args[i].data);
             ++i;
             ++nargs;
         }

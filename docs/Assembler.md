@@ -18,12 +18,13 @@ To execute, run `./assemble.exe [src] [options]` where
 
 Assembly source files are read line-by-line, and have the following syntax: `[mnemonic [...args]] [; Comment]`. Trailing whitespace is removed, and blank/empty lines are ignored.
 
-Instructions come in the form `mnemonic [...args]` where the arguments consist of a space- or comma-seperated list of:
+Instructions come in the form `mnemonic [...args]` where the arguments consist of a comma-seperated list of:
   - `nnn`, where `nnn` is a number, represents a **literal**
   - `[nnn]`, where `nnn` is a number, represents an **address**
   - `abc`, where `abc` is a string of characters, represents a **register**. The string is translated to its corresponsing register offset or, if it is not recognised, will result in an error.
   - `[abc]`, where `abc` is a string of characters, represents a **register pointer**. The string is translated to its corresponsing register offset or, if it is not recognised, will result in an error.
-  - `'c'`, where `c` is a character (or escape sequence), represents a **literal**. If multiple character literals follow eachother, they will be concatenated to an integer.
+  - `'c'`, where `c` is a character (or escape sequence), represents a **literal**. If multiple character literals follow eachother, they will be concatenated to an integer. Maximum is 8 characters.
+  - `"..."`, where `...` is a string, represents a **literal**. Maximum length is 8 characters.
 
 See `Instructions.md` for a list of all implemeted instructions.
 
