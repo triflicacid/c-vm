@@ -19,6 +19,13 @@
       }){.u16 = 1}    \
           .c)
 
+// Is whitespace?
+#define IS_WHITESPACE(c) (c == ' ' || c == '\t' || c == '\n' || c == '\r')
+
+// Consume whitespace
+#define CONSUME_WHITESPACE(string, idx) \
+    while (IS_WHITESPACE(string[idx])) ++(idx);
+
 // Is [A-Za-z]
 #define IS_CHAR(c) ((c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z'))
 
@@ -40,11 +47,19 @@
         (offset += sizeof(type));                  \
     }
 
+// Macro - easy buffer write. Requires variable `void *buf`.
+#define BUF_WRITEK(offset, type, value) \
+    (*(type *)((char *)buf + offset) = value)
+
 // Macro - easy buffer write. Requires variable `void *buf`. `offset` is
 // incremented by `sizeof(type * bytes)`. `ptr` points to start of block to move
 // (`void*`)
 #define BUF_WRITE_BYTES(offset, ptr, bytes) \
     for (T_u8 i = 0; i < bytes; ++i) BUF_WRITE(offset, T_u8, *((T_u8 *)ptr + i))
+
+// Set variable = value if value > variable
+#define SET_IF_LARGER(variable, value) \
+    if (variable < value) variable = value;
 
 /** String to `long long` */
 T_i64 str_to_int(const char *string, int length);
@@ -55,5 +70,8 @@ long long decode_escape_seq(char **ptr);
 
 /** Byte array to integer (little-endian) */
 T_u64 bytes_to_int(char *ptr, int len);
+
+/** Get substring. REMEMBER to free() the returned pointer. */
+char *extract_string(const char *string, unsigned int start, unsigned int len);
 
 #endif

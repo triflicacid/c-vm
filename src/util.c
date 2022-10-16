@@ -95,8 +95,15 @@ long long decode_escape_seq(char **ptr) {
 }
 
 T_u64 bytes_to_int(char *ptr, int len) {
-    int j = len - 1;
-    T_u64 lit = ptr[--j];
-    for (--j; j >= 0; --j) lit = (lit << 8) | ptr[j];
+    T_u64 lit = ptr[0];
+    for (int j = 1; j < len; ++j) lit = (lit << 8) | ptr[j];
     return lit;
+}
+
+/** Get substring */
+char *extract_string(const char *string, unsigned int start, unsigned int len) {
+    char *buf = (char *)malloc(len + 1);
+    for (unsigned int i = 0; i < len; i++) buf[i] = string[start + i];
+    buf[len] = '\0';
+    return buf;
 }

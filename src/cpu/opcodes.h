@@ -1,10 +1,10 @@
 #ifndef __OPCODES_H__
 #define __OPCODES_H__
 
-#include "cpu.h"
-
 #define OPCODE_T T_u16
 #define OPCODE_T_FLAG "%u"
+
+#include "cpu.h"
 
 // No-operation, skip
 #define OP_NOP 0x0000
@@ -526,19 +526,19 @@
 #define OP_POP_REGPTR 0x0126
 // Pop 8-bit value from the stack and place in address in register
 // Syntax: `pop8 <regptr: u8>`
-#define OP_POP8_REGPTR 0x0126
+#define OP_POP8_REGPTR 0x0127
 // Pop 16-bit value from the stack and place in address in register
 // Syntax: `pop16 <regptr: u8>`
-#define OP_POP16_REGPTR 0x0127
+#define OP_POP16_REGPTR 0x0128
 // Pop 32-bit value from the stack and place in address in register
 // Syntax: `pop32 <regptr: u8>`
-#define OP_POP32_REGPTR 0x0128
+#define OP_POP32_REGPTR 0x0129
 // Pop 64-bit value from the stack and place in address in register
 // Syntax: `pop64 <regptr: u8>`
-#define OP_POP64_REGPTR 0x0128
+#define OP_POP64_REGPTR 0x012A
 // Pop (n*8)-bit value from the stack and place in address in register
 // Syntax: `pop <bytes: u8> <regptr: u8>`
-#define OP_POPN_REGPTR 0x0128
+#define OP_POPN_REGPTR 0x012B
 
 // Call literal
 // Syntax: `cal <lit: uword>`

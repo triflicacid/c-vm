@@ -2,26 +2,21 @@
 
 #include <stdio.h>
 
+#include "src/assembler/args.c"
+#include "src/assembler/instruction.c"
+#include "src/assembler/labels.c"
+#include "src/cpu/bit-ops.c"
 #include "src/cpu/cpu.c"
 #include "src/cpu/opcodes.h"
 #include "src/util.c"
 
 int main(int argc, char **argv) {
     char *file_in, *file_out;
-    int is_file_in = 0, is_file_out = 0, do_detail = 0;
+    int is_file_in = 0, is_file_out = 0, do_detail = 0, debug = 0;
     unsigned long long buf_size = 1000000;
     for (int i = 1; i < argc; ++i) {
         if (argv[i][0] == '-') {
             switch (argv[i][1]) {
-                case 'o':  // Out file
-                    i++;
-                    if (i >= argc) {
-                        printf("-o: expected file path\n");
-                        return -1;
-                    }
-                    is_file_out = 1;
-                    file_out = argv[i];
-                    break;
                 case 'b':  // Set buffer size
                     i++;
                     if (i >= argc) {
@@ -30,6 +25,18 @@ int main(int argc, char **argv) {
                     }
                     buf_size = strtoull(
                         argv[i], (char **)(argv[i] + strlen(argv[0])), 10);
+                    break;
+                case 'd':  // Debug
+                    debug = 1;
+                    break;
+                case 'o':  // Out file
+                    i++;
+                    if (i >= argc) {
+                        printf("-o: expected file path\n");
+                        return -1;
+                    }
+                    is_file_out = 1;
+                    file_out = argv[i];
                     break;
                 case 'p':  // Print detail
                     do_detail = !do_detail;
@@ -53,7 +60,7 @@ int main(int argc, char **argv) {
         printf("Reading source file '%s'\n\n",
                is_file_in ? file_in : "source.asm");
     FILE *fp = fopen(is_file_in ? file_in : "source.asm", "r");
-    struct Assemble o = assemble(fp, buffer, buf_size, do_detail);
+    struct Assemble o = assemble(fp, buffer, buf_size, do_detail, debug);
     fclose(fp);
 
     if (do_detail) {

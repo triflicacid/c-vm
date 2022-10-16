@@ -6,22 +6,28 @@
 // General error
 #define ASM_ERR_GENERIC 1
 
+// Argument count exceeded
+#define ASM_ERR_TOO_MANY_ARGS 2
+
 // Unknown argument
-#define ASM_ERR_ARG 2
+#define ASM_ERR_ARG 3
 
 // Assembler: invalid register
-#define ASM_ERR_REG 3
+#define ASM_ERR_REG 4
 
 // Assembler: invalid address
-#define ASM_ERR_ADDR 4
+#define ASM_ERR_ADDR 5
 
 // Asembler: out of memory
-#define ASM_ERR_MEMORY 5
+#define ASM_ERR_MEMORY 6
 
 // Assembler: unknown mnemonic
-#define ASM_ERR_MNEMONIC 6
+#define ASM_ERR_MNEMONIC 7
 
 // Assembler: invalid argument combination
-#define ASM_ERR_ARGS 7
+#define ASM_ERR_ARGS 8
+
+// Assembler: cannot decode opcode
+#define ASM_ERR_UNK_OPCODE 10
 
 #endif

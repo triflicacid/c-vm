@@ -2,9 +2,10 @@
 #define __ASSEMBLE_H__
 
 #include <stdio.h>
-#include <string.h>
 
 #include "../util.h"
+#include "args.h"
+#include "instruction.h"
 
 #define ASM_MAX_LINE_LENGTH 1000
 #define ASM_MAX_MNEMONIC_LENGTH 8
@@ -15,37 +16,49 @@
 #define ASM_ARG_REG 2
 #define ASM_ARG_REGPTR 3
 
-// Is whitespace?
-#define IS_WHITESPACE(c) (c == ' ' || c == '\t' || c == '\n' || c == '\r')
-
 // Is instruction/argument seperator?
 #define IS_SEPERATOR(c) (c == ',')
 
-// Return if memory overflow
-#define RET_MEMOV(bytes) \
-    if (*buf_offset + bytes >= buf_size) return ASM_ERR_MEMORY;
-
 // Write instruction to machine code with 1 argument
-#define WRITE_INST1(opcode, type)               \
-    RET_MEMOV(sizeof(OPCODE_T) + sizeof(type)); \
-    BUF_WRITE(*buf_offset, OPCODE_T, opcode);   \
-    BUF_WRITE(*buf_offset, type, (type)args[0].data);
+#define WRITE_INST1(opcode, type)                         \
+    BUF_WRITEK(instruct->offset, OPCODE_T, opcode);       \
+    BUF_WRITEK(instruct->offset + sizeof(OPCODE_T), type, \
+               (type)instruct->args->data.data);
+
+// Decode instruction in struct AsmInstruction *
+#define DECODE_INST1(_opcode, type) \
+    instruct->opcode = _opcode;     \
+    instruct->bytes = sizeof(OPCODE_T) + sizeof(type);
 
 // Write instruction to machine code with 2 arguments
-#define WRITE_INST2(opcode, type1, type2)                        \
-    RET_MEMOV(sizeof(OPCODE_T) + sizeof(type1) + sizeof(type2)); \
-    BUF_WRITE(*buf_offset, OPCODE_T, opcode);                    \
-    BUF_WRITE(*buf_offset, type1, (type1)args[0].data);          \
-    BUF_WRITE(*buf_offset, type2, (type2)args[1].data);
+#define WRITE_INST2(opcode, type1, type2)                                  \
+    BUF_WRITEK(instruct->offset, OPCODE_T, opcode);                        \
+    BUF_WRITEK(instruct->offset + sizeof(OPCODE_T), type1,                 \
+               (type1)instruct->args->data.data);                          \
+    BUF_WRITEK(instruct->offset + sizeof(OPCODE_T) + sizeof(type1), type2, \
+               (type2)instruct->args->next->data.data);
+
+// Decode instruction in struct AsmInstruction *
+#define DECODE_INST2(_opcode, type1, type2) \
+    instruct->opcode = _opcode;             \
+    instruct->bytes = sizeof(OPCODE_T) + sizeof(type1) + sizeof(type2);
 
 // Write instruction to machine code with 3 arguments
-#define WRITE_INST3(opcode, type1, type2, type3)                 \
-    RET_MEMOV(sizeof(OPCODE_T) + sizeof(type1) + sizeof(type2) + \
-              sizeof(type3));                                    \
-    BUF_WRITE(*buf_offset, OPCODE_T, opcode);                    \
-    BUF_WRITE(*buf_offset, type1, (type1)args[0].data);          \
-    BUF_WRITE(*buf_offset, type2, (type2)args[1].data);          \
-    BUF_WRITE(*buf_offset, type3, (type3)args[2].data);
+#define WRITE_INST3(opcode, type1, type2, type3)                             \
+    BUF_WRITEK(instruct->offset, OPCODE_T, opcode);                          \
+    BUF_WRITEK(instruct->offset + sizeof(OPCODE_T), type1,                   \
+               (type1)instruct->args->data.data);                            \
+    BUF_WRITEK(instruct->offset + sizeof(OPCODE_T) + sizeof(type1), type2,   \
+               (type2)instruct->args->next->data.data);                      \
+    BUF_WRITEK(                                                              \
+        instruct->offset + sizeof(OPCODE_T) + sizeof(type1) + sizeof(type2), \
+        type3, (type3)instruct->args->next->next->data.data);
+
+// Decode instruction in struct AsmInstruction *
+#define DECODE_INST3(_opcode, type1, type2, type3) \
+    instruct->opcode = _opcode;                    \
+    instruct->bytes =                              \
+        sizeof(OPCODE_T) + sizeof(type1) + sizeof(type2) + sizeof(type3);
 
 struct Assemble {
     unsigned int buf_offset;  // Final buffer offset reached
@@ -54,20 +67,21 @@ struct Assemble {
     int errc;                 // Error code (if any)
 };
 
-/** Structure representing an argument */
-struct AsmArgument {
-    T_u8 type;   // Argument type. Constant: `ASM_ARG_...`
-    T_i64 data;  // Argument data
-};
-
 /** Assemble file into a buffer */
 struct Assemble assemble(FILE *fp, void *buf, unsigned int buf_size,
-                         unsigned int print_errors);
+                         unsigned int print_errors, int debug);
 
-/** Convert a mnemonic and array of AsmArguments to machine code. Return erro
- * code. */
-int decode_instruction(void *buf, unsigned int buf_size,
-                       unsigned int *buf_offset, const char *mnemonic,
-                       struct AsmArgument *args, unsigned int argc);
+/** Given an instruction, populate instruct->bytes and instruct->opcode. Return
+ * error. */
+int decode_instruction(struct AsmInstruction *instruct);
+
+/** Write instruction data to buffer. Instruction must fit in buffer. */
+int write_instruction(void *buf, struct AsmInstruction *instruct);
+
+/** Print linked list of AsmInstruction */
+void asm_print_instruction_list(struct LL_NODET_NAME(AsmInstruction) * head);
+
+/** Free linked list of AsmInstruction */
+void asm_free_instruction_list(struct LL_NODET_NAME(AsmInstruction) * head);
 
 #endif
