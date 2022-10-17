@@ -10,7 +10,7 @@ struct AsmLabel {
     unsigned long long addr;  // Address
 };
 
-// Create label structure
+// Create label structure. Copy string.
 struct AsmLabel label_create(const char *string);
 
 LL_CREATE_NODET(AsmLabel, struct AsmLabel);
@@ -20,6 +20,8 @@ LL_DECL_FPRINT(AsmLabel, struct AsmLabel);
 
 // Insert label structure into node list. If pos is -1, insert at end.
 LL_DECL_FINSERT(AsmLabel, struct AsmLabel);
+
+LL_DECL_FINSERTNODE(AsmLabel);
 
 // Return pointer to LABEL with given label string, or NULL pointer.
 LL_DECL_FFIND(AsmLabel, struct AsmLabel, const char *);

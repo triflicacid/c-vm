@@ -27,6 +27,9 @@
 // Assembler: invalid argument combination
 #define ASM_ERR_ARGS 8
 
+// Assembler: unknown label encountered
+#define ASM_ERR_LABEL 9
+
 // Assembler: cannot decode opcode
 #define ASM_ERR_UNK_OPCODE 10
 

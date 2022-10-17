@@ -9,7 +9,7 @@ int main() {
     int addr = 0, addr2 = 256;
     cpu->regs[REG_CMP] = CMP_EQ;
 
-    MEM_WRITE(addr, OPCODE_T, OP_JMP_NEQ_LIT);
+    MEM_WRITE(addr, OPCODE_T, OP_JMP_NEQ_ADDR);
     MEM_WRITE(addr, UWORD_T, addr2);
     MEM_WRITE(addr, OPCODE_T, OP_MOV_LIT_REG);
     MEM_WRITE(addr, WORD_T, 1);

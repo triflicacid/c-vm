@@ -61,8 +61,27 @@
 #define SET_IF_LARGER(variable, value) \
     if (variable < value) variable = value;
 
-/** String to `long long` */
-T_i64 str_to_int(const char *string, int length);
+// Is char "c" a valid character for a number of base "base"
+#define IS_BASE_CHAR(c, base)                              \
+    ((c >= '0' && c <= '0' + (base > 9 ? 9 : base)) ||     \
+     (base > 10 ? ((c >= 'a' && c <= 'a' + (base - 10)) || \
+                   (c >= 'A' && c <= 'A' + (base - 10)))   \
+                : 0))
+
+// Given char "c", return numeric representation. Return 0 otherwise.
+#define GET_BASE_VAL(c, base) \
+    (c >= 'a' ? c - 'a' + 10  \
+              : (c >= 'A' ? c - 'A' + 10 : (c >= '0' ? c - '0' : 0)))
+
+/** Given a radix suffix, return integer radix. Return -1 ifinvalid radix. */
+int get_radix(char suffix);
+
+/** Given a string input containing a number of base "radix", return index where
+ * number ends. */
+unsigned int scan_number(const char *string, int radix);
+
+/** Base to double */
+double base_to_10(const char *string, int radix);
 
 /** Decode escape sequence '\...'. Pass in pointer. Return character extracted
  * (or -1), and adjust pointer. */

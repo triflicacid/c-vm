@@ -355,31 +355,31 @@ int cpu_mem_exec(struct CPU *cpu, OPCODE_T opcode, UWORD_T *ip) {
         case OP_CMP_MEM_MEM:
             CMP_MEM_MEM(*ip);
             return 1;
-        case OP_JMP_LIT:
+        case OP_JMP_ADDR:
             SET_LIT(*ip, *ip, UWORD_T);
             return 1;
         case OP_JMP_REG:
             SET_REG(*ip, *ip, UWORD_T);
             return 1;
-        case OP_JMP_EQ_LIT:
+        case OP_JMP_EQ_ADDR:
             JMP_LIT_IF(*ip, ==, CMP_EQ);
             return 1;
         case OP_JMP_EQ_REG:
             JMP_REG_IF(*ip, ==, CMP_EQ);
             return 1;
-        case OP_JMP_GT_LIT:
+        case OP_JMP_GT_ADDR:
             JMP_LIT_IF(*ip, ==, CMP_GT);
             return 1;
         case OP_JMP_GT_REG:
             JMP_REG_IF(*ip, ==, CMP_GT);
             return 1;
-        case OP_JMP_LT_LIT:
+        case OP_JMP_LT_ADDR:
             JMP_LIT_IF(*ip, ==, CMP_LT);
             return 1;
         case OP_JMP_LT_REG:
             JMP_REG_IF(*ip, ==, CMP_LT);
             return 1;
-        case OP_JMP_NEQ_LIT:
+        case OP_JMP_NEQ_ADDR:
             JMP_LIT_IF(*ip, !=, CMP_EQ);
             return 1;
         case OP_JMP_NEQ_REG:

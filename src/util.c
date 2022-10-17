@@ -2,28 +2,22 @@
 
 #include <stdlib.h>
 
-T_i64 str_to_int(const char *string, int length) {
-    int radix;
-    switch (string[length - 1]) {
+int get_radix(char suffix) {
+    switch (suffix) {
         case 'h':
-            radix = 16;
-            break;
+            return 16;
         case 'o':
         case 'q':
-            radix = 8;
-            break;
+            return 8;
         case 'b':
         case 'y':
-            radix = 2;
-            break;
+            return 2;
         case 'd':
         case 't':
+            return 10;
         default:
-            radix = 10;
-            break;
+            return -1;
     }
-    // if (IS_CHAR(string[length - 1])) --length;
-    return strtoll(string, (char **)0, radix);
 }
 
 long long decode_escape_seq(char **ptr) {
@@ -92,6 +86,43 @@ long long decode_escape_seq(char **ptr) {
         default:  // Unknown
             return -1;
     }
+}
+
+unsigned int scan_number(const char *string, int radix) {
+    int found_dp = 0;
+    unsigned int i = 0;
+    while (string[i] != '\0' && IS_BASE_CHAR(string[i], radix)) {
+        ++i;
+        if (string[i] == '.' && !found_dp) {
+            ++i;
+            found_dp = 1;
+        }
+    }
+    return i;
+}
+
+double base_to_10(const char *string, int radix) {
+    double value = 0;  // Base 10 value
+    double k = 1;      // Multiplying factor
+    unsigned int i = 0;
+    // Calculate integer exponent
+    while (string[i] != '\0' && IS_BASE_CHAR(string[i], radix)) {
+        if (i != 0) k *= radix;
+        ++i;
+    }
+    // Calculate number
+    i = 0;
+    int found_dp = 0;
+    while (string[i] != '\0' && IS_BASE_CHAR(string[i], radix)) {
+        value += GET_BASE_VAL(string[i], radix) * k;
+        k /= radix;
+        ++i;
+        if (string[i] == '.' && !found_dp) {
+            ++i;
+            found_dp = 1;
+        }
+    }
+    return value;
 }
 
 T_u64 bytes_to_int(char *ptr, int len) {

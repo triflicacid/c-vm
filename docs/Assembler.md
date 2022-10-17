@@ -16,7 +16,10 @@ To execute, run `./assemble.exe [src] [options]` where
 
 ## Syntax
 
-Assembly source files are read line-by-line, and have the following syntax: `[mnemonic [...args]] [; Comment]`. Trailing whitespace is removed, and blank/empty lines are ignored.
+Assembly source files are read line-by-line, and have the following syntax: `[label:] [mnemonic [...args]] [; Comment]`. Trailing whitespace is removed, and blank/empty lines are ignored.
+
+Labels come in the form `label:`
+  - `label` is a word containing letters and numbers. (See section on labels for more.)
 
 Instructions come in the form `mnemonic [...args]` where the arguments consist of a comma-seperated list of:
   - `nnn`, where `nnn` is a number, represents a **literal**
@@ -39,4 +42,16 @@ Numeric values consist of a sequence of digits optionally suffixed by a radix in
   - `h`: hexadecimal (16)
 
 The validity of the digits is dependent upon the radix chosen e.g. `Fh` is valid, but `F` is not.
+
+## Labels
+
+Labels are placeholder names for addresses, and can be substituted in an instruction where an address would be expected.
+
+When defined, it is initialised with a value of the current offset is appeared at. Labels may be re-defined, in which case its offset will be updated accordingly.
+
+When a label is encounteredin an instruction...
+  - If the label is defined, it is immediatly replaced by its address
+  - If the label is not defined, this is cached. Later, all un-replaced labels are replaced with the final label offset.
+
+See `test/assembler/labels.asm` for an example
 

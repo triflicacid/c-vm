@@ -19,6 +19,8 @@ LL_CREATE_FPRINT(AsmLabel, struct AsmLabel,
 
 LL_CREATE_FINSERT(AsmLabel, struct AsmLabel);
 
+LL_CREATE_FINSERTNODE(AsmLabel);
+
 LL_CREATE_FFIND(AsmLabel, struct AsmLabel, const char *,
                 strcmp(curr->data.ptr, item) == 0);
 

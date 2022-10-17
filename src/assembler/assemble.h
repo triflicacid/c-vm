@@ -11,11 +11,6 @@
 #define ASM_MAX_MNEMONIC_LENGTH 8
 #define ASM_MAX_ARGS 5
 
-#define ASM_ARG_LIT 0
-#define ASM_ARG_ADDR 1
-#define ASM_ARG_REG 2
-#define ASM_ARG_REGPTR 3
-
 // Is instruction/argument seperator?
 #define IS_SEPERATOR(c) (c == ',')
 
