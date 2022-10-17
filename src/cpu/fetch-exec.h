@@ -283,7 +283,7 @@
         T_u8 reg = MEM_READ(ip, T_u8);                              \
         ERR_CHECK_REG(reg) else {                                   \
             ip += sizeof(T_u8);                                     \
-            dt2 v = (dt2)((dt1)cpu->regs[reg]);                     \
+            dt2 v = (dt2)(*(dt1 *)(&cpu->regs[reg]));               \
             *(dt2 *)((char *)cpu->regs + reg * sizeof(WORD_T)) = v; \
         }                                                           \
     }
@@ -519,6 +519,16 @@
             }                                         \
             POP(T_u8, value);                         \
             *((T_u8 *)cpu->mem + addr + off) = value; \
+        }                                             \
+    }
+
+// Print register as `type` via printf() using the provided formatting flag
+#define PRINT_REG(ip, type, flag)                     \
+    {                                                 \
+        T_u8 reg = MEM_READ(ip, T_u8);                \
+        ERR_CHECK_REG(reg) else {                     \
+            ip += sizeof(T_u8);                       \
+            printf(flag, *(type *)(cpu->regs + reg)); \
         }                                             \
     }
 

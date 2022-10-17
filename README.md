@@ -12,9 +12,8 @@ For more informations, see `docs/`, `tests/`.
 ### TODO
 - CPU: implement instructions OP_PUSH_REGPTR, OP_POP_REGPTR
 - Assembler:
-  - floating-point literals
+  - Constants
 - Print to STDOUT (using memory mapping to map characters?)
-- Opcode documentation? (explained in `opcodes.h` - maybe write a more general overview?)
 - Basic de-compiler? Given .bin, produce .asm
 
 ### Bugs

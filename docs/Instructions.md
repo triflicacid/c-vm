@@ -113,10 +113,13 @@ Below is the full list of instructions supported by the assembler.
 
 | prc | OP_PRINT_CHARS_MEM | `<bytes: u8>`, `<addr: uword>` | Print n-bytes as ASCII characters to STDOUT from an address | `prc 12, [100]` |
 | prc | OP_PRINT_CHARS_REG | `<reg: u8>` | Print bytes as ASCII characters to STDOUT from a register until a NULL byte is encountered | `prc r1` |
+| prd | OP_PRINT_DBL_REG | `<reg: u8>` | Print contents of register as a double (f64) | `prd r1` |
 | prh | OP_PRINT_HEX_MEM | `<bytes: u8>`, `<addr: uword>` | Print n-bytes as hexadecimal to STDOUT from an address | `prh 12, [100]` |
 | prh | OP_PRINT_HEX_REG | `<reg: u8>` | Print bytes as hexadecimal to STDOUT from a register until a NULL byte is encountered | `prh r1` |
+| pri | OP_PRINT_INT_REG | `<reg: u8>` | Print contents of register as an integer (i64) | `pri r1` |
 | prr | OP_PREG | | [**TEMP**] Print each register's value | `prr` |
 | prs | OP_PSTACK | | [**TEMP**] Print bytes of the stack | `prs` |
+| pru | OP_PRINT_UINT_REG | `<reg: u8>` | Print contents of register as an unsigned integer (u64) | `pru r1` |
 | psh | OP_PUSH_LIT | `<lit: word>` | Push a literal onto the stack | `psh 101` |
 | psh8 | OP_PUSH8_LIT | `<lit: u8>` | Push an 8-bit literal onto the stack | `psh8 101` |
 | psh16 | OP_PUSH16_LIT | `<lit: u16>` | Push a 16-bit literal onto the stack | `psh16 101` |

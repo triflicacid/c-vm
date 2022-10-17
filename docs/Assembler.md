@@ -43,6 +43,8 @@ Numeric values consist of a sequence of digits optionally suffixed by a radix in
 
 The validity of the digits is dependent upon the radix chosen e.g. `Fh` is valid, but `F` is not.
 
+Digits may be seperated by underscores `_`.
+
 ## Labels
 
 Labels are placeholder names for addresses, and can be substituted in an instruction where an address would be expected.

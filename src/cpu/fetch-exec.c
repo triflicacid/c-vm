@@ -494,7 +494,7 @@ int cpu_mem_exec(struct CPU *cpu, OPCODE_T opcode, UWORD_T *ip) {
                     printf("%c", ch);
                 }
             } else {
-                for (T_u8 met = 0, off = sizeof(WORD_T) + 1; off > 0; --off) {
+                for (T_u8 met = 0, off = sizeof(WORD_T); off > 0; --off) {
                     T_u8 ch = addr[off - 1];
                     if (ch == '\0')
                         if (met)
@@ -509,6 +509,15 @@ int cpu_mem_exec(struct CPU *cpu, OPCODE_T opcode, UWORD_T *ip) {
         }
         case OP_PRINT_CHARS_LIT:
             OP_APPLYF_LIT(*ip, print_chars);
+            return 1;
+        case OP_PRINT_INT_REG:
+            PRINT_REG(*ip, T_i64, "%lli");
+            return 1;
+        case OP_PRINT_UINT_REG:
+            PRINT_REG(*ip, T_u64, "%llu");
+            return 1;
+        case OP_PRINT_DBL_REG:
+            PRINT_REG(*ip, T_f64, "%lf");
             return 1;
         case OP_GET_CHAR: {
             T_u8 reg = MEM_READ(*ip, T_u8);

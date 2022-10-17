@@ -36,6 +36,16 @@
 // Syntax: `prc <bytes: u8> <lit: ...>`
 #define OP_PRINT_CHARS_LIT 0xFFE4
 
+// Print register as an integer
+// Syntax: `pri <reg: u8>`
+#define OP_PRINT_INT_REG 0xFFE5
+// Print register as an unsigned integer
+// Syntax: `pru <reg: u8>`
+#define OP_PRINT_UINT_REG 0xFFE6
+// Print register as a double
+// Syntax: `prd <reg: u8>`
+#define OP_PRINT_DBL_REG 0xFFE7
+
 // Get character from STDIN and write to register
 // Syntax: `inp <reg: u8>`
 #define OP_GET_CHAR 0xFFD0

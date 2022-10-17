@@ -80,8 +80,11 @@ int get_radix(char suffix);
  * number ends. */
 unsigned int scan_number(const char *string, int radix);
 
-/** Base to double */
-double base_to_10(const char *string, int radix);
+/** Integer Base to double */
+unsigned long long base_to_10(const char *string, int radix);
+
+/** Float Base to double */
+double fbase_to_10(const char *string, int radix);
 
 /** Decode escape sequence '\...'. Pass in pointer. Return character extracted
  * (or -1), and adjust pointer. */

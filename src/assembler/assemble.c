@@ -4,6 +4,7 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include "../cpu/bit-ops.h"
 #include "../cpu/cpu.h"
 #include "../cpu/opcodes.h"
 #include "args.h"
@@ -180,7 +181,7 @@ struct Assemble assemble(FILE *fp, void *buf, unsigned int buf_size,
 
             if (string[*pos] == '\'') {  // CHARACTER LITERAL
                 int j = 0, k = 0;
-                char data[sizeof(UWORD_T)];
+                char data[sizeof(UWORD_T)] = {0};
                 while (j < sizeof(data) && *pos < slen &&
                        string[*pos] == '\'') {
                     if (string[*pos + 1] == '\\') {  // Escape sequence
@@ -213,6 +214,9 @@ struct Assemble assemble(FILE *fp, void *buf, unsigned int buf_size,
                 struct LL_NODET_NAME(AsmArgument) *node =
                     malloc(sizeof(struct LL_NODET_NAME(AsmArgument)));
                 node->data.type = ASM_ARG_LIT;
+                printf("DATA: [");
+                print_bytes(data, sizeof(data));
+                printf("]\n");
                 node->data.data = bytes_to_int(data, j + 1);
                 linked_list_insertnode_AsmArgument(node, &(instruct->args), -1);
             } else if (string[*pos] == '\"') {  // STRING LITERAL
@@ -283,13 +287,14 @@ struct Assemble assemble(FILE *fp, void *buf, unsigned int buf_size,
                 } else {
                     char *astr = extract_string(string, *pos + 1, len - 2);
                     int radix = get_radix(astr[len - 3]);
-                    double addr = base_to_10(astr, radix == -1 ? 10 : radix);
+                    unsigned long long addr =
+                        base_to_10(astr, radix == -1 ? 10 : radix);
                     free(astr);
 
                     struct LL_NODET_NAME(AsmArgument) *node =
                         malloc(sizeof(struct LL_NODET_NAME(AsmArgument)));
                     node->data.type = ASM_ARG_ADDR;
-                    node->data.data = (unsigned long long)addr;
+                    node->data.data = addr;
                     linked_list_insertnode_AsmArgument(node, &(instruct->args),
                                                        -1);
                 }
@@ -309,16 +314,27 @@ struct Assemble assemble(FILE *fp, void *buf, unsigned int buf_size,
                     int radix = get_radix(sub[sublen - 1]);
                     unsigned int litend =
                         scan_number(sub, radix == -1 ? 10 : radix);
+                    int has_dp = 0;
+                    for (int j = 0; j < sublen && !IS_WHITESPACE(sub[j]); ++j) {
+                        if (sub[j] == '.') {
+                            has_dp = 1;
+                            break;
+                        }
+                    }
                     if (litend == sublen ||
                         (radix != -1 && litend == sublen - 1)) {  // Is literal!
-                        double lit = base_to_10(sub, radix == -1 ? 10 : radix);
                         struct LL_NODET_NAME(AsmArgument) *node =
                             malloc(sizeof(struct LL_NODET_NAME(AsmArgument)));
                         node->data.type = ASM_ARG_LIT;
-                        // TODO: Support floating point args
-                        // node->data.data =
-                        //     *(unsigned long long *)&lit;  // Copy bytes
-                        node->data.data = (unsigned long long)lit;
+                        if (has_dp) {  // Float
+                            double lit =
+                                fbase_to_10(sub, radix == -1 ? 10 : radix);
+                            node->data.data = *(unsigned long long *)&lit;
+                        } else {  // Integer
+                            unsigned long long lit =
+                                base_to_10(sub, radix == -1 ? 10 : radix);
+                            node->data.data = lit;
+                        }
                         linked_list_insertnode_AsmArgument(
                             node, &(instruct->args), -1);
                     } else {  // Label
@@ -472,8 +488,6 @@ struct Assemble assemble(FILE *fp, void *buf, unsigned int buf_size,
     // Release un-needed memory
     asm_free_instruction_list(instruction_llhead);
     linked_list_destroy_AsmLabel(&label_llhead);
-
-    printf("FREE'D\n");
 
     return out;
 }
@@ -950,12 +964,27 @@ int decode_instruction(struct AsmInstruction *instruct) {
             DECODE_INST1(OP_PRINT_CHARS_REG, T_u8);
         } else
             return ASM_ERR_ARGS;
+    } else if (strcmp(instruct->mnemonic, "prd") == 0) {
+        if (argc == 1 && instruct->args->data.type == ASM_ARG_REG) {
+            DECODE_INST1(OP_PRINT_DBL_REG, T_u8);
+        } else
+            return ASM_ERR_ARGS;
     } else if (strcmp(instruct->mnemonic, "prh") == 0) {
         if (argc == 2 && instruct->args->data.type == ASM_ARG_LIT &&
             instruct->args->next->data.type == ASM_ARG_ADDR) {
             DECODE_INST2(OP_PRINT_HEX_MEM, T_u8, UWORD_T);
         } else if (argc == 1 && instruct->args->data.type == ASM_ARG_REG) {
             DECODE_INST1(OP_PRINT_HEX_REG, T_u8);
+        } else
+            return ASM_ERR_ARGS;
+    } else if (strcmp(instruct->mnemonic, "pri") == 0) {
+        if (argc == 1 && instruct->args->data.type == ASM_ARG_REG) {
+            DECODE_INST1(OP_PRINT_INT_REG, T_u8);
+        } else
+            return ASM_ERR_ARGS;
+    } else if (strcmp(instruct->mnemonic, "pru") == 0) {
+        if (argc == 1 && instruct->args->data.type == ASM_ARG_REG) {
+            DECODE_INST1(OP_PRINT_UINT_REG, T_u8);
         } else
             return ASM_ERR_ARGS;
     } else if (strcmp(instruct->mnemonic, "prs") == 0) {
@@ -1466,6 +1495,15 @@ int write_instruction(void *buf, struct AsmInstruction *instruct) {
             break;
         case OP_PRINT_HEX_REG:
             WRITE_INST1(OP_PRINT_HEX_REG, T_u8);
+            break;
+        case OP_PRINT_DBL_REG:
+            WRITE_INST1(OP_PRINT_DBL_REG, T_u8);
+            break;
+        case OP_PRINT_INT_REG:
+            WRITE_INST1(OP_PRINT_INT_REG, T_u8);
+            break;
+        case OP_PRINT_UINT_REG:
+            WRITE_INST1(OP_PRINT_UINT_REG, T_u8);
             break;
         case OP_PSTACK:
             BUF_WRITEK(instruct->offset, OPCODE_T, OP_PSTACK);

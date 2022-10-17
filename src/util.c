@@ -91,7 +91,8 @@ long long decode_escape_seq(char **ptr) {
 unsigned int scan_number(const char *string, int radix) {
     int found_dp = 0;
     unsigned int i = 0;
-    while (string[i] != '\0' && IS_BASE_CHAR(string[i], radix)) {
+    while (string[i] != '\0' &&
+           (string[i] == '_' || IS_BASE_CHAR(string[i], radix))) {
         ++i;
         if (string[i] == '.' && !found_dp) {
             ++i;
@@ -101,21 +102,49 @@ unsigned int scan_number(const char *string, int radix) {
     return i;
 }
 
-double base_to_10(const char *string, int radix) {
-    double value = 0;  // Base 10 value
-    double k = 1;      // Multiplying factor
+unsigned long long base_to_10(const char *string, int radix) {
+    unsigned long long value = 0;  // Base 10 value
+    unsigned long long k = 1;      // Multiplying factor
     unsigned int i = 0;
     // Calculate integer exponent
-    while (string[i] != '\0' && IS_BASE_CHAR(string[i], radix)) {
-        if (i != 0) k *= radix;
+    while (string[i] != '\0' &&
+           (string[i] == '_' || IS_BASE_CHAR(string[i], radix))) {
+        if (string[i] != '_' && i != 0) k *= radix;
         ++i;
     }
     // Calculate number
     i = 0;
     int found_dp = 0;
-    while (string[i] != '\0' && IS_BASE_CHAR(string[i], radix)) {
-        value += GET_BASE_VAL(string[i], radix) * k;
-        k /= radix;
+    while (string[i] != '\0' &&
+           (string[i] == '_' || IS_BASE_CHAR(string[i], radix))) {
+        if (string[i] != '_') {
+            value += GET_BASE_VAL(string[i], radix) * k;
+            k /= radix;
+        }
+        ++i;
+    }
+    return value;
+}
+
+double fbase_to_10(const char *string, int radix) {
+    double value = 0;  // Base 10 value
+    double k = 1;      // Multiplying factor
+    unsigned int i = 0;
+    // Calculate integer exponent
+    while (string[i] != '\0' &&
+           (string[i] == '_' || IS_BASE_CHAR(string[i], radix))) {
+        if (string[i] != '_' && i != 0) k *= radix;
+        ++i;
+    }
+    // Calculate number
+    i = 0;
+    int found_dp = 0;
+    while (string[i] != '\0' &&
+           (string[i] == '_' || IS_BASE_CHAR(string[i], radix))) {
+        if (string[i] != '_') {
+            value += GET_BASE_VAL(string[i], radix) * k;
+            k /= radix;
+        }
         ++i;
         if (string[i] == '.' && !found_dp) {
             ++i;
