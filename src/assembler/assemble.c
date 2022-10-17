@@ -93,7 +93,7 @@ struct Assemble assemble(FILE *fp, void *buf, unsigned int buf_size,
         for (; *pos < slen && !IS_WHITESPACE(string[*pos]); ++(*pos), ++mlen)
             ;
 
-        // If label, skip it
+        // LABEL
         if (string[mptr + mlen - 1] == ':') {
             char *lbl = extract_string(string, mptr, mlen - 1);  // Label string
             if (debug) {
@@ -109,6 +109,32 @@ struct Assemble assemble(FILE *fp, void *buf, unsigned int buf_size,
                 node->data.len = mlen - 1;
                 node->data.addr = offset;
                 linked_list_insertnode_AsmLabel(node, &label_llhead, -1);
+
+                // Replace past references to this label
+                struct LL_NODET_NAME(AsmInstruction) *instruct =
+                    instruction_llhead;
+                while (instruct != 0) {
+                    struct LL_NODET_NAME(AsmArgument) *arg =
+                        instruct->data.args;
+                    int i = 0;
+                    while (arg != 0) {
+                        if (arg->data.type == ASM_ARG_LABEL &&
+                            strcmp(lbl, (char *)arg->data.data) == 0) {
+                            if (debug)
+                                printf(
+                                    "Mnemonic \"%s\"/Opcode %u, arg %i: "
+                                    "label \"%s\" "
+                                    "-> addr [%llu]\n",
+                                    instruct->data.mnemonic,
+                                    instruct->data.opcode, i, lbl, offset);
+                            arg->data.type = ASM_ARG_ADDR;
+                            arg->data.data = offset;
+                        }
+                        ++i;
+                        arg = arg->next;
+                    }
+                    instruct = instruct->next;
+                }
             } else {  // Update label
                 label->addr = offset;
                 free(lbl);
@@ -396,42 +422,34 @@ struct Assemble assemble(FILE *fp, void *buf, unsigned int buf_size,
 
     // Print AST?
     if (debug) {
-        // printf("=== Instruction AST ===\n");
-        // asm_print_instruction_list(instruction_llhead);
+        printf("=== Instruction AST ===\n");
+        asm_print_instruction_list(instruction_llhead);
         printf("=== Labels ===\n");
         linked_list_print_AsmLabel(label_llhead);
     }
 
-    //#region POPULATE LABELS
-    if (debug) printf("=== [DEBUG: POPULATE LABELS] ===\n");
+    // Check for labels (should be none).
     struct LL_NODET_NAME(AsmInstruction) *instruct = instruction_llhead;
     while (instruct != 0) {
         struct LL_NODET_NAME(AsmArgument) *arg = instruct->data.args;
         int i = 0;
         while (arg != 0) {
             if (arg->data.type == ASM_ARG_LABEL) {
-                struct AsmLabel *label = linked_list_find_AsmLabel(
-                    label_llhead, (char *)arg->data.data);
-                if (label == 0) {
-                    out.errc = ASM_ERR_LABEL;
-                    return out;
-                } else {  // "label" -> [addr]
-                    if (debug)
-                        printf(
-                            "Mnemonic \"%s\"/Opcode %u, arg %i: label \"%s\" "
-                            "-> addr [%llu]\n",
-                            instruct->data.mnemonic, instruct->data.opcode, i,
-                            label->ptr, label->addr);
-                    arg->data.type = ASM_ARG_ADDR;
-                    arg->data.data = label->addr;
-                }
+                if (print_errors)
+                    printf(
+                        "ERROR! Instruction \"%s\" (+%u): reference to "
+                        "undefined "
+                        "label \"%s\"\n",
+                        instruct->data.mnemonic, instruct->data.offset,
+                        arg->data.data);
+                out.errc = ASM_ERR_LABEL;
+                return out;
             }
             ++i;
             arg = arg->next;
         }
         instruct = instruct->next;
     }
-    //#endregion
 
     //#region COMPILE AST
     // Instructions

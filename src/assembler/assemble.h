@@ -73,6 +73,9 @@ int decode_instruction(struct AsmInstruction *instruct);
 /** Write instruction data to buffer. Instruction must fit in buffer. */
 int write_instruction(void *buf, struct AsmInstruction *instruct);
 
+/** Print details of an instruction */
+void asm_print_instruction(struct AsmInstruction *instruct);
+
 /** Print linked list of AsmInstruction */
 void asm_print_instruction_list(struct LL_NODET_NAME(AsmInstruction) * head);
 

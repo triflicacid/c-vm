@@ -50,8 +50,10 @@ Labels are placeholder names for addresses, and can be substituted in an instruc
 When defined, it is initialised with a value of the current offset is appeared at. Labels may be re-defined, in which case its offset will be updated accordingly.
 
 When a label is encounteredin an instruction...
-  - If the label is defined, it is immediatly replaced by its address
-  - If the label is not defined, this is cached. Later, all un-replaced labels are replaced with the final label offset.
+  - If the label is defined, it is immediatly replaced by its address. Replace all un-replaced references to this label.
+  - If the label is not defined, this is cached.
+
+If a label is not defined, an error will be reported.
 
 See `test/assembler/labels.asm` for an example
 
