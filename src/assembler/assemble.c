@@ -4,7 +4,6 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "../cpu/bit-ops.h"
 #include "../cpu/cpu.h"
 #include "../cpu/opcodes.h"
 #include "args.h"
@@ -214,10 +213,7 @@ struct Assemble assemble(FILE *fp, void *buf, unsigned int buf_size,
                 struct LL_NODET_NAME(AsmArgument) *node =
                     malloc(sizeof(struct LL_NODET_NAME(AsmArgument)));
                 node->data.type = ASM_ARG_LIT;
-                printf("DATA: [");
-                print_bytes(data, sizeof(data));
-                printf("]\n");
-                node->data.data = bytes_to_int(data, j + 1);
+                node->data.data = bytes_to_int(data, j);
                 linked_list_insertnode_AsmArgument(node, &(instruct->args), -1);
             } else if (string[*pos] == '\"') {  // STRING LITERAL
                 unsigned short j = 0;

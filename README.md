@@ -17,7 +17,6 @@ For more informations, see `docs/`, `tests/`.
 - Basic de-compiler? Given .bin, produce .asm
 
 ### Bugs
-- `\n` in asm source files
 
 ## Goal
 The goal of this repo is to build a basic virtual machine with I/O, equipped with a custom assembler, and a C-like language to accompany it.

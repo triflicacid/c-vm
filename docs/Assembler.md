@@ -33,7 +33,22 @@ See `Instructions.md` for a list of all implemeted instructions.
 
 Comments start with a `;`, with everything after the semi-colon being ignored up until the next line
 
+### Escape Literals
+
+- `\b` - Non-destructive backspace (8h)
+- `\d...` - Character with code given in decimal
+- `\n` - Newline (Ah)
+- `\o...` - Character with code given in octal
+- `\r` - Carriage Return (Dh)
+- `\s` - Space (20h)
+- `\t` - Horizontal Tab (9h)
+- `\v` - Vertical Tab (Bh)
+- `\x...` - Character with code given in hexadecimal
+- `\0` - Null (0h)
+
 ### Numeric Values
+
+**All numeric constants are 64-bit**
 
 Numeric values consist of a sequence of digits optionally suffixed by a radix indicator, where
   - `b` or `y`: binary (2)
@@ -44,6 +59,8 @@ Numeric values consist of a sequence of digits optionally suffixed by a radix in
 The validity of the digits is dependent upon the radix chosen e.g. `Fh` is valid, but `F` is not.
 
 Digits may be seperated by underscores `_`.
+
+Numbers containing `.` will be treated as floating-point.
 
 ## Labels
 

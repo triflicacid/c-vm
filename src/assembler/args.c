@@ -1,5 +1,7 @@
 #include "args.h"
 
+#include "../cpu/bit-ops.h"
+
 LL_CREATE_FINSERT(AsmArgument, struct AsmArgument);
 
 LL_CREATE_FINSERTNODE(AsmArgument);
@@ -10,7 +12,9 @@ int print_asm_arg(struct AsmArgument *arg) {
     switch (arg->type) {
         case ASM_ARG_LIT:
             // printf("literal '%lf'", *(double *)&(arg->data));
-            printf("literal '%llu'", arg->data);
+            printf("literal '%llu' {", arg->data);
+            print_bytes(&(arg->data), 8);
+            printf("\b}");
             break;
         case ASM_ARG_ADDR:
             printf("address '%llu'", arg->data);

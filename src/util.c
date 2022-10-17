@@ -23,19 +23,26 @@ int get_radix(char suffix) {
 long long decode_escape_seq(char **ptr) {
     switch (**ptr) {
         case 'b':  // BACKSPACE
+            ++(*ptr);
             return 0x8;
         case 'n':  // NEWLINE
+            ++(*ptr);
             return 0xA;
         case 'r':  // CARRIAGE RETURN
+            ++(*ptr);
             return 0xD;
+        case 's':  // SPACE
+            ++(*ptr);
+            return 0x20;
         case 't':  // HORIZONTAL TAB
+            ++(*ptr);
             return 0x9;
         case 'v':  // VERTICAL TAB
+            ++(*ptr);
             return 0xB;
         case '0':  // NULL
+            ++(*ptr);
             return 0x0;
-        case 's':  // SPACE
-            return 0x20;
         case 'd': {  // DECIMAL SEQUENCE
             unsigned int len = 0;
             long long k = 1, value = 0;
@@ -156,6 +163,7 @@ double fbase_to_10(const char *string, int radix) {
 
 T_u64 bytes_to_int(char *ptr, int len) {
     T_u64 lit = ptr[0];
+    printf("Lit = %llu\n", lit);
     for (int j = 1; j < len; ++j) lit = (lit << 8) | ptr[j];
     return lit;
 }
