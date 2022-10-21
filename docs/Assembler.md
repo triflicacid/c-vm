@@ -30,8 +30,8 @@ The assembler works in the current way:
 These are evaluated before any assembling takes place
 
 - `%define [SYMBOL] [VALUE]` - defines the constant `SYMBOL` with value `VALUE`. `VALUE` contains everything from after `SYMBOL ` to end of the line. From this point, any occurances of `SYMBOL` is replaced by `VALUE`.
-
-- `%stop` - ignore anything after this point
+- `%ignore` - ignore this line. Like a comment.
+- `%stop` - ignore anything after this point. "Stops" the assembler.
 
 ## Syntax
 

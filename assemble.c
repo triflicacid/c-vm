@@ -35,9 +35,9 @@ int main(int argc, char **argv) {
                     file_out = argv[i];
                     break;
                 case 'p':  // Pre-Processed file
-                    i++;
                     preproc = 1;
-                    if (i < argc && argv[i][0] != '-') {
+                    if (i + 1 < argc && argv[i + 1][0] != '-') {
+                        i++;
                         is_file_preproc = 1;
                         file_preproc = argv[i];
                     }
@@ -130,7 +130,6 @@ int main(int argc, char **argv) {
 end:
     asm_data_destroy(&data);
 
-    if (debug) printf("[Done]\n");
     printf("%i", err.errc);
 
     return err.errc;

@@ -145,7 +145,7 @@ void asm_preprocess(struct AsmData *data, struct AsmError *err) {
             while (idx < slen && !IS_WHITESPACE(string[idx])) ++idx, ++dlen;
 
             char *directive = extract_string(string, didx + 1, dlen - 1);
-            if (strcmp(directive, "define") == 0) {
+            if (strcmp(directive, "define") == 0) {  // %define
                 while (idx < slen && IS_WHITESPACE(string[idx])) ++idx;
                 // Extract symbol name
                 unsigned int name_i = idx, name_len = 0;
@@ -166,7 +166,12 @@ void asm_preprocess(struct AsmData *data, struct AsmError *err) {
                 node->data.name = name;
                 node->data.value = value;
                 linked_list_insertnode_AsmSymbol(node, &(data->symbols), -1);
-            } else if (strcmp(directive, "stop") == 0) {
+            } else if (strcmp(directive, "ignore") == 0) {  // %ignore
+                if (err->debug)
+                    printf("[LINE %u] %%%s: IGNORE THIS LINE\n", cline->data.n,
+                           directive);
+                // Ignore this line - it'll get removed at the end, anyway
+            } else if (strcmp(directive, "stop") == 0) {  // %stop
                 if (err->debug)
                     printf("[LINE %u] %%stop: IGNORE PAST THIS POINT\n",
                            cline->data.n);
