@@ -30,6 +30,8 @@ These are evaluated before any assembling takes place
 
 - `%define [SYMBOL] [VALUE]` - defines the constant `SYMBOL` with value `VALUE`. `VALUE` contains everything from after `SYMBOL ` to end of the line. From this point, any occurances of `SYMBOL` is replaced by `VALUE`.
 
+- `%stop` - ignore anything after this point
+
 ## Syntax
 
 Assembly source files are read line-by-line, and have the following syntax: `[label:] [mnemonic [...args]] [; Comment]`. Trailing whitespace is removed, and blank/empty lines are ignored.

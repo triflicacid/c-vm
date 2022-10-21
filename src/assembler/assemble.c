@@ -101,7 +101,14 @@ struct Assemble assemble(FILE *fp, void *buf, unsigned int buf_size,
     //#region HANDLE PRE-PROCESSOR DIRECTIVES
     if (debug) printf("=== Pre-Processing ===\n");
     struct LL_NODET_NAME(AsmLine) *cline = line_llhead;
+    int stopped = 0;
     while (cline != 0) {
+        if (stopped) {
+            cline->data.done = 1;
+            cline = cline->next;
+            continue;
+        }
+
         unsigned int idx = 0;
         unsigned int slen = cline->data.len;
         char *string = cline->data.str;
@@ -164,7 +171,7 @@ struct Assemble assemble(FILE *fp, void *buf, unsigned int buf_size,
                 while (string[vlen - 1] == '\r' || string[vlen - 1] == '\n')
                     --vlen;  // Remove newline chars
                 char *value = extract_string(string, idx, vlen);
-                if (debug) printf("DEFINE \"%s\" TO BE \"%s\"\n", name, value);
+                if (debug) printf("[LINE %u] DEFINE \"%s\" TO BE \"%s\"\n", cline->data.n, name, value);
                 idx = slen;
 
                 struct LL_NODET_NAME(AsmSymbol) *node =
@@ -172,6 +179,9 @@ struct Assemble assemble(FILE *fp, void *buf, unsigned int buf_size,
                 node->data.name = name;
                 node->data.value = value;
                 linked_list_insertnode_AsmSymbol(node, &symbol_llhead, -1);
+            } else if (strcmp(directive, "stop") == 0) {
+                stopped = 1;
+                if (debug) printf("[LINE %u] %%stop: IGNORE PAST THIS POINT\n", cline->data.n);
             } else {
                 if (print_errors)
                     printf(
@@ -357,7 +367,7 @@ struct Assemble assemble(FILE *fp, void *buf, unsigned int buf_size,
                         char *ptr = (char *)string + *pos + 1;
                         long long val = decode_escape_seq(&ptr);
                         data[j] = (char)val;
-                        *pos = ptr - string + 1;
+                        *pos = ptr - string;
                     } else {
                         data[j] = string[*pos];
                         ++(*pos);

@@ -163,7 +163,6 @@ double fbase_to_10(const char *string, int radix) {
 
 T_u64 bytes_to_int(char *ptr, int len) {
     T_u64 lit = ptr[0];
-    printf("Lit = %llu\n", lit);
     for (int j = 1; j < len; ++j) lit = (lit << 8) | ptr[j];
     return lit;
 }
