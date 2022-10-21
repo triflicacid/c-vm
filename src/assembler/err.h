@@ -36,4 +36,15 @@
 // Assembler: unknown directive
 #define ASM_ERR_DIRECTIVE 13
 
+// Assembler - contain error info
+struct AsmError {
+    unsigned int line;  // Assembly source line reached
+    unsigned int col;   // Column reached
+    int errc;           // Error code (if any)
+    int print;          // Print errors
+    int debug;          // Debug?
+};
+
+struct AsmError asm_error_create();
+
 #endif

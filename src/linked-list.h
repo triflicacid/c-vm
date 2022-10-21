@@ -144,4 +144,22 @@
         return size;                                                   \
     }
 
+#define LL_DECL_FREMOVENODE(name)                                  \
+    void linked_list_removenode_##name(struct LLNode_##name *node, \
+                                       struct LLNode_##name **head);
+
+// Remove node from linked-list with given head. `node` is not de-allocated in
+// any way.
+#define LL_CREATE_FREMOVENODE(name)                                    \
+    void linked_list_removenode_##name(struct LLNode_##name *node,     \
+                                       struct LLNode_##name **head) {  \
+        if (node == *head) {                                           \
+            *head = node->next;                                        \
+        } else {                                                       \
+            struct LLNode_##name *curr = *head;                        \
+            while (curr != 0 && curr->next != node) curr = curr->next; \
+            curr->next = curr->next->next;                             \
+        }                                                              \
+    }
+
 #endif

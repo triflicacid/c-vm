@@ -20,4 +20,13 @@ LL_DECL_FINSERT(AsmInstruction, struct AsmInstruction);
 
 LL_DECL_FINSERTNODE(AsmInstruction);
 
+/** Print details of an instruction */
+void asm_print_instruction(struct AsmInstruction *instruct);
+
+/** Print linked list of AsmInstruction */
+void asm_print_instruction_list(struct LL_NODET_NAME(AsmInstruction) * head);
+
+/** Free linked list of AsmInstruction */
+void asm_free_instruction_list(struct LL_NODET_NAME(AsmInstruction) * head);
+
 #endif

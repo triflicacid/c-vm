@@ -10,9 +10,10 @@ To compile, run `gcc assemble.c -o assemble.exe`.
 
 To execute, run `./assemble.exe [src] [options]` where
   - `src` is the path to the assembly source file to assemble. If none is provided, it is defaulted to `source.asm`.
-  - `-b <size>` sets the buffer size to `size` bytes. This is the maximum machine code file size. Default is 1MB.
-  - `-o <file>` specifies an output file. If none is provided, is id defaulted to `source.bin`.
-  - `-p` switches on detail. Detail about the source file, line/col reached, error messages etc... are printed. If disabled, only the error number is printed.
+  - `-d` switches on detail. Detail about the source file, line/col reached, error messages etc... are printed. If disabled, only the error number is printed.
+  - `-d` enables debug mode, if it appears for a second time. Debug information around each assembler stage etc... is printed.
+  - `-o <file>` specifies an output file for machine code. If none is provided, is is defaulted to `source.bin`.
+  - `-p <file>` specifies an output file for post-processed assembly. This will output the assembly after the pre-processor has dealt with the source. If the flag is stated, but no input file is provided, `preproc.asm` is used.
 
 ## Assembling
 

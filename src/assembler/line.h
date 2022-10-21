@@ -4,7 +4,6 @@
 #include "../linked-list.h"
 
 struct AsmLine {
-    int done;          // Has this line been parsed?
     unsigned int n;    // Line number
     char *str;         // Line contents
     unsigned int len;  // Line length
@@ -17,5 +16,7 @@ LL_DECL_FINSERTNODE(AsmLine);
 LL_DECL_FDESTROY(AsmLine);
 
 LL_DECL_FPRINT(AsmLine, struct AsmLine);
+
+LL_DECL_FREMOVENODE(AsmLine);
 
 #endif

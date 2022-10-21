@@ -5,17 +5,33 @@
 
 #include "../util.h"
 #include "args.h"
+#include "err.h"
 #include "instruction.h"
+#include "labels.h"
+#include "line.h"
+#include "symbol.h"
 
 #define ASM_MAX_LINE_LENGTH 1000
 #define ASM_MAX_MNEMONIC_LENGTH 8
 #define ASM_MAX_ARGS 5
 
+// Not begun
+#define ASM_STAGE_NONE 0
+// Split into lines
+#define ASM_STAGE_LINES 1
+// Pre-Processed
+#define ASM_STAGE_PREPROC 2
+// Parsing AST
+#define ASM_STAGE_PARSE 3
+// Compiling
+#define ASM_STAGE_COMPILE 4
+
 // Is instruction/argument seperator?
 #define IS_SEPERATOR(c) (c == ',')
 
 // If this character is encountered, create a new token
-#define IS_TOKEN_SEP(c) (c == ' ' || c == '\t' || c == '(' || c == '[' || c == '{' || c == ',')
+#define IS_TOKEN_SEP(c) \
+    (c == ' ' || c == '\t' || c == '(' || c == '[' || c == '{' || c == ',')
 
 // Write instruction to machine code with 1 argument
 #define WRITE_INST1(opcode, type)                         \
@@ -58,31 +74,45 @@
     instruct->bytes =                              \
         sizeof(OPCODE_T) + sizeof(type1) + sizeof(type2) + sizeof(type3);
 
-struct Assemble {
-    unsigned int buf_offset;  // Final buffer offset reached
-    unsigned int line;        // Assembly source line reached
-    unsigned int col;         // Column reached
-    int errc;                 // Error code (if any)
+struct AsmData {
+    int stage;                 // Stage of assembly
+    unsigned long long bytes;  // Bytes used (populated in ASM_STAGE_PARSE)
+    struct LL_NODET_NAME(AsmLine) * lines;             // Source lines
+    struct LL_NODET_NAME(AsmSymbol) * symbols;         // Symbols (constants)
+    struct LL_NODET_NAME(AsmLabel) * labels;           // Labels
+    struct LL_NODET_NAME(AsmInstruction) * instructs;  // Instructions
 };
 
-/** Assemble file into a buffer */
-struct Assemble assemble(FILE *fp, void *buf, unsigned int buf_size,
-                         unsigned int print_errors, int debug);
+// Create `struct AsmData`
+struct AsmData asm_data_create();
+
+// Destroy contents of `struct AsmData` (DOES NOT destroy the struct itself)
+void asm_data_destroy(struct AsmData *data);
+
+/** Given a file, return a linked list of source lines */
+void asm_read_lines(FILE *fp, struct AsmData *data, struct AsmError *err);
+
+/** Given linked list of lines, combine and insert into buffer. Return buffer
+ * size (buffer IS null-terminated). */
+unsigned long long asm_write_lines(struct LL_NODET_NAME(AsmLine) * lines,
+                                   char **buffer);
+
+/** Given a linked list of lines, pre-process them */
+void asm_preprocess(struct AsmData *data, struct AsmError *err);
+
+/** Given linekd list of lines, parse it to an AST */
+void asm_parse(struct AsmData *data, struct AsmError *err);
+
+/** Given instruction AST, compile to a byte buffer. Return pointer to said
+ * buffer. Size is data.bytes. Return 0 (null) if data.bytes==0 or there is an
+ * error. */
+char *asm_compile(struct AsmData *data, struct AsmError *err);
 
 /** Given an instruction, populate instruct->bytes and instruct->opcode. Return
  * error. */
-int decode_instruction(struct AsmInstruction *instruct);
+int asm_decode_instruction(struct AsmInstruction *instruct);
 
 /** Write instruction data to buffer. Instruction must fit in buffer. */
-int write_instruction(void *buf, struct AsmInstruction *instruct);
-
-/** Print details of an instruction */
-void asm_print_instruction(struct AsmInstruction *instruct);
-
-/** Print linked list of AsmInstruction */
-void asm_print_instruction_list(struct LL_NODET_NAME(AsmInstruction) * head);
-
-/** Free linked list of AsmInstruction */
-void asm_free_instruction_list(struct LL_NODET_NAME(AsmInstruction) * head);
+int asm_write_instruction(void *buf, struct AsmInstruction *instruct);
 
 #endif
