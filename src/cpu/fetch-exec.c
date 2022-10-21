@@ -477,7 +477,7 @@ int cpu_mem_exec(struct CPU *cpu, OPCODE_T opcode, UWORD_T *ip) {
             *ip += sizeof(T_u8);
             T_u8 *addr = (T_u8 *)(cpu->regs + reg);
             for (T_u8 off = 0; off < sizeof(WORD_T); ++off)
-                printf("%.2X ", addr[off]);
+                fprintf(cpu->out, "%.2X ", addr[off]);
             return 1;
         }
         case OP_PRINT_CHARS_MEM:
@@ -491,7 +491,7 @@ int cpu_mem_exec(struct CPU *cpu, OPCODE_T opcode, UWORD_T *ip) {
                 for (T_u8 off = 0; off < sizeof(WORD_T); ++off) {
                     T_u8 ch = addr[off];
                     if (ch == '\0') break;
-                    printf("%c", ch);
+                    fprintf(cpu->out, "%c", ch);
                 }
             } else {
                 for (T_u8 met = 0, off = sizeof(WORD_T); off > 0; --off) {
@@ -501,7 +501,7 @@ int cpu_mem_exec(struct CPU *cpu, OPCODE_T opcode, UWORD_T *ip) {
                             break;
                         else
                             continue;
-                    printf("%c", ch);
+                    fprintf(cpu->out, "%c", ch);
                     met = 1;
                 }
             }

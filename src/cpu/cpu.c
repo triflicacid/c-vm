@@ -8,7 +8,7 @@
 #include "err.h"
 
 struct CPU cpu_create(UWORD_T mem_size) {
-    struct CPU cpu = {.mem_size = mem_size};
+    struct CPU cpu = {.mem_size = mem_size, .out = stdout};
     cpu.mem = malloc(mem_size);
     cpu.regs[REG_IP] = 0;  // Clear IP register
     cpu.regs[REG_SP] = mem_size;
@@ -28,6 +28,7 @@ void cpu_print_details(struct CPU* cpu) {
     printf("Memory Size: " WORD_T_FLAG "\n", cpu->mem_size);
     printf("Registers  : %i\n", REG_COUNT);
     printf("Stack Size : %i\n", cpu->regs[REG_SSIZE]);
+    printf("STDOUT     : %i\n", fileno(cpu->out));
     printf("Errno      : 0x%.8X\n", err);
     if (err != ERR_NONE)
         printf("Error Data : " WORD_T_FLAG "\n", cpu->regs[REG_FLAG]);

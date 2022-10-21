@@ -69,12 +69,14 @@ struct CPU {
     UWORD_T mem_size;        // Size of .mem
     void *mem;               // Pointer to start of memory block
     WORD_T regs[REG_COUNT];  // Register memory
+    FILE *out;               // STDOUT
 };
 
 /** Create a new CPU struct */
 struct CPU cpu_create(UWORD_T mem_size);
 
-/** Destroy data inside a struct. Doesn't free() the struct itself */
+/** Destroy data inside a struct. Doesn't free() the struct itself. Doesn't
+ * close file pointers. */
 void cpu_destroy(struct CPU *cpu);
 
 /** Print CPU details */

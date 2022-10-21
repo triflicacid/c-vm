@@ -8,14 +8,14 @@
 #include "src/util.c"
 
 int main(int argc, char **argv) {
-    char *file_in;
-    int is_file_in = 0, do_detail = 0;
+    char *file_in, *file_out;
+    int is_file_in = 0, is_file_out = 0, do_detail = 0;
     UWORD_T addr_start = 0, mem_size = 0xFFF, stack_size = 0x1FF;
     for (int i = 1; i < argc; ++i) {
         if (argv[i][0] == '-') {
             switch (argv[i][1]) {
-                case 'p':  // Print detail
-                    do_detail = !do_detail;
+                case 'd':  // Print detail
+                    do_detail = 1;
                     break;
                 case 'm':  // Memory size
                     i++;
@@ -25,6 +25,15 @@ int main(int argc, char **argv) {
                     }
                     mem_size = strtoull(
                         argv[i], (char **)(argv[i] + strlen(argv[0])), 10);
+                    break;
+                case 'o':  // Out file
+                    i++;
+                    if (i >= argc) {
+                        printf("-o: expected file path\n");
+                        return -1;
+                    }
+                    is_file_out = 1;
+                    file_out = argv[i];
                     break;
                 case 's':  // Stack size
                     i++;
@@ -52,6 +61,13 @@ int main(int argc, char **argv) {
     struct CPU *cpu = &_cpu;
     cpu->regs[REG_SSIZE] = stack_size;
 
+    FILE *fout;
+    if (is_file_out) {
+        if (do_detail) printf("Set STDOUT='%s'\n", file_out);
+        fout = fopen(file_out, "w");
+        cpu->out = fout;
+    }
+
     if (do_detail) {
         printf("Initlialising CPU...\n");
         cpu_print_details(cpu);
@@ -68,20 +84,10 @@ int main(int argc, char **argv) {
     cpu_mem_fread(cpu, fp, addr_start, fsize);
     fclose(fp);
 
-    // if (do_detail) {
-    //     if (o.errc != ASM_ERR_NONE) printf("\n");
-    //     printf("Buffer Size : %llu\n", buf_size);
-    //     printf("Buffer Used : %u\n", o.buf_offset);
-    //     printf("Line        : %u\n", o.line);
-    //     printf("Col         : %u\n", o.col);
-    //     printf("Errno       : %i\n", o.errc);
-    // } else {
-    //     printf("%i", o.errc);
-    // }
-
     cpu_fecycle(cpu);
 
     cpu_destroy(cpu);
+    if (is_file_out) fclose(fout);
     if (do_detail) printf("[Done]");
 
     return 0;
