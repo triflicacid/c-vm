@@ -14,6 +14,22 @@ To execute, run `./assemble.exe [src] [options]` where
   - `-o <file>` specifies an output file. If none is provided, is id defaulted to `source.bin`.
   - `-p` switches on detail. Detail about the source file, line/col reached, error messages etc... are printed. If disabled, only the error number is printed.
 
+## Assembling
+
+The assembler works in the current way:
+
+- Read file and split into lines
+- Scan each line for pre-processor directives
+- Parse eahc line into an AST
+- Resolve labels in AST
+- Convert into machine code and insert into a buffer
+
+## Pre-Processor
+
+These are evaluated before any assembling takes place
+
+- `%define [SYMBOL] [VALUE]` - defines the constant `SYMBOL` with value `VALUE`. `VALUE` contains everything from after `SYMBOL ` to end of the line. From this point, any occurances of `SYMBOL` is replaced by `VALUE`.
+
 ## Syntax
 
 Assembly source files are read line-by-line, and have the following syntax: `[label:] [mnemonic [...args]] [; Comment]`. Trailing whitespace is removed, and blank/empty lines are ignored.
@@ -75,4 +91,3 @@ When a label is encounteredin an instruction...
 If a label is not defined, an error will be reported.
 
 See `test/assembler/labels.asm` for an example
-

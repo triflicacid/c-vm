@@ -11,8 +11,7 @@ For more informations, see `docs/`, `tests/`.
 
 ### TODO
 - CPU: implement instructions OP_PUSH_REGPTR, OP_POP_REGPTR
-- Assembler:
-  - Constants
+- Assembler
 - Print to STDOUT (using memory mapping to map characters?)
 - Basic de-compiler? Given .bin, produce .asm
 

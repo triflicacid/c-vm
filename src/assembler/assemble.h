@@ -14,6 +14,9 @@
 // Is instruction/argument seperator?
 #define IS_SEPERATOR(c) (c == ',')
 
+// If this character is encountered, create a new token
+#define IS_TOKEN_SEP(c) (c == ' ' || c == '\t' || c == '(' || c == '[' || c == '{' || c == ',')
+
 // Write instruction to machine code with 1 argument
 #define WRITE_INST1(opcode, type)                         \
     BUF_WRITEK(instruct->offset, OPCODE_T, opcode);       \

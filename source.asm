@@ -1,4 +1,4 @@
-mov '\n', r1
-prh r1
-prc r1
-hlt8h
+%define PI 3.14
+mov PI, r1
+prd r1
+hlt

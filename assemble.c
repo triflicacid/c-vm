@@ -5,6 +5,8 @@
 #include "src/assembler/args.c"
 #include "src/assembler/instruction.c"
 #include "src/assembler/labels.c"
+#include "src/assembler/line.c"
+#include "src/assembler/symbol.c"
 #include "src/cpu/bit-ops.c"
 #include "src/cpu/cpu.c"
 #include "src/cpu/opcodes.h"

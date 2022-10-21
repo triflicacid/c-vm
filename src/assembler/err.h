@@ -33,4 +33,7 @@
 // Assembler: cannot decode opcode
 #define ASM_ERR_UNK_OPCODE 10
 
+// Assembler: unknown directive
+#define ASM_ERR_DIRECTIVE 13
+
 #endif
