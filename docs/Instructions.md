@@ -110,7 +110,6 @@ Below is the full list of instructions supported by the assembler.
 | pop64 | OP_POP64_REGPTR | `<regptr: u8>` | Pop 64-bit value from the stack and load into address in register | `pop64 [r1]` |
 | pop | OP_POPN_REGPTR | `<bytes: u8>`, `<regptr: u8>` | Pop n-byte value from the stack and load into address in register | `pop 12, [r1]` |
 | pop | OP_POPN_MEM | `<bytes: u8>`, `<addr: uword>` | Pop n-byte value from the stack and load into address | `pop 12, [100]` |
-
 | prc | OP_PRINT_CHARS_MEM | `<bytes: u8>`, `<addr: uword>` | Print n-bytes as ASCII characters to STDOUT from an address | `prc 12, [100]` |
 | prc | OP_PRINT_CHARS_REG | `<reg: u8>` | Print bytes as ASCII characters to STDOUT from a register until a NULL byte is encountered | `prc r1` |
 | prd | OP_PRINT_DBL_REG | `<reg: u8>` | Print contents of register as a double (f64) | `prd r1` |
