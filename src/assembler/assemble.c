@@ -302,6 +302,7 @@ void asm_parse(struct AsmData *data, struct AsmError *err) {
         // Create data
         struct LL_NODET_NAME(AsmChunk) *chunk_node =
             malloc(sizeof(struct LL_NODET_NAME(AsmChunk)));
+        chunk_node->next = 0;
         struct AsmChunk *chunk = &(chunk_node->data);
         chunk->offset = offset;
         chunk->bytes = 0;
@@ -383,12 +384,12 @@ void asm_parse(struct AsmData *data, struct AsmError *err) {
                     struct LL_NODET_NAME(AsmArgument) *node =
                         malloc(sizeof(struct LL_NODET_NAME(AsmArgument)));
                     node->data.type = ASM_ARG_LIT;
-                    node->data.data = bytes_to_int(data, j);
+                    memcpy(&(node->data.data), data, sizeof(data));
                     linked_list_insertnode_AsmArgument(node, &(instruct->args),
                                                        -1);
                 } else if (string[pos] == '\"') {  // STRING LITERAL
                     unsigned short j = 0;
-                    char data[sizeof(UWORD_T)];
+                    char data[sizeof(UWORD_T)] = {0};
                     ++pos;
                     while (j < sizeof(data) && pos < slen) {
                         if (string[pos] == '\"') {
@@ -410,7 +411,7 @@ void asm_parse(struct AsmData *data, struct AsmError *err) {
                     struct LL_NODET_NAME(AsmArgument) *node =
                         malloc(sizeof(struct LL_NODET_NAME(AsmArgument)));
                     node->data.type = ASM_ARG_LIT;
-                    node->data.data = bytes_to_int(data, j + 1);
+                    memcpy(&(node->data.data), data, sizeof(data));
                     linked_list_insertnode_AsmArgument(node, &(instruct->args),
                                                        -1);
                 } else if (string[pos] == '[') {  // Address/Register pointer
@@ -546,7 +547,9 @@ void asm_parse(struct AsmData *data, struct AsmError *err) {
                 } else {  // Unknown argument form
                     if (err->print) {
                         unsigned int len = 0;
-                        while (!IS_WHITESPACE(string[pos + len])) ++len;
+                        while (pos + len < slen &&
+                               !IS_WHITESPACE(string[pos + len]))
+                            ++len;
                         char *astr = extract_string(string, pos, len);
                         printf(CONSOLE_RED
                                "ERROR!" CONSOLE_RESET
@@ -627,27 +630,34 @@ void asm_parse(struct AsmData *data, struct AsmError *err) {
             chunk->bytes = instruct->bytes;
         }
 
-        offset += chunk->bytes;
-        SET_IF_LARGER(data->bytes, offset);
-
-        // Insert chunk into linked list
-        struct AsmChunk *collision = asm_chunk_in_range(
-            data->chunks, chunk->offset, chunk->offset + chunk->bytes);
-        if (collision == 0) {
-            linked_list_insertnode_AsmChunk(&(data->chunks), chunk_node);
-        } else {
-            if (err->print)
-                printf(CONSOLE_RED
-                       "ERROR!" CONSOLE_RESET
-                       " Line %i, column %i:\nChunk collision - %u bytes at "
-                       "%llu\n",
-                       line, pos, collision->bytes, collision->offset);
-            err->col = pos;
-            err->line = cline->data.n;
-            err->errc = ASM_ERR_MEMORY;
-            asm_free_instruction_chunk(chunk);
+        if (chunk->bytes == 0) {
+            // No data... ignore
+            asm_destroy_chunk(chunk);
             free(chunk_node);
-            return;
+        } else {
+            offset += chunk->bytes;
+            SET_IF_LARGER(data->bytes, offset);
+
+            // Insert chunk into linked list
+            struct AsmChunk *collision = asm_chunk_in_range(
+                data->chunks, chunk->offset, chunk->offset + chunk->bytes);
+            if (collision == 0) {
+                linked_list_insertnode_AsmChunk(&(data->chunks), chunk_node);
+            } else {
+                if (err->print)
+                    printf(
+                        CONSOLE_RED
+                        "ERROR!" CONSOLE_RESET
+                        " Line %i, column %i:\nChunk collision - %u bytes at "
+                        "%llu\n",
+                        line, pos, collision->bytes, collision->offset);
+                err->col = pos;
+                err->line = cline->data.n;
+                err->errc = ASM_ERR_MEMORY;
+                asm_destroy_chunk(chunk);
+                free(chunk_node);
+                return;
+            }
         }
         // Next line
         cline = cline->next;

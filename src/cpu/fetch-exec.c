@@ -487,23 +487,10 @@ int cpu_mem_exec(struct CPU *cpu, OPCODE_T opcode, UWORD_T *ip) {
             T_u8 reg = MEM_READ(*ip, T_u8);
             *ip += sizeof(T_u8);
             T_u8 *addr = (T_u8 *)(cpu->regs + reg);
-            if (IS_BIG_ENDIAN) {
-                for (T_u8 off = 0; off < sizeof(WORD_T); ++off) {
-                    T_u8 ch = addr[off];
-                    if (ch == '\0') break;
-                    fprintf(cpu->out, "%c", ch);
-                }
-            } else {
-                for (T_u8 met = 0, off = sizeof(WORD_T); off > 0; --off) {
-                    T_u8 ch = addr[off - 1];
-                    if (ch == '\0')
-                        if (met)
-                            break;
-                        else
-                            continue;
-                    fprintf(cpu->out, "%c", ch);
-                    met = 1;
-                }
+            for (T_u8 off = 0; off < sizeof(WORD_T); ++off) {
+                T_u8 ch = addr[off];
+                if (ch == '\0') break;
+                fprintf(cpu->out, "%c", ch);
             }
             return 1;
         }

@@ -44,7 +44,7 @@ Labels come in the form `label:`
   - `label` is a word containing letters and numbers. (See section on labels for more.)
 
 If `mnemonic` is one of `u8, u16, u32, u64`, this is a data constant.
-  - `args` is a comma- or space-seperated list of constants
+  - `args` is a comma- or space-seperated list of constants. If no `args` are provided, insert a `0`.
     - `...[r]` - Numeric constants. These may be followed by a radix suffix `r`.  
     - `'...'` - Character constants
     - `"..."` - String constants
