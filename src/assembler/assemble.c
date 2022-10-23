@@ -190,10 +190,11 @@ void asm_preprocess(struct AsmData *data, struct AsmError *err) {
                 break;
             } else {
                 if (err->print)
-                    printf(
-                        "ERROR! Line %i, column %i:\nUnknown directive "
-                        "%%%s\n",
-                        cline->data.n, idx, directive);
+                    printf(CONSOLE_RED
+                           "ERROR!" CONSOLE_RESET
+                           " Line %i, column %i:\nUnknown directive "
+                           "%%%s\n",
+                           cline->data.n, idx, directive);
                 free(directive);
                 err->errc = ASM_ERR_DIRECTIVE;
                 return;
@@ -342,11 +343,12 @@ void asm_parse(struct AsmData *data, struct AsmError *err) {
                             if (err->print) {
                                 char astr[] = {string[pos], string[pos + 1],
                                                '\0'};
-                                printf(
-                                    "ERROR! Line %i, column %i:\nExpected ' "
-                                    "after character expression "
-                                    "%s <-- '\n",
-                                    line, pos, astr);
+                                printf(CONSOLE_RED
+                                       "ERROR!" CONSOLE_RESET
+                                       " Line %i, column %i:\nExpected ' "
+                                       "after character expression "
+                                       "%s <-- '\n",
+                                       line, pos, astr);
                             }
                             err->col = pos;
                             err->line = cline->data.n;
@@ -398,10 +400,11 @@ void asm_parse(struct AsmData *data, struct AsmError *err) {
                 if (string[pos + len - 1] != ']') {
                     if (err->print) {
                         char *astr = extract_string(string, pos, len);
-                        printf(
-                            "ERROR! Line %i, column %i:\nExpected ']' after "
-                            "address expression: '%s' <-- ]\n",
-                            line, pos, astr);
+                        printf(CONSOLE_RED
+                               "ERROR!" CONSOLE_RESET
+                               " Line %i, column %i:\nExpected ']' after "
+                               "address expression: '%s' <-- ]\n",
+                               line, pos, astr);
                         free(astr);
                     }
                     err->col = pos;
@@ -418,10 +421,11 @@ void asm_parse(struct AsmData *data, struct AsmError *err) {
                         if (err->print) {
                             char *astr =
                                 extract_string(string, pos + 1, len - 2);
-                            printf(
-                                "ERROR! Line %i, column %i:\nUnknown register "
-                                "pointer '[%s]'\n",
-                                line, pos, astr);
+                            printf(CONSOLE_RED
+                                   "ERROR!" CONSOLE_RESET
+                                   " Line %i, column %i:\nUnknown register "
+                                   "pointer '[%s]'\n",
+                                   line, pos, astr);
                             free(astr);
                         }
                         err->col = pos;
@@ -521,10 +525,11 @@ void asm_parse(struct AsmData *data, struct AsmError *err) {
                     unsigned int len = 0;
                     while (!IS_WHITESPACE(string[pos + len])) ++len;
                     char *astr = extract_string(string, pos, len);
-                    printf(
-                        "ERROR! Line %i, column %i:\nUnknown argument format "
-                        "'%s'\n",
-                        line, pos, astr);
+                    printf(CONSOLE_RED
+                           "ERROR!" CONSOLE_RESET
+                           " Line %i, column %i:\nUnknown argument format "
+                           "'%s'\n",
+                           line, pos, astr);
                     free(astr);
                 }
                 err->col = pos;
@@ -543,10 +548,11 @@ void asm_parse(struct AsmData *data, struct AsmError *err) {
                 ++pos;
             } else {
                 if (err->print)
-                    printf(
-                        "ERROR! Line %i, column %i:\nExpected comma, found "
-                        "'%c'\n",
-                        line, pos, string[pos]);
+                    printf(CONSOLE_RED
+                           "ERROR!" CONSOLE_RESET
+                           " Line %i, column %i:\nExpected comma, found "
+                           "'%c'\n",
+                           line, pos, string[pos]);
                 err->col = pos;
                 err->line = cline->data.n;
                 err->errc = ASM_ERR_GENERIC;
@@ -559,7 +565,9 @@ void asm_parse(struct AsmData *data, struct AsmError *err) {
         int errc = asm_decode_instruction(instruct);
         if (errc == ASM_ERR_MNEMONIC) {
             if (err->print)
-                printf("ERROR! Line %i, column %i:\nUnknown mnemonic '%s'\n",
+                printf(CONSOLE_RED
+                       "ERROR!" CONSOLE_RESET
+                       " Line %i, column %i:\nUnknown mnemonic '%s'\n",
                        line, pos, instruct->mnemonic);
             err->col = pos;
             err->line = cline->data.n;
@@ -571,10 +579,11 @@ void asm_parse(struct AsmData *data, struct AsmError *err) {
             if (err->print) {
                 unsigned int argc =
                     linked_list_size_AsmArgument(instruct->args);
-                printf(
-                    "ERROR! Line %i, column %i:\nUnknown argument(s) for "
-                    "\"%s\": [%u] ",
-                    line, pos, instruct->mnemonic, argc);
+                printf(CONSOLE_RED
+                       "ERROR!" CONSOLE_RESET
+                       " Line %i, column %i:\nUnknown argument(s) for "
+                       "\"%s\": [%u] ",
+                       line, pos, instruct->mnemonic, argc);
                 struct LL_NODET_NAME(AsmArgument) *curr = instruct->args;
                 for (unsigned int i = 0; curr != 0; ++i, curr = curr->next) {
                     print_asm_arg(&(curr->data));
@@ -602,10 +611,11 @@ void asm_parse(struct AsmData *data, struct AsmError *err) {
             linked_list_insertnode_AsmChunk(&(data->chunks), chunk_node);
         } else {
             if (err->print)
-                printf(
-                    "ERROR! Line %i, column %i:\nChunk collision - %u bytes at "
-                    "%llu\n",
-                    line, pos, collision->bytes, collision->offset);
+                printf(CONSOLE_RED
+                       "ERROR!" CONSOLE_RESET
+                       " Line %i, column %i:\nChunk collision - %u bytes at "
+                       "%llu\n",
+                       line, pos, collision->bytes, collision->offset);
             err->col = pos;
             err->line = cline->data.n;
             err->errc = ASM_ERR_MEMORY;
@@ -627,12 +637,13 @@ void asm_parse(struct AsmData *data, struct AsmError *err) {
             while (arg != 0) {
                 if (arg->data.type == ASM_ARG_LABEL) {
                     if (err->print)
-                        printf(
-                            "ERROR! Instruction \"%s\" (+%u): reference to "
-                            "undefined "
-                            "label \"%s\"\n",
-                            instruct->mnemonic, chunk->data.offset,
-                            arg->data.data);
+                        printf(CONSOLE_RED
+                               "ERROR!" CONSOLE_RESET
+                               " Instruction \"%s\" (+%u): reference to "
+                               "undefined "
+                               "label \"%s\"\n",
+                               instruct->mnemonic, chunk->data.offset,
+                               arg->data.data);
                     err->line = 0;  // Unknown.
                     err->col = 0;   // Unknown.
                     err->errc = ASM_ERR_LABEL;
@@ -659,7 +670,9 @@ char *asm_compile(struct AsmData *data, struct AsmError *err) {
                     asm_write_instruction(buf, chunk->data.offset, instruct);
                 if (errc != ASM_ERR_NONE) {
                     if (err->print)
-                        printf("ERROR! Unknown opcode whilst decoding: %llu\n",
+                        printf(CONSOLE_RED
+                               "ERROR!" CONSOLE_RESET
+                               " Unknown opcode whilst decoding: %llu\n",
                                instruct->opcode);
                     err->line = 0;  // Unknown.
                     err->col = 0;   // Unknown.
@@ -671,9 +684,10 @@ char *asm_compile(struct AsmData *data, struct AsmError *err) {
             }
             default:
                 if (err->print)
-                    printf(
-                        "ERROR! Unknown data chunk type whist decoding: %i\n",
-                        chunk->data.type);
+                    printf(CONSOLE_RED
+                           "ERROR!" CONSOLE_RESET
+                           " Unknown data chunk type whist decoding: %i\n",
+                           chunk->data.type);
                 err->line = 0;  // Unknown.
                 err->col = 0;   // Unknown.
                 err->errc = ASM_ERR_GENERIC;

@@ -73,6 +73,9 @@
     (c >= 'a' ? c - 'a' + 10  \
               : (c >= 'A' ? c - 'A' + 10 : (c >= '0' ? c - '0' : 0)))
 
+#define CONSOLE_RED "\033[0;31m"
+#define CONSOLE_RESET "\033[0m"
+
 /** Given a radix suffix, return integer radix. Return -1 ifinvalid radix. */
 int get_radix(char suffix);
 
