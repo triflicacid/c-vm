@@ -1,17 +1,5 @@
 #include "bit-ops.h"
 
-void print_bytes(const void *data, const T_u32 len) {
-    for (T_u32 off = 0; off < len; ++off) {
-        printf("%.2X ", *((T_u8 *)data + off));
-    }
-}
-
-void print_chars(const char *data, const T_u32 chars) {
-    for (T_u32 off = 0; off < chars; ++off) {
-        printf("%c", data[off]);
-    }
-}
-
 void bitwise_not(void *data, T_u8 bytes) {
     for (T_u8 off = 0; off < bytes; ++off) {
         T_u8 *addr = (T_u8 *)data + off;

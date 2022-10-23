@@ -1,6 +1,6 @@
 #include "chunk.h"
 
-#include "../cpu/bit-ops.h"
+#include "../util.h"
 #include "instruction.h"
 
 void asm_print_chunk(struct AsmChunk *chunk) {

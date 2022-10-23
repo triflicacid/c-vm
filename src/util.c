@@ -2,6 +2,18 @@
 
 #include <stdlib.h>
 
+void print_bytes(const void *data, const T_u32 len) {
+    for (T_u32 off = 0; off < len; ++off) {
+        printf("%.2X ", *((T_u8 *)data + off));
+    }
+}
+
+void print_chars(const char *data, const T_u32 chars) {
+    for (T_u32 off = 0; off < chars; ++off) {
+        printf("%c", data[off]);
+    }
+}
+
 int get_radix(char suffix) {
     switch (suffix) {
         case 'h':

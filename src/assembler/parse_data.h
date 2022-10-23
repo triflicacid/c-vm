@@ -111,31 +111,31 @@
 
 // Code to extract data from string and insert into `chunk`. Requires `chunk`,
 // `string`, `err`.
-#define PARSEDATA_EXTRACT(name, datatype)                           \
-    /* Extract data into linked list */                             \
-    struct LL_NODET_NAME(AsmDataItem_##name) *items = 0;            \
-    int errc = parse_data_##name(string + pos, &items, err);        \
-    /* Set-up chunk */                                              \
-    unsigned int size = linked_list_size_AsmDataItem_##name(items); \
-    chunk->type = ASM_CHUNKT_DATA;                                  \
-    datatype *buf;                                                  \
-    if (size == 0) {                                                \
-        chunk->bytes = sizeof(datatype);                            \
-        buf = malloc(sizeof(datatype));                             \
-        *buf = 0;                                                   \
-    } else {                                                        \
-        chunk->bytes = size * sizeof(datatype);                     \
-        /* Transfer into buffer */                                  \
-        buf = malloc(chunk->bytes);                                 \
-        struct LL_NODET_NAME(AsmDataItem_##name) *cursor = items;   \
-        unsigned int offset = 0;                                    \
-        while (cursor != 0) {                                       \
-            buf[offset] = cursor->data;                             \
-            ++offset;                                               \
-            cursor = cursor->next;                                  \
-        }                                                           \
-        linked_list_destroy_AsmDataItem_##name(&items);             \
-    }                                                               \
+#define PARSEDATA_EXTRACT(name, datatype)                            \
+    /* Extract data into linked list */                              \
+    struct LL_NODET_NAME(AsmDataItem_##name) *items = 0;             \
+    int errc = parse_data_##name((char *)string + pos, &items, err); \
+    /* Set-up chunk */                                               \
+    unsigned int size = linked_list_size_AsmDataItem_##name(items);  \
+    chunk->type = ASM_CHUNKT_DATA;                                   \
+    datatype *buf;                                                   \
+    if (size == 0) {                                                 \
+        chunk->bytes = sizeof(datatype);                             \
+        buf = malloc(sizeof(datatype));                              \
+        *buf = 0;                                                    \
+    } else {                                                         \
+        chunk->bytes = size * sizeof(datatype);                      \
+        /* Transfer into buffer */                                   \
+        buf = malloc(chunk->bytes);                                  \
+        struct LL_NODET_NAME(AsmDataItem_##name) *cursor = items;    \
+        unsigned int offset = 0;                                     \
+        while (cursor != 0) {                                        \
+            buf[offset] = cursor->data;                              \
+            ++offset;                                                \
+            cursor = cursor->next;                                   \
+        }                                                            \
+        linked_list_destroy_AsmDataItem_##name(&items);              \
+    }                                                                \
     chunk->data = buf;
 
 PARSEDATA_DECL(u8, T_u8);

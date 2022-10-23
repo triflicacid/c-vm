@@ -79,6 +79,13 @@
 #define CONSOLE_YELLOW "\033[0;33m"
 #define CONSOLE_RESET "\033[0m"
 
+/** Print seqence of bytes e.g. for `int` call print_bytes(&var, sizeof(int)) to
+ * print `XX XX XX XX ` */
+void print_bytes(const void *data, const unsigned int length);
+
+/** Print seqence of characters */
+void print_chars(const char *data, const unsigned int chars);
+
 /** Given a radix suffix, return integer radix. Return -1 ifinvalid radix. */
 int get_radix(char suffix);
 

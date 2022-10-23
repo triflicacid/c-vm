@@ -13,9 +13,8 @@ For more informations, see `docs/`, `tests/`.
 - CPU: implement instructions OP_PUSH_REGPTR, OP_POP_REGPTR
 - Assembler
   - Defining data. Reserves space in Chunk linked list.
-    - Support for floating-point `f32` and `f64`
     - Support to find length of previously defined constant
-  - Resolve `removed const` qualifier warnings. `parse_data.h`.
+  - Support for expressions - RPN
 - Print to STDOUT (using memory mapping to map characters?)
 - Basic de-compiler? Given .bin, produce .asm
 
