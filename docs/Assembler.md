@@ -21,7 +21,10 @@ The assembler works in the current way:
 
 - Read file and split into lines
 - Scan each line for pre-processor directives
-- Parse eahc line into an AST
+  - If `-p` switch enabled, this would be outputted 
+- Parse each line into an AST
+  - Split into "chunks"
+  - Resolve labels
 - Resolve labels in AST
 - Convert into machine code and insert into a buffer
 

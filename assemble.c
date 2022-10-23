@@ -1,8 +1,11 @@
+#define DEBUG_MODE 1
+
 #include "src/assembler/assemble.c"
 
 #include <stdio.h>
 
 #include "src/assembler/args.c"
+#include "src/assembler/chunk.c"
 #include "src/assembler/instruction.c"
 #include "src/assembler/labels.c"
 #include "src/assembler/line.c"
@@ -15,7 +18,7 @@
 int main(int argc, char **argv) {
     char *file_in, *file_out, *file_preproc;
     int is_file_in = 0, is_file_out = 0, preproc = 0, is_file_preproc = 0,
-        do_detail = 0, debug = 0;
+        do_detail = DEBUG_MODE, debug = DEBUG_MODE;
     for (int i = 1; i < argc; ++i) {
         if (argv[i][0] == '-') {
             switch (argv[i][1]) {
@@ -104,11 +107,11 @@ int main(int argc, char **argv) {
     asm_parse(&data, &err);
     if (err.errc) goto end;
     if (debug) {
-        printf("*** BYTES: %llu\n", data.bytes);
-        printf("--- Instruction AST ---\n");
-        asm_print_instruction_list(data.instructs);
         printf("--- Labels ---\n");
         linked_list_print_AsmLabel(data.labels);
+        printf("--- Chunks ---\n");
+        linked_list_print_AsmChunk(data.chunks);
+        printf("TOTAL BYTES: %llu\n", data.bytes);
     }
 
     // COMPILE

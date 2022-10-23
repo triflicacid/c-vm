@@ -7,6 +7,7 @@
 #include "../cpu/cpu.h"
 #include "../cpu/opcodes.h"
 #include "args.h"
+#include "chunk.h"
 #include "err.h"
 #include "instruction.h"
 #include "labels.h"
@@ -25,7 +26,7 @@ struct AsmData asm_data_create() {
                            .lines = 0,
                            .symbols = 0,
                            .labels = 0,
-                           .instructs = 0};
+                           .chunks = 0};
     return data;
 }
 
@@ -252,29 +253,31 @@ void asm_parse(struct AsmData *data, struct AsmError *err) {
                 linked_list_insertnode_AsmLabel(node, &(data->labels), -1);
 
                 // Replace past references to this label
-                struct LL_NODET_NAME(AsmInstruction) *instruct =
-                    data->instructs;
-                while (instruct != 0) {
-                    struct LL_NODET_NAME(AsmArgument) *arg =
-                        instruct->data.args;
-                    int i = 0;
-                    while (arg != 0) {
-                        if (arg->data.type == ASM_ARG_LABEL &&
-                            strcmp(lbl, (char *)arg->data.data) == 0) {
-                            if (err->debug)
-                                printf(
-                                    "Mnemonic \"%s\"/Opcode %u, arg %i: "
-                                    "label \"%s\" "
-                                    "-> addr [%llu]\n",
-                                    instruct->data.mnemonic,
-                                    instruct->data.opcode, i, lbl, offset);
-                            arg->data.type = ASM_ARG_ADDR;
-                            arg->data.data = offset;
+                struct LL_NODET_NAME(AsmChunk) *chunk = data->chunks;
+                while (chunk != 0) {
+                    // If chunk is storing an instruction
+                    if (chunk->data.type == ASM_CHUNKT_INSTRUCTION) {
+                        struct AsmInstruction *instruct = chunk->data.data;
+                        struct LL_NODET_NAME(AsmArgument) *arg = instruct->args;
+                        unsigned int i = 0;
+                        while (arg != 0) {
+                            if (arg->data.type == ASM_ARG_LABEL &&
+                                strcmp(lbl, (char *)arg->data.data) == 0) {
+                                if (err->debug)
+                                    printf(
+                                        "Mnemonic \"%s\"/Opcode %u, arg %u: "
+                                        "label \"%s\" "
+                                        "-> addr [%llu]\n",
+                                        instruct->mnemonic, instruct->opcode, i,
+                                        lbl, offset);
+                                arg->data.type = ASM_ARG_ADDR;
+                                arg->data.data = offset;
+                            }
+                            ++i;
+                            arg = arg->next;
                         }
-                        ++i;
-                        arg = arg->next;
                     }
-                    instruct = instruct->next;
+                    chunk = chunk->next;
                 }
             } else {  // Update label
                 label->addr = offset;
@@ -293,16 +296,19 @@ void asm_parse(struct AsmData *data, struct AsmError *err) {
         }
 
         // Create data
-        struct LL_NODET_NAME(AsmInstruction) *instruct_node =
-            malloc(sizeof(struct LL_NODET_NAME(AsmInstruction)));
-        struct AsmInstruction *instruct = &(instruct_node->data);
-        instruct->offset = offset;
-        instruct->bytes = 0;
-        instruct->args = 0;
-        linked_list_insertnode_AsmInstruction(instruct_node, &(data->instructs),
-                                              -1);
+        struct LL_NODET_NAME(AsmChunk) *chunk_node =
+            malloc(sizeof(struct LL_NODET_NAME(AsmChunk)));
+        struct AsmChunk *chunk = &(chunk_node->data);
+        chunk->offset = offset;
+        chunk->bytes = 0;
 
-        // Transfer over mnemonic
+        // Initialise instruction
+        chunk->type = ASM_CHUNKT_INSTRUCTION;
+        chunk->data = malloc(sizeof(struct AsmInstruction));
+        struct AsmInstruction *instruct = chunk->data;
+        instruct->args = 0;
+        instruct->bytes = 0;
+        instruct->opcode = 0;
         instruct->mnemonic = malloc(mlen + 1);
         memcpy(instruct->mnemonic, string + mptr, mlen);
         *((char *)instruct->mnemonic + mlen) = '\0';
@@ -345,6 +351,8 @@ void asm_parse(struct AsmData *data, struct AsmError *err) {
                             err->col = pos;
                             err->line = cline->data.n;
                             err->errc = ASM_ERR_GENERIC;
+                            asm_free_instruction_chunk(chunk);
+                            free(chunk_node);
                             return;
                         }
                     }
@@ -399,6 +407,8 @@ void asm_parse(struct AsmData *data, struct AsmError *err) {
                     err->col = pos;
                     err->line = cline->data.n;
                     err->errc = ASM_ERR_ADDR;
+                    asm_free_instruction_chunk(chunk);
+                    free(chunk_node);
                     return;
                 }
                 if (IS_CHAR(string[pos + 1])) {  // Register pointer?
@@ -417,6 +427,8 @@ void asm_parse(struct AsmData *data, struct AsmError *err) {
                         err->col = pos;
                         err->line = cline->data.n;
                         err->errc = ASM_ERR_REG;
+                        asm_free_instruction_chunk(chunk);
+                        free(chunk_node);
                         return;
                     }
 
@@ -518,6 +530,8 @@ void asm_parse(struct AsmData *data, struct AsmError *err) {
                 err->col = pos;
                 err->line = cline->data.n;
                 err->errc = ASM_ERR_ARG;
+                asm_free_instruction_chunk(chunk);
+                free(chunk_node);
                 return;
             }
 
@@ -536,11 +550,11 @@ void asm_parse(struct AsmData *data, struct AsmError *err) {
                 err->col = pos;
                 err->line = cline->data.n;
                 err->errc = ASM_ERR_GENERIC;
+                asm_free_instruction_chunk(chunk);
+                free(chunk_node);
                 return;
             }
         }
-
-        if (err->debug) asm_print_instruction(instruct);
 
         int errc = asm_decode_instruction(instruct);
         if (errc == ASM_ERR_MNEMONIC) {
@@ -550,6 +564,8 @@ void asm_parse(struct AsmData *data, struct AsmError *err) {
             err->col = pos;
             err->line = cline->data.n;
             err->errc = errc;
+            asm_free_instruction_chunk(chunk);
+            free(chunk_node);
             return;
         } else if (errc == ASM_ERR_ARGS) {
             if (err->print) {
@@ -569,60 +585,102 @@ void asm_parse(struct AsmData *data, struct AsmError *err) {
             err->col = pos;
             err->line = cline->data.n;
             err->errc = errc;
+            asm_free_instruction_chunk(chunk);
+            free(chunk_node);
             return;
         }
 
+        // Read byte-length
         offset += instruct->bytes;
+        chunk->bytes = instruct->bytes;
         data->bytes = offset;
+
+        // Insert chunk into linked list
+        struct AsmChunk *collision = asm_chunk_in_range(
+            data->chunks, chunk->offset, chunk->offset + chunk->bytes);
+        if (collision == 0) {
+            linked_list_insertnode_AsmChunk(&(data->chunks), chunk_node);
+        } else {
+            if (err->print)
+                printf(
+                    "ERROR! Line %i, column %i:\nChunk collision - %u bytes at "
+                    "%llu\n",
+                    line, pos, collision->bytes, collision->offset);
+            err->col = pos;
+            err->line = cline->data.n;
+            err->errc = ASM_ERR_MEMORY;
+            asm_free_instruction_chunk(chunk);
+            free(chunk_node);
+            return;
+        }
+        // Next line
         cline = cline->next;
     }
 
     // Check for labels (should be none).
-    struct LL_NODET_NAME(AsmInstruction) *instruct = data->instructs;
-    while (instruct != 0) {
-        struct LL_NODET_NAME(AsmArgument) *arg = instruct->data.args;
-        int i = 0;
-        while (arg != 0) {
-            if (arg->data.type == ASM_ARG_LABEL) {
-                if (err->print)
-                    printf(
-                        "ERROR! Instruction \"%s\" (+%u): reference to "
-                        "undefined "
-                        "label \"%s\"\n",
-                        instruct->data.mnemonic, instruct->data.offset,
-                        arg->data.data);
-                err->line = 0;  // Unknown.
-                err->col = 0;   // Unknown.
-                err->errc = ASM_ERR_LABEL;
-                return;
+    struct LL_NODET_NAME(AsmChunk) *chunk = data->chunks;
+    while (chunk != 0) {
+        if (chunk->data.type == ASM_CHUNKT_INSTRUCTION) {
+            struct AsmInstruction *instruct = chunk->data.data;
+            struct LL_NODET_NAME(AsmArgument) *arg = instruct->args;
+            unsigned int i = 0;
+            while (arg != 0) {
+                if (arg->data.type == ASM_ARG_LABEL) {
+                    if (err->print)
+                        printf(
+                            "ERROR! Instruction \"%s\" (+%u): reference to "
+                            "undefined "
+                            "label \"%s\"\n",
+                            instruct->mnemonic, chunk->data.offset,
+                            arg->data.data);
+                    err->line = 0;  // Unknown.
+                    err->col = 0;   // Unknown.
+                    err->errc = ASM_ERR_LABEL;
+                    return;
+                }
+                ++i;
+                arg = arg->next;
             }
-            ++i;
-            arg = arg->next;
         }
-        instruct = instruct->next;
+        chunk = chunk->next;
     }
 }
 
 char *asm_compile(struct AsmData *data, struct AsmError *err) {
     data->stage = ASM_STAGE_COMPILE;
     if (data->bytes == 0) return 0;   // Return NULL if nothing to write
-    unsigned int offset = 0;          // Offset into buffer
     char *buf = malloc(data->bytes);  // Create byte buffer
-    struct LL_NODET_NAME(AsmInstruction) *instruct = data->instructs;
-    while (instruct != 0) {
-        int errc = asm_write_instruction(buf, &(instruct->data));
-        if (errc != ASM_ERR_NONE) {
-            if (err->print)
-                printf("ERROR! Unknown opcode whilst decoding: %llu\n",
-                       instruct->data.opcode);
-            err->line = 0;  // Unknown.
-            err->col = 0;   // Unknown.
-            err->errc = errc;
-            free(buf);
-            return 0;
+    struct LL_NODET_NAME(AsmChunk) *chunk = data->chunks;
+    while (chunk != 0) {
+        switch (chunk->data.type) {
+            case ASM_CHUNKT_INSTRUCTION: {
+                struct AsmInstruction *instruct = chunk->data.data;
+                int errc =
+                    asm_write_instruction(buf, chunk->data.offset, instruct);
+                if (errc != ASM_ERR_NONE) {
+                    if (err->print)
+                        printf("ERROR! Unknown opcode whilst decoding: %llu\n",
+                               instruct->opcode);
+                    err->line = 0;  // Unknown.
+                    err->col = 0;   // Unknown.
+                    err->errc = errc;
+                    free(buf);
+                    return 0;
+                }
+                break;
+            }
+            default:
+                if (err->print)
+                    printf(
+                        "ERROR! Unknown data chunk type whist decoding: %i\n",
+                        chunk->data.type);
+                err->line = 0;  // Unknown.
+                err->col = 0;   // Unknown.
+                err->errc = ASM_ERR_GENERIC;
+                free(buf);
+                return 0;
         }
-        SET_IF_LARGER(offset, instruct->data.offset + instruct->data.bytes);
-        instruct = instruct->next;
+        chunk = chunk->next;
     }
     return buf;
 }
@@ -1302,13 +1360,14 @@ int asm_decode_instruction(struct AsmInstruction *instruct) {
     return ASM_ERR_NONE;
 }
 
-int asm_write_instruction(void *buf, struct AsmInstruction *instruct) {
+int asm_write_instruction(void *buf, unsigned long long offset,
+                          struct AsmInstruction *instruct) {
     switch (instruct->opcode) {
         case OP_HALT:
-            BUF_WRITEK(instruct->offset, OPCODE_T, OP_HALT);
+            BUF_WRITEK(offset, OPCODE_T, OP_HALT);
             break;
         case OP_NOP:
-            BUF_WRITEK(instruct->offset, OPCODE_T, OP_NOP);
+            BUF_WRITEK(offset, OPCODE_T, OP_NOP);
             break;
         case OP_ADD_REG_LIT:
             WRITE_INST2(OP_ADD_REG_LIT, T_u8, WORD_T);
@@ -1641,10 +1700,10 @@ int asm_write_instruction(void *buf, struct AsmInstruction *instruct) {
             WRITE_INST1(OP_PRINT_UINT_REG, T_u8);
             break;
         case OP_PSTACK:
-            BUF_WRITEK(instruct->offset, OPCODE_T, OP_PSTACK);
+            BUF_WRITEK(offset, OPCODE_T, OP_PSTACK);
             break;
         case OP_PREG:
-            BUF_WRITEK(instruct->offset, OPCODE_T, OP_PREG);
+            BUF_WRITEK(offset, OPCODE_T, OP_PREG);
             break;
         case OP_PUSH_LIT:
             WRITE_INST1(OP_PUSH_LIT, WORD_T);
@@ -1713,7 +1772,7 @@ int asm_write_instruction(void *buf, struct AsmInstruction *instruct) {
             WRITE_INST1(OP_PUSH64_REGPTR, T_u8);
             break;
         case OP_RET:
-            BUF_WRITEK(instruct->offset, OPCODE_T, OP_RET);
+            BUF_WRITEK(offset, OPCODE_T, OP_RET);
             break;
         case OP_ARSHIFT_LIT:
             WRITE_INST2(OP_ARSHIFT_LIT, T_u8, T_u8);

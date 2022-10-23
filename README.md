@@ -12,6 +12,7 @@ For more informations, see `docs/`, `tests/`.
 ### TODO
 - CPU: implement instructions OP_PUSH_REGPTR, OP_POP_REGPTR
 - Assembler
+  - Defining data e.g. `num: f64 3.14`, `string: u8 "Hello"`
 - Print to STDOUT (using memory mapping to map characters?)
 - Basic de-compiler? Given .bin, produce .asm
 

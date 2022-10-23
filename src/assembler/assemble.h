@@ -5,6 +5,7 @@
 
 #include "../util.h"
 #include "args.h"
+#include "chunk.h"
 #include "err.h"
 #include "instruction.h"
 #include "labels.h"
@@ -33,10 +34,11 @@
 #define IS_TOKEN_SEP(c) \
     (c == ' ' || c == '\t' || c == '(' || c == '[' || c == '{' || c == ',')
 
-// Write instruction to machine code with 1 argument
-#define WRITE_INST1(opcode, type)                         \
-    BUF_WRITEK(instruct->offset, OPCODE_T, opcode);       \
-    BUF_WRITEK(instruct->offset + sizeof(OPCODE_T), type, \
+// Write instruction to machine code with 1 argument. `offset` and `instruct`
+// must be declared.
+#define WRITE_INST1(opcode, type)               \
+    BUF_WRITEK(offset, OPCODE_T, opcode);       \
+    BUF_WRITEK(offset + sizeof(OPCODE_T), type, \
                (type)instruct->args->data.data);
 
 // Decode instruction in struct AsmInstruction *
@@ -44,12 +46,13 @@
     instruct->opcode = _opcode;     \
     instruct->bytes = sizeof(OPCODE_T) + sizeof(type);
 
-// Write instruction to machine code with 2 arguments
-#define WRITE_INST2(opcode, type1, type2)                                  \
-    BUF_WRITEK(instruct->offset, OPCODE_T, opcode);                        \
-    BUF_WRITEK(instruct->offset + sizeof(OPCODE_T), type1,                 \
-               (type1)instruct->args->data.data);                          \
-    BUF_WRITEK(instruct->offset + sizeof(OPCODE_T) + sizeof(type1), type2, \
+// Write instruction to machine code with 2 arguments. `offset` and `instruct`
+// must be declared.
+#define WRITE_INST2(opcode, type1, type2)                        \
+    BUF_WRITEK(offset, OPCODE_T, opcode);                        \
+    BUF_WRITEK(offset + sizeof(OPCODE_T), type1,                 \
+               (type1)instruct->args->data.data);                \
+    BUF_WRITEK(offset + sizeof(OPCODE_T) + sizeof(type1), type2, \
                (type2)instruct->args->next->data.data);
 
 // Decode instruction in struct AsmInstruction *
@@ -57,16 +60,16 @@
     instruct->opcode = _opcode;             \
     instruct->bytes = sizeof(OPCODE_T) + sizeof(type1) + sizeof(type2);
 
-// Write instruction to machine code with 3 arguments
-#define WRITE_INST3(opcode, type1, type2, type3)                             \
-    BUF_WRITEK(instruct->offset, OPCODE_T, opcode);                          \
-    BUF_WRITEK(instruct->offset + sizeof(OPCODE_T), type1,                   \
-               (type1)instruct->args->data.data);                            \
-    BUF_WRITEK(instruct->offset + sizeof(OPCODE_T) + sizeof(type1), type2,   \
-               (type2)instruct->args->next->data.data);                      \
-    BUF_WRITEK(                                                              \
-        instruct->offset + sizeof(OPCODE_T) + sizeof(type1) + sizeof(type2), \
-        type3, (type3)instruct->args->next->next->data.data);
+// Write instruction to machine code with 3 arguments. `offset` and `instruct`
+// must be declared.
+#define WRITE_INST3(opcode, type1, type2, type3)                          \
+    BUF_WRITEK(offset, OPCODE_T, opcode);                                 \
+    BUF_WRITEK(offset + sizeof(OPCODE_T), type1,                          \
+               (type1)instruct->args->data.data);                         \
+    BUF_WRITEK(offset + sizeof(OPCODE_T) + sizeof(type1), type2,          \
+               (type2)instruct->args->next->data.data);                   \
+    BUF_WRITEK(offset + sizeof(OPCODE_T) + sizeof(type1) + sizeof(type2), \
+               type3, (type3)instruct->args->next->next->data.data);
 
 // Decode instruction in struct AsmInstruction *
 #define DECODE_INST3(_opcode, type1, type2, type3) \
@@ -77,10 +80,10 @@
 struct AsmData {
     int stage;                 // Stage of assembly
     unsigned long long bytes;  // Bytes used (populated in ASM_STAGE_PARSE)
-    struct LL_NODET_NAME(AsmLine) * lines;             // Source lines
-    struct LL_NODET_NAME(AsmSymbol) * symbols;         // Symbols (constants)
-    struct LL_NODET_NAME(AsmLabel) * labels;           // Labels
-    struct LL_NODET_NAME(AsmInstruction) * instructs;  // Instructions
+    struct LL_NODET_NAME(AsmLine) * lines;      // Source lines
+    struct LL_NODET_NAME(AsmSymbol) * symbols;  // Symbols (constants)
+    struct LL_NODET_NAME(AsmLabel) * labels;    // Labels
+    struct LL_NODET_NAME(AsmChunk) * chunks;    // Chunks (writable data)
 };
 
 // Create `struct AsmData`
@@ -113,6 +116,7 @@ char *asm_compile(struct AsmData *data, struct AsmError *err);
 int asm_decode_instruction(struct AsmInstruction *instruct);
 
 /** Write instruction data to buffer. Instruction must fit in buffer. */
-int asm_write_instruction(void *buf, struct AsmInstruction *instruct);
+int asm_write_instruction(void *buf, unsigned long long offset,
+                          struct AsmInstruction *instruct);
 
 #endif

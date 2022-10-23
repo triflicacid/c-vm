@@ -8,6 +8,8 @@ This file explains certain files' usage in `src/`.
   - `args.c`. Defines functions for handling `struct AsmArgument`. Represent arguments to assembler mnemonics
   - `assemble.h`
   - `assemble.c`. Main file for assembling a source file into a machine code buffer
+  - `chunk.h`
+  - `chunk.c`. Functions for manipulating "chunks" of data - used in AST
   - `err.h`. Defines error constants which may be returned during a failed assembly
   - `instruction.h`. Definitions for Assembler Instructions
   - `instruction.c`. Defines functions for handling `struct AsmInstruction`. Represents assembly mnemonics
