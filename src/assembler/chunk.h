@@ -5,6 +5,7 @@
 
 #define ASM_CHUNKT_UNKNOWN 0
 #define ASM_CHUNKT_INSTRUCTION 1
+#define ASM_CHUNKT_DATA 2
 
 struct AsmChunk {
     unsigned long long offset;  // Byte offset
@@ -19,6 +20,8 @@ LL_DECL_FPRINT(AsmChunk, struct AsmChunk);
 
 void asm_print_chunk(struct AsmChunk *chunk);
 
+void asm_destroy_chunk(struct AsmChunk *chunk);
+
 // Insert chunk node into the linked list
 void linked_list_insertnode_AsmChunk(struct LL_NODET_NAME(AsmChunk) * *chunks,
                                      struct LL_NODET_NAME(AsmChunk) * chunk);
@@ -28,5 +31,7 @@ void linked_list_insertnode_AsmChunk(struct LL_NODET_NAME(AsmChunk) * *chunks,
 struct AsmChunk *asm_chunk_in_range(struct LL_NODET_NAME(AsmChunk) * chunks,
                                     unsigned long long start,
                                     unsigned long long end);
+
+LL_DECL_FDESTROY(AsmChunk);
 
 #endif

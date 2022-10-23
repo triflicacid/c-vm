@@ -1,5 +1,6 @@
 #include "chunk.h"
 
+#include "../cpu/bit-ops.h"
 #include "instruction.h"
 
 void asm_print_chunk(struct AsmChunk *chunk) {
@@ -9,10 +10,28 @@ void asm_print_chunk(struct AsmChunk *chunk) {
             printf(" - instruction:\n\t");
             asm_print_instruction(chunk->data);
             break;
+        case ASM_CHUNKT_DATA:
+            printf(" - data:\n\t{");
+            print_bytes(chunk->data, chunk->bytes);
+            printf("\b}\n");
+            break;
         default:
             printf("\n");
     }
 }
+
+void asm_destroy_chunk(struct AsmChunk *chunk) {
+    switch (chunk->type) {
+        case ASM_CHUNKT_INSTRUCTION:
+            asm_free_instruction_chunk(chunk);
+            break;
+        case ASM_CHUNKT_DATA:
+            free(chunk->data);
+            break;
+    }
+}
+
+LL_CREATE_FDESTROY(AsmChunk, asm_destroy_chunk(&(curr->data)));
 
 LL_CREATE_FPRINT(AsmChunk, struct AsmChunk, asm_print_chunk(&(curr->data)));
 

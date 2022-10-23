@@ -43,6 +43,13 @@ Assembly source files are read line-by-line, and have the following syntax: `[la
 Labels come in the form `label:`
   - `label` is a word containing letters and numbers. (See section on labels for more.)
 
+If `mnemonic` is one of `u8, u16, u32, u64`, this is a data constant.
+  - `args` is a comma- or space-seperated list of constants
+    - `...[r]` - Numeric constants. These may be followed by a radix suffix `r`.  
+    - `'...'` - Character constants
+    - `"..."` - String constants
+  - The mnemonic specifies the type of each item. Each item is written to the output with this type. In the case of strings, each character in said string has this type.
+
 Instructions come in the form `mnemonic [...args]` where the arguments consist of a comma-seperated list of:
   - `nnn`, where `nnn` is a number, represents a **literal**
   - `[nnn]`, where `nnn` is a number, represents an **address**

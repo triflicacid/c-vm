@@ -74,6 +74,9 @@
               : (c >= 'A' ? c - 'A' + 10 : (c >= '0' ? c - '0' : 0)))
 
 #define CONSOLE_RED "\033[0;31m"
+#define CONSOLE_GREEN "\033[0;32m"
+#define CONSOLE_BLUE "\033[0;34m"
+#define CONSOLE_YELLOW "\033[0;33m"
 #define CONSOLE_RESET "\033[0m"
 
 /** Given a radix suffix, return integer radix. Return -1 ifinvalid radix. */

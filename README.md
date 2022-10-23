@@ -13,9 +13,9 @@ For more informations, see `docs/`, `tests/`.
 - CPU: implement instructions OP_PUSH_REGPTR, OP_POP_REGPTR
 - Assembler
   - Defining data. Reserves space in Chunk linked list.
-    - Syntax: `[<label>:] <type> <data>`
-    - `data` is a comma-seperated list of items. Items may be numbers, characters, or a string. Each item will be inserted as type `type` (includes characters in a string)
-    - e.g. `num: f64 3.14`, `string: u8 "Hello"`
+    - Support for floating-point `f32` and `f64`
+    - Support to find length of previously defined constant
+  - Resolve `removed const` qualifier warnings. `parse_data.h`.
 - Print to STDOUT (using memory mapping to map characters?)
 - Basic de-compiler? Given .bin, produce .asm
 

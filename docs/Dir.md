@@ -17,6 +17,8 @@ This file explains certain files' usage in `src/`.
   - `labels.c`. Functions for handling `struct AsmLabel` in assembly. Represents an assembly label
   - `line.h`
   - `line.c`. Functions for handling `struct AsmLine` in assembly. Represents a source line in an assembly source file
+  - `parse_data.h`. Macros for defining functions to handle data constants.
+  - `parse_data.c`
   - `symbol.h`
   - `symbol.c`. Functions for handling `struct AsmSymbol` in assembly. Represents constants defined whilst assembling.
 - `cpu`. Source code for the CPU

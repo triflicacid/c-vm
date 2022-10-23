@@ -1,4 +1,4 @@
-#define DEBUG_MODE 0
+#define DEBUG_MODE 1
 
 #include "src/assembler/assemble.c"
 
@@ -9,6 +9,7 @@
 #include "src/assembler/instruction.c"
 #include "src/assembler/labels.c"
 #include "src/assembler/line.c"
+#include "src/assembler/parse_data.c"
 #include "src/assembler/symbol.c"
 #include "src/cpu/bit-ops.c"
 #include "src/cpu/cpu.c"
@@ -69,7 +70,7 @@ int main(int argc, char **argv) {
                is_file_in ? file_in : "source.asm");
     FILE *fp = fopen(is_file_in ? file_in : "source.asm", "r");
 
-    if (debug) printf("=== GET LINES ===\n");
+    if (debug) printf(CONSOLE_GREEN "=== GET LINES ===\n" CONSOLE_RESET);
     asm_read_lines(fp, &data, &err);
     if (err.errc) goto end;
     if (debug) {
@@ -80,7 +81,7 @@ int main(int argc, char **argv) {
     fclose(fp);
 
     // PRE-PROCESS FILE
-    if (debug) printf("=== PRE-PROCESSING ===\n");
+    if (debug) printf(CONSOLE_GREEN "=== PRE-PROCESSING ===\n" CONSOLE_RESET);
     asm_preprocess(&data, &err);
     if (err.errc) goto end;
     if (debug) {
@@ -103,7 +104,7 @@ int main(int argc, char **argv) {
     }
 
     // PARSE LINES
-    if (debug) printf("=== PARSING ===\n");
+    if (debug) printf(CONSOLE_GREEN "=== PARSING ===\n" CONSOLE_RESET);
     asm_parse(&data, &err);
     if (err.errc) goto end;
     if (debug) {
@@ -115,7 +116,7 @@ int main(int argc, char **argv) {
     }
 
     // COMPILE
-    if (debug) printf("=== COMPILE ===\n");
+    if (debug) printf(CONSOLE_GREEN "=== COMPILE ===\n" CONSOLE_RESET);
     char *buf = asm_compile(&data, &err);
     if (err.errc) goto end;
     if (debug) printf("> Buffer of size %u bytes at %p.\n", data.bytes, buf);
