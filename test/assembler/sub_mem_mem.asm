@@ -1,3 +1,5 @@
+; Implement OP_SUB_MEM_MEM just using OP_ADD_MEM_MEM
+
 mov '\n', r1
 ; Print hex bytes of [n1] and [n2]
 prh 2, n1

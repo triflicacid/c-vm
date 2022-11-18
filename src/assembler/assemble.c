@@ -1339,7 +1339,11 @@ int asm_decode_instruction(struct AsmInstruction* instruct)
         } else if (argc == 2 && instruct->args->data.type == ASM_ARG_REG
             && instruct->args->next->data.type == ASM_ARG_REG) {
             DECODE_INST2(OP_SUB_REG_REG, T_u8, T_u8);
-        } else
+        }  else if (argc == 3 && instruct->args->data.type == ASM_ARG_LIT
+            && (instruct->args->next->data.type == ASM_ARG_ADDR || instruct->args->next->data.type == ASM_ARG_LABEL)
+            && (instruct->args->next->next->data.type == ASM_ARG_ADDR || instruct->args->next->next->data.type == ASM_ARG_LABEL)) {
+            DECODE_INST3(OP_SUB_MEM_MEM, T_u8, UWORD_T, UWORD_T);
+        }else
             return ASM_ERR_ARGS;
     } else if (strcmp(instruct->mnemonic, "subf32") == 0) {
         if (argc == 2 && instruct->args->data.type == ASM_ARG_REG
@@ -1853,6 +1857,9 @@ int asm_write_instruction(void* buf, unsigned long long offset, struct AsmInstru
         break;
     case OP_SUBF64_REG_REG:
         WRITE_INST2(OP_SUBF64_REG_REG, T_u8, T_u8);
+        break;
+    case OP_SUB_MEM_MEM:
+        WRITE_INST3(OP_SUB_MEM_MEM, T_u8, UWORD_T, UWORD_T);
         break;
     case OP_XOR_REG_LIT:
         WRITE_INST2(OP_XOR_REG_LIT, T_u8, WORD_T);

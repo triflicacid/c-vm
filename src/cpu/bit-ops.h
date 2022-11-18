@@ -28,6 +28,10 @@ T_u8 bytes_add(const void *n1, const void *n2, void *nout,
 T_u8 bytes_add_lit(const void *n1, const T_u8 k, void *nout,
                const unsigned int bytes);
 
+// Subtract two byte-buffers of byte-length `length` in LITTLE ENDIAN (n1 - n2). Return overflow.
+T_u8 bytes_sub(const void *n1, const void *n2, void *nout,
+               const unsigned int bytes);
+
 // Compare two byte-buffers of byte-length `length` in LITTLE ENDIAN e.g. 0xDEAD
 // -> "AD DE". Return comparison: CMP_EQ, CMP_LT, CMP_GT.
 T_u8 bytes_compare(const void *n1, const void *n2, const unsigned int bytes);

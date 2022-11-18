@@ -151,6 +151,7 @@ Below is the full list of instructions supported by the assembler.
 | slr | OP_LRSHIFT_REG | `<reg: u8>`, `<reg: u8>` | Logically shift value in register right n-bits, where `n` is value in the second register | `slr r2, r3` |
 | sub | OP_SUB_REG_LIT | `<reg: u8>`, `<lit: word>` | Subtract a literal from a register as integers | `sub r1, 10` |
 | sub | OP_SUB_REG_REG | `<reg: u8>`, `<reg: u8>` | Subtract two registers as integers, storing the result in the first register | `sub r1, r2` |
+| sub | OP_SUB_MEM_MEM | `<bytes: u8>`, `<addr1: uword>`, `<addr2: uword>` | Subtract two n-bytes buffers (buf1 - buf2) at the addresses and store result at the first address | `sub 128, [200], [328]` |
 | subf32 | OP_SUBF32_REG_LIT | `<reg: u8>`, `<lit: f32>` | Subtract a literal from a register as 32-bit floats | `subf32 r1, 10` |
 | subf32 | OP_SUBF32_REG_REG | `<reg: u8>`, `<reg: u8>` | Subtract two registers as 32-bit floats, storing the result in the first register | `subf32 r1, r2` |
 | subf64 | OP_SUBF64_REG_LIT | `<reg: u8>`, `<lit: f64>` | Subtract a literal from a register as 64-bit floats | `subf64 r1, 10` |

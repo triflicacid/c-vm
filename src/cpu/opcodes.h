@@ -354,6 +354,9 @@
 // Subtract 2 registers AS DOUBLES : r1 = r1 - r2
 // Syntax: `subf64 <reg: u8> <reg: u8>`
 #define OP_SUBF64_REG_REG 0x00A5
+// Subtract two n-byte buffers: buf1 = buf1 - buf
+// Syntax: `sub <bytes: u8> <addr1: uword> <addr2: uword>`
+#define OP_SUB_MEM_MEM 0x00A6
 
 // Multiply a literal and a register : reg = reg * lit
 // Syntax: `mul <reg: u8> <lit: word>`
