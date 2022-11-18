@@ -8,6 +8,15 @@ void print_bytes(const void *data, const T_u32 len) {
     }
 }
 
+void print_bin(const void *data, const T_u32 len) {
+    for (int i = 0; i < len; ++i) {
+        T_u8 byte = *((T_u8 *)data + i);
+        for (int j = 7; j >= 0; --j)
+            printf("%d", (byte & (1 << j)) >> j);
+        printf(" ");
+    }
+}
+
 void print_chars(const char *data, const T_u32 chars) {
     for (T_u32 off = 0; off < chars; ++off) {
         printf("%c", data[off]);

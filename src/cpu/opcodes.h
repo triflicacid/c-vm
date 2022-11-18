@@ -26,25 +26,33 @@
 // Syntax: `prh <reg: u8>`
 #define OP_PRINT_HEX_REG 0xFFE1
 
+
+// Print register as binary
+// Syntax: `prb <reg: u8>`
+#define OP_PRINT_BIN_REG 0xFFE3
+// Print memory as binary
+// Syntax: `prb <bytes: u8> <addr: uword>`
+#define OP_PRINT_BIN_MEM 0xFFE4
+
 // Print `bytes` characters from memory
 // Syntax: `prc <bytes: u8> <addr: uword>`
-#define OP_PRINT_CHARS_MEM 0xFFE2
+#define OP_PRINT_CHARS_MEM 0xFFE7
 // Print up to four characters from a register. Print up until '\0' is found.
 // Syntax: `prc <reg: u8>`
-#define OP_PRINT_CHARS_REG 0xFFE3
+#define OP_PRINT_CHARS_REG 0xFFE8
 // Print `bytes` characters from a literal
 // Syntax: `prc <bytes: u8> <lit: ...>`
-#define OP_PRINT_CHARS_LIT 0xFFE4
+#define OP_PRINT_CHARS_LIT 0xFFE9
 
 // Print register as an integer
 // Syntax: `pri <reg: u8>`
-#define OP_PRINT_INT_REG 0xFFE5
+#define OP_PRINT_INT_REG 0xFFEB
 // Print register as an unsigned integer
 // Syntax: `pru <reg: u8>`
-#define OP_PRINT_UINT_REG 0xFFE6
+#define OP_PRINT_UINT_REG 0xFFEC
 // Print register as a double
 // Syntax: `prd <reg: u8>`
-#define OP_PRINT_DBL_REG 0xFFE7
+#define OP_PRINT_DBL_REG 0xFFED
 
 // Get character from STDIN and write to register
 // Syntax: `inp <reg: u8>`
@@ -169,7 +177,7 @@
 // Syntax: `mov <register: u8> <register: u8>`
 #define OP_MOV64_REG_REGPTR 0x003E
 
-// Computer bitwise AND of register & literal, and store in register.
+// Computer bitwise AND of register & literal, and store in register. CCR: **00.
 // Syntax: `and <register: u8> <data: word>`
 #define OP_AND_REG_LIT 0x0040
 // Computer 8-bit bitwise AND of register & literal, and store in register.

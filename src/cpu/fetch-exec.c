@@ -498,6 +498,16 @@ int cpu_mem_exec(struct CPU *cpu, OPCODE_T opcode, UWORD_T *ip) {
                 fprintf(cpu->out, "%.2X ", addr[off]);
             return 1;
         }
+        case OP_PRINT_BIN_REG: {
+            T_u8 reg = MEM_READ(*ip, T_u8);
+            *ip += sizeof(T_u8);
+            T_u8 *addr = (T_u8 *)(cpu->regs + reg);
+            print_bin(addr, sizeof(T_u64));
+            return 1;
+        }
+        case OP_PRINT_BIN_MEM:
+            OP_APPLYF_MEM(*ip, print_bin);
+            return 1;
         case OP_PRINT_CHARS_MEM:
             OP_APPLYF_MEM(*ip, print_chars);
             return 1;

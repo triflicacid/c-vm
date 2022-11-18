@@ -37,6 +37,13 @@
 #define CCR_ZERO 2
 #define CCR_MINUS 3
 
+// Set states of the CCR - pass 0 or 1 to update, else pass -1. Must have `struct CPU *cpu`
+#define SET_CCR(C, V, Z, N) \
+    if (C > -1) cpu->regs[REG_CCR] = (cpu->regs[REG_CCR] & ~1) | C;\
+    if (V > -1) cpu->regs[REG_CCR] = (cpu->regs[REG_CCR] & ~2) | (V << 1);\
+    if (Z > -1) cpu->regs[REG_CCR] = (cpu->regs[REG_CCR] & ~4) | (Z << 2);\
+    if (N > -1) cpu->regs[REG_CCR] = (cpu->regs[REG_CCR] & ~8) | (N << 3);
+
 #include "cpu.h"
 #include "err.h"
 

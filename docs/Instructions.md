@@ -113,6 +113,8 @@ Below is the full list of instructions supported by the assembler.
 | pop | OP_POPN_MEM | `<bytes: u8>`, `<addr: uword>` | Pop n-byte value from the stack and load into address | `pop 12, [100]` |
 | prc | OP_PRINT_CHARS_MEM | `<bytes: u8>`, `<addr: uword>` | Print n-bytes as ASCII characters to STDOUT from an address | `prc 12, [100]` |
 | prc | OP_PRINT_CHARS_REG | `<reg: u8>` | Print bytes as ASCII characters to STDOUT from a register until a NULL byte is encountered | `prc r1` |
+| prb | OP_PRINT_BIN_MEM | `<bytes: u8>`, `<addr: uword>` | Print n-bytes as binary to STDOUT from an address | `prb 12, [100]` |
+| prb | OP_PRINT_BIN_REG | `<reg: u8>` | Print bytes as binary to STDOUT from a register | `prb r1` |
 | prd | OP_PRINT_DBL_REG | `<reg: u8>` | Print contents of register as a double (f64) | `prd r1` |
 | prh | OP_PRINT_HEX_MEM | `<bytes: u8>`, `<addr: uword>` | Print n-bytes as hexadecimal to STDOUT from an address | `prh 12, [100]` |
 | prh | OP_PRINT_HEX_REG | `<reg: u8>` | Print bytes as hexadecimal to STDOUT from a register until a NULL byte is encountered | `prh r1` |

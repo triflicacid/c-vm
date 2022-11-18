@@ -1185,6 +1185,14 @@ int asm_decode_instruction(struct AsmInstruction* instruct)
             DECODE_INST1(OP_POP64_REGPTR, T_u8);
         } else
             return ASM_ERR_ARGS;
+    } else if (strcmp(instruct->mnemonic, "prb") == 0) {
+        if (argc == 1 && instruct->args->data.type == ASM_ARG_REG) {
+            DECODE_INST1(OP_PRINT_BIN_REG, T_u8);
+        } else if (argc == 2 && instruct->args->data.type == ASM_ARG_LIT
+            && (instruct->args->next->data.type == ASM_ARG_ADDR || instruct->args->next->data.type == ASM_ARG_LABEL)) {
+            DECODE_INST2(OP_PRINT_BIN_MEM, T_u8, UWORD_T);
+        } else
+            return ASM_ERR_ARGS;
     } else if (strcmp(instruct->mnemonic, "prc") == 0) {
         if (argc == 2 && instruct->args->data.type == ASM_ARG_LIT
             && (instruct->args->next->data.type == ASM_ARG_ADDR || instruct->args->next->data.type == ASM_ARG_LABEL)) {
@@ -1737,6 +1745,12 @@ int asm_write_instruction(void* buf, unsigned long long offset, struct AsmInstru
         break;
     case OP_PRINT_HEX_REG:
         WRITE_INST1(OP_PRINT_HEX_REG, T_u8);
+        break;
+    case OP_PRINT_BIN_REG:
+        WRITE_INST1(OP_PRINT_BIN_REG, T_u8);
+        break;
+    case OP_PRINT_BIN_MEM:
+        WRITE_INST2(OP_PRINT_BIN_MEM, T_u8, UWORD_T);
         break;
     case OP_PRINT_DBL_REG:
         WRITE_INST1(OP_PRINT_DBL_REG, T_u8);

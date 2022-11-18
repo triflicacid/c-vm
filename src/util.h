@@ -83,6 +83,10 @@
  * print `XX XX XX XX ` */
 void print_bytes(const void *data, const unsigned int length);
 
+/** Print seqence of bytes e.g. for `int` call print_bin(&var, sizeof(int)) to
+ * print `BBBBBBBB BBBBBBBB BBBBBBBB BBBBBBBB` */
+void print_bin(const void *data, const unsigned int length);
+
 /** Print seqence of characters */
 void print_chars(const char *data, const unsigned int chars);
 
