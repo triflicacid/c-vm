@@ -9,6 +9,7 @@ Below is the full list of instructions supported by the assembler.
 | add | OP_ADD_REG_LIT | `<reg: u8>`, `<lit: word>` | Add a register and a literal as integers | `add r1, 10` |
 | add | OP_ADD_REG_REG | `<reg: u8>`, `<reg: u8>` | Add two registers as integers, storing the result in the first register | `add r1, r2` |
 | add | OP_ADD_MEM_MEM | `<bytes: u8>`, `<addr1: uword>`, `<addr2: uword>` | Add two n-bytes buffers at the addresses and store result at the first address | `add 128, [200], [328]` |
+| add | OP_ADD_MEM_LIT | `<bytes: u8>`, `<addr: uword>`, `<lit: u8>` | Add an unsigned byte into an n-byte buffer | `add 128, [200], 1` |
 | addf32 | OP_ADDF32_REG_LIT | `<reg: u8>`, `<lit: f32>` | Add a register and a literal as 32-bit floats | `addf32 r1, 10` |
 | addf32 | OP_ADDF32_REG_REG | `<reg: u8>`, `<reg: u8>` | Add two registers as 32-bit floats, storing the result in the first register | `addf32 r1, r2` |
 | addf64 | OP_ADDF64_REG_LIT | `<reg: u8>`, `<lit: f64>` | Add a register and a literal as 64-bit floats | `addf64 r1, 10` |

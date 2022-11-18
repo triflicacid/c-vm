@@ -332,6 +332,9 @@
 // Add two `byte`-length buffers together. Indicate carry.
 // Syntax: `add <bytes: u8> <addr1: uword> <addr2: uword>`
 #define OP_ADD_MEM_MEM 0x0096
+// Add a byte to a n-byte region in memory
+// Syntax: `add <bytes: u8> <addr: uword> <data: u8>`
+#define OP_ADD_MEM_LIT 0x0097
 
 // Subtract a literal from a register : reg = reg - lit
 // Syntax: `sub <reg: u8> <lit: word>`

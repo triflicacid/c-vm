@@ -2,6 +2,7 @@
 
 #include "src/cpu/bit-ops.c"
 #include "src/cpu/cpu.c"
+#include "src/cpu/registers.c"
 #include "src/cpu/err.c"
 #include "src/cpu/fetch-exec.c"
 #include "src/cpu/opcodes.h"
@@ -74,7 +75,7 @@ int main(int argc, char **argv) {
         printf("\n");
     }
 
-    FILE *fp = fopen((is_file_in ? file_in : "source.bin"), "r");
+    FILE *fp = fopen((is_file_in ? file_in : "source.bin"), "rb");
     fseek(fp, 0, SEEK_END);
     long fsize = ftell(fp);
     rewind(fp);

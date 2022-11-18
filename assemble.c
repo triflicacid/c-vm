@@ -12,7 +12,7 @@
 #include "src/assembler/parse_data.c"
 #include "src/assembler/symbol.c"
 #include "src/cpu/bit-ops.c"
-#include "src/cpu/cpu.c"
+#include "src/cpu/registers.c"
 #include "src/cpu/opcodes.h"
 #include "src/util.c"
 
@@ -122,7 +122,7 @@ int main(int argc, char **argv) {
     if (debug) printf("> Buffer of size %u bytes at %p.\n", data.bytes, buf);
 
     if (buf != 0) {
-        fp = fopen(is_file_out ? file_out : "source.bin", "w");
+        fp = fopen(is_file_out ? file_out : "source.bin", "wb");
         fwrite(buf, data.bytes, 1, fp);
         fclose(fp);
         if (do_detail)

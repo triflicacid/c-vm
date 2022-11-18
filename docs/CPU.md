@@ -6,9 +6,9 @@ A `CPU` struct may be created by calling `cpu_create`. As the CPUs memory is `ma
 
 ## Registers
 
-Registers are a small single-word storage slot. There are `REG_COUNT` registers, all of which are general purpose, except
-- `REG_IP` : index of the instruction pointer register. This points to the next instruction to be fetched or, in case of an error, where the data was fetched from.
-- `REG_FLAG` : a special register used to output additional data from instructions. Examples include integer under-/over-flow from `n`-byte arithmatic, joind div-mod opertions etc...
+Registers are a small single-word storage slot.
+
+See `Register.md`.
 
 ## Memory
 

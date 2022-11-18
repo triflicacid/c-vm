@@ -1,43 +1,14 @@
 #ifndef __CPU_H__
 #define __CPU_H__
 
-#include <stdio.h>
-
-#include "../util.h"
-#include "opcodes.h"
-
 #define WORD_T T_i64
 #define WORD_T_FLAG "%lli"
 #define UWORD_T T_u64
 #define UWORD_T_FLAG "%llu"
-#define ERRNO_T int
 
-// Registers: general 0-9, ip
-// Register for flags
-#define REG_FLAG 9
-#define REG_FLAG_SYM "fl"
-// Register for comparison operations
-#define REG_CMP 9
-#define REG_CMP_SYM "cp"
-// Error code
-#define REG_ERR 10
-#define REG_ERR_SYM "er"
-// Instruction pointer
-#define REG_IP 11
-#define REG_IP_SYM "ip"
-// Stack pointer
-#define REG_SP 12
-#define REG_SP_SYM "sp"
-// Stores size (bytes) of stack
-#define REG_SSIZE 13
-#define REG_SSIZE_SYM "ss"
-// Frame pointer
-#define REG_FP 14
-#define REG_FP_SYM "fp"
-// Total number of registers
-#define REG_COUNT 15
-// Preserve first `n` registers
-#define REG_RESV 5
+#include <stdio.h>
+
+#include "../util.h"
 
 // Check if memory address is valid. Expects defined `struct CPU *cpu`
 #define MEM_CHECK(addr) (addr >= 0 && addr < cpu->mem_size)
@@ -68,9 +39,13 @@
 struct CPU {
     UWORD_T mem_size;        // Size of .mem
     void *mem;               // Pointer to start of memory block
-    WORD_T regs[REG_COUNT];  // Register memory
+    WORD_T *regs;  // Register memory
     FILE *out;               // STDOUT
 };
+
+#include "err.h"
+#include "opcodes.h"
+#include "registers.h"
 
 /** Create a new CPU struct */
 struct CPU cpu_create(UWORD_T mem_size);
@@ -100,19 +75,6 @@ int cpu_mem_fread(struct CPU *cpu, FILE *fp, UWORD_T addr_start, size_t length);
  * number of bytes. Return error code (or 0). */
 ERRNO_T cpu_mem_write_array(struct CPU *cpu, UWORD_T addr_start,
                             const void *data, unsigned int length);
-
-/** Print register contents */
-ERRNO_T cpu_reg_print(struct CPU *cpu);
-
-/** Set contents of register */
-void cpu_reg_write(struct CPU *cpu, unsigned int reg_offset, WORD_T value);
-
-/** Get contents of register Instruction Pointer */
-WORD_T cpu_reg_read(struct CPU *cpu, unsigned int reg_offset);
-
-/** Given a register mnemonic, return its offset, or -1. Increment pointer is
- * necesarry. */
-T_i8 cpu_reg_offset_from_string(char *string);
 
 /** Execute given opcode. If needed, fetched data from cpu.mem, using `ip`
  * as the inst instruction pointer (on invocation, if in contiguous memory, `ip`

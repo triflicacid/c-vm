@@ -10,11 +10,11 @@ For more informations, see `docs/`, `tests/`.
   - Source is `assemble.c`. See `docs/Assembler.md` for more.
 
 ### TODO
-- CPU: implement instructions OP_PUSH_REGPTR, OP_POP_REGPTR
+- CPU
+  - Add Breakpoint instruction
+  - Implement instructions OP_PUSH_REGPTR, OP_POP_REGPTR
 - Assembler
-  - Defining data. Reserves space in Chunk linked list.
-    - Support to find length of previously defined constant
-  - Support for expressions - RPN
+  - Support for expressions - RPN. Include dollar `$` variable for last address.
 - Print to STDOUT (using memory mapping to map characters?)
 - Basic de-compiler? Given .bin, produce .asm
 

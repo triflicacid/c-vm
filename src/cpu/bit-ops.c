@@ -36,6 +36,18 @@ T_u8 bytes_add(const void *n1, const void *n2, void *nout,
     return ovfl;
 }
 
+T_u8 bytes_add_lit(const void *n, const T_u8 k, void *nout,
+               const unsigned int bytes) {
+    T_u8 ovfl = k;
+    for (T_u16 off = 0; off < bytes; ++off)
+    {
+        T_u16 sum = *((T_u8 *)n + off) + ovfl;
+        ovfl = sum >> 8;
+        *((T_u8 *)nout + off) = sum & 0xFF;
+    }
+    return ovfl;
+}
+
 T_u8 bytes_compare(const void *n1, const void *n2, const unsigned int bytes) {
     for (T_u16 off = bytes; off > 0; --off) {
         T_u8 a = *((T_u8 *)n1 + off - 1), b = *((T_u8 *)n2 + off - 1);

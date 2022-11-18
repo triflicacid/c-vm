@@ -2,6 +2,8 @@
 #define __ERR_H__
 #include "cpu.h"
 
+#define ERRNO_T int
+
 // CPU - set error. Requires `struct CPU *cpu`
 #define ERR_SET(errn, data)         \
     {                               \
