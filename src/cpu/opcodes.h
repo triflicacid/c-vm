@@ -180,40 +180,40 @@
 // Computer bitwise AND of register & literal, and store in register. CCR: **00.
 // Syntax: `and <register: u8> <data: word>`
 #define OP_AND_REG_LIT 0x0040
-// Computer 8-bit bitwise AND of register & literal, and store in register.
+// Computer 8-bit bitwise AND of register & literal, and store in register. CCR: **00.
 // Syntax: `and <register: u8> <data: 8-bit>`
 #define OP_AND8_REG_LIT 0x0041
-// Computer 16-bit bitwise AND of register & literal, and store in register.
+// Computer 16-bit bitwise AND of register & literal, and store in register. CCR: **00.
 // Syntax: `and <register: u8> <data: 16-bit>`
 #define OP_AND16_REG_LIT 0x0042
-// Computer 32-bit bitwise AND of register & literal, and store in register.
+// Computer 32-bit bitwise AND of register & literal, and store in register. CCR: **00.
 // Syntax: `and <register: u8> <data: 32-bit>`
 #define OP_AND32_REG_LIT 0x0043
-// Computer 64-bit bitwise AND of register & literal, and store in register.
+// Computer 64-bit bitwise AND of register & literal, and store in register. CCR: **00.
 // Syntax: `and <register: u8> <data: 64-bit>`
 #define OP_AND64_REG_LIT 0x0044
 
-// Computer bitwise AND of register1 & register2, and store in register1.
+// Computer bitwise AND of register1 & register2, and store in register1. CCR: **00.
 // Syntax: `and <register: u8> <register: u8>`
 #define OP_AND_REG_REG 0x0045
 
-// Computer bitwise AND of `byte` long buffers at two memory addresses.
+// Computer bitwise AND of `byte` long buffers at two memory addresses. CCR: **00.
 // Syntax: `and <bytes: u8> <addr1: uword> <addr2: uword>`
 #define OP_AND_MEM_MEM 0x0046
 
-// Computer bitwise OR of register | literal, and store in register.
+// Computer bitwise OR of register | literal, and store in register. CCR: **00.
 // Syntax: `or <register: u8> <data: word>`
 #define OP_OR_REG_LIT 0x0050
-// Computer 8-bit bitwise OR of register | literal, and store in register.
+// Computer 8-bit bitwise OR of register | literal, and store in register. CCR: **00.
 // Syntax: `or <register: u8> <data: 8-bit>`
 #define OP_OR8_REG_LIT 0x0051
-// Computer 16-bit bitwise OR of register | literal, and store in register.
+// Computer 16-bit bitwise OR of register | literal, and store in register. CCR: **00.
 // Syntax: `or <register: u8> <data: 16-bit>`
 #define OP_OR16_REG_LIT 0x0052
-// Computer 32-bit bitwise OR of register | literal, and store in register.
+// Computer 32-bit bitwise OR of register | literal, and store in register. CCR: **00.
 // Syntax: `or <register: u8> <data: 32-bit>`
 #define OP_OR32_REG_LIT 0x0053
-// Computer 64-bit bitwise OR of register | literal, and store in register.
+// Computer 64-bit bitwise OR of register | literal, and store in register. CCR: **00.
 // Syntax: `or <register: u8> <data: 64-bit>`
 #define OP_OR64_REG_LIT 0x0054
 
@@ -221,69 +221,69 @@
 // Syntax: `or <register: u8> <register: u8>`
 #define OP_OR_REG_REG 0x0055
 
-// Computer bitwise OR of `byte` long buffers at two memory addresses.
+// Computer bitwise OR of `byte` long buffers at two memory addresses. CCR: **00.
 // Syntax: `or <bytes: u8> <addr1: uword> <addr2: uword>`
 #define OP_OR_MEM_MEM 0x0056
 
-// Computer bitwise XOR of register ^ literal, and store in register.
+// Computer bitwise XOR of register ^ literal, and store in register. CCR: **00.
 // Syntax: `xor <register: u8> <data: word>`
 #define OP_XOR_REG_LIT 0x0060
-// Computer 8-bit bitwise XOR of register ^ literal, and store in register.
+// Computer 8-bit bitwise XOR of register ^ literal, and store in register. CCR: **00.
 // Syntax: `xor <register: u8> <data: u8>`
 #define OP_XOR8_REG_LIT 0x0061
-// Computer 16-bit bitwise XOR of register ^ literal, and store in register.
+// Computer 16-bit bitwise XOR of register ^ literal, and store in register. CCR: **00.
 // Syntax: `xor <register: u8> <data: u16>`
 #define OP_XOR16_REG_LIT 0x0062
-// Computer 32-bit bitwise XOR of register ^ literal, and store in register.
+// Computer 32-bit bitwise XOR of register ^ literal, and store in register. CCR: **00.
 // Syntax: `xor <register: u8> <data: u32>`
 #define OP_XOR32_REG_LIT 0x0063
-// Computer 64-bit bitwise XOR of register ^ literal, and store in register.
+// Computer 64-bit bitwise XOR of register ^ literal, and store in register. CCR: **00.
 // Syntax: `xor <register: u8> <data: u64>`
 #define OP_XOR64_REG_LIT 0x0064
 
-// Computer bitwise XOR of register1 ^ register2, and store in register1.
+// Computer bitwise XOR of register1 ^ register2, and store in register1. CCR: **00.
 // Syntax: `xor <register: u8> <register: u8>`
 #define OP_XOR_REG_REG 0x0065
 
-// Computer bitwise XOR of `byte` long buffers at two memory addresses.
+// Computer bitwise XOR of `byte` long buffers at two memory addresses. CCR: **00.
 // Syntax: `xor <bytes: u8> <addr1: uword> <addr2: uword>`
 #define OP_XOR_MEM_MEM 0x0066
 
-// Computer bitwise NOT of register, and stores back in register.
+// Computer bitwise NOT of register, and stores back in register. CCR: **00.
 // Syntax: `not <register: u8>`
 #define OP_NOT_REG 0x0070
-// Computer bitwise NOT of value `bytes` long starting at address.
+// Computer bitwise NOT of value `bytes` long starting at address. CCR: **00.
 // Syntax: `not <bytes: u8> <addr: unsigned wort>`
 #define OP_NOT_MEM 0x0071
 
-// Negates value of register: x -> -x
+// Negates value of register: x -> -x. CCR: **00.
 // Syntax: `neg <register: u8>`
 #define OP_NEG 0x0075
-// Negates value of register AS A FLOAT: x -> -x
+// Negates value of register AS A FLOAT: x -> -x. CCR: **00.
 // Syntax: `negf32 <register: u8>`
 #define OP_NEGF32 0x0076
-// Negates value of register AS A DOUBLE: x -> -x
+// Negates value of register AS A DOUBLE: x -> -x. CCR: **00.
 // Syntax: `negf64 <register: u8>`
 #define OP_NEGF64 0x0077
 
-// Logically shifts right (fills with 0) register by a literal amount.
+// Logically shifts right (fills with 0) register by a literal amount. CCR: **00.
 // Syntax: `slr <reg: u8> <lit: u8>`
 #define OP_LRSHIFT_LIT 0x007A
-// Logically shifts right (fills with 0) register by a registers' value.
+// Logically shifts right (fills with 0) register by a registers' value. CCR: **00.
 // Syntax: `slr <reg: u8> <reg: u8>`
 #define OP_LRSHIFT_REG 0x007B
 
-// Arithmetically shifts right (preserves sign) register by a literal amount.
+// Arithmetically shifts right (preserves sign) register by a literal amount. CCR: **00.
 // Syntax: `sar <reg: u8> <lit: u8>`
 #define OP_ARSHIFT_LIT 0x007C
-// Arithmetically shifts right (preserves sign) register by a register' value.
+// Arithmetically shifts right (preserves sign) register by a register' value. CCR: **00.
 // Syntax: `sar <reg: u8> <reg: u8>`
 #define OP_ARSHIFT_REG 0x007D
 
-// Shifts left register by a literal amount.
+// Shifts left register by a literal amount. CCR: **00.
 // Syntax: `sll <reg: u8> <lit: u8>`
 #define OP_LLSHIFT_LIT 0x007E
-// Shifts left register by a register' value.
+// Shifts left register by a register' value. CCR: **00.
 // Syntax: `sll <reg: u8> <reg: u8>`
 #define OP_LLSHIFT_REG 0x007F
 

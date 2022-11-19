@@ -119,6 +119,7 @@ long long decode_escape_seq(char **ptr) {
 unsigned int scan_number(const char *string, int radix) {
     int found_dp = 0;
     unsigned int i = 0;
+    if (string[i] == '-') ++i;
     while (string[i] != '\0' &&
            (string[i] == '_' || IS_BASE_CHAR(string[i], radix))) {
         ++i;
@@ -133,15 +134,21 @@ unsigned int scan_number(const char *string, int radix) {
 unsigned long long base_to_10(const char *string, int radix) {
     unsigned long long value = 0;  // Base 10 value
     unsigned long long k = 1;      // Multiplying factor
-    unsigned int i = 0;
+    char neg = 0;
+    char i_start = 0;
+    if (string[0] == '-') {
+        neg = 1;
+        i_start = 1;
+    }
+    unsigned int i = i_start;
     // Calculate integer exponent
     while (string[i] != '\0' &&
            (string[i] == '_' || IS_BASE_CHAR(string[i], radix))) {
-        if (string[i] != '_' && i != 0) k *= radix;
+        if (string[i] != '_' && i != i_start) k *= radix;
         ++i;
     }
     // Calculate number
-    i = 0;
+    i = i_start;
     int found_dp = 0;
     while (string[i] != '\0' &&
            (string[i] == '_' || IS_BASE_CHAR(string[i], radix))) {
@@ -151,6 +158,7 @@ unsigned long long base_to_10(const char *string, int radix) {
         }
         ++i;
     }
+    if (neg) value *= -1;
     return value;
 }
 
