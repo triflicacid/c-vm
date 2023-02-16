@@ -134,100 +134,100 @@ int cpu_mem_exec(struct CPU *cpu, OPCODE_T opcode, UWORD_T *ip) {
             MOV_LIT_OFF_REG(*ip, T_u64);
             return 1;
         case OP_AND_REG_LIT:
-            OP_REG_LIT(&, *ip, WORD_T, SET_CCR_FROM_REG(reg, WORD_T));
+            OP_REG_LIT(&, *ip, WORD_T, );
             return 1;
         case OP_AND8_REG_LIT:
-            OP_REG_LIT(&, *ip, T_u8, SET_CCR_FROM_REG(reg, T_i8));
+            OP_REG_LIT(&, *ip, T_u8, );
             return 1;
         case OP_AND16_REG_LIT:
-            OP_REG_LIT(&, *ip, T_u16, SET_CCR_FROM_REG(reg, T_i16));
+            OP_REG_LIT(&, *ip, T_u16, );
             return 1;
         case OP_AND32_REG_LIT:
-            OP_REG_LIT(&, *ip, T_u32, SET_CCR_FROM_REG(reg, T_i32));
+            OP_REG_LIT(&, *ip, T_u32, );
             return 1;
         case OP_AND64_REG_LIT:
-            OP_REG_LIT(&, *ip, T_u64, SET_CCR_FROM_REG(reg, T_i64));
+            OP_REG_LIT(&, *ip, T_u64, );
             return 1;
         case OP_AND_REG_REG:
-            OP_REG_REG(&, *ip, WORD_T, SET_CCR_FROM_REG(r1, WORD_T));
+            OP_REG_REG(&, *ip, WORD_T, );
             return 1;
         case OP_AND_MEM_MEM:
-            OP_APPLYF_MEM_MEM(*ip, bitwise_and, SET_CCR_FROM_MEM((T_u8 *)buf1, bytes));
+            OP_APPLYF_MEM_MEM(*ip, bitwise_and, );
             return 1;
         case OP_OR_REG_LIT:
-            OP_REG_LIT(|, *ip, WORD_T, SET_CCR_FROM_REG(reg, WORD_T));
+            OP_REG_LIT(|, *ip, WORD_T, );
             return 1;
         case OP_OR8_REG_LIT:
-            OP_REG_LIT(|, *ip, T_u8, SET_CCR_FROM_REG(reg, T_i8));
+            OP_REG_LIT(|, *ip, T_u8, );
             return 1;
         case OP_OR16_REG_LIT:
-            OP_REG_LIT(|, *ip, T_u16, SET_CCR_FROM_REG(reg, T_i16));
+            OP_REG_LIT(|, *ip, T_u16, );
             return 1;
         case OP_OR32_REG_LIT:
-            OP_REG_LIT(|, *ip, T_u32, SET_CCR_FROM_REG(reg, T_i32));
+            OP_REG_LIT(|, *ip, T_u32, );
             return 1;
         case OP_OR64_REG_LIT:
-            OP_REG_LIT(|, *ip, T_u64, SET_CCR_FROM_REG(reg, T_i64));
+            OP_REG_LIT(|, *ip, T_u64, );
             return 1;
         case OP_OR_REG_REG:
-            OP_REG_REG(|, *ip, WORD_T, SET_CCR_FROM_REG(r1, WORD_T));
+            OP_REG_REG(|, *ip, WORD_T, );
             return 1;
         case OP_OR_MEM_MEM:
-            OP_APPLYF_MEM_MEM(*ip, bitwise_or, SET_CCR_FROM_MEM((T_u8 *)buf1, bytes));
+            OP_APPLYF_MEM_MEM(*ip, bitwise_or, );
             return 1;
         case OP_XOR_REG_LIT:
-            OP_REG_LIT(^, *ip, WORD_T, SET_CCR_FROM_REG(reg, WORD_T));
+            OP_REG_LIT(^, *ip, WORD_T, );
             return 1;
         case OP_XOR8_REG_LIT:
-            OP_REG_LIT(^, *ip, T_u8, SET_CCR_FROM_REG(reg, T_i8));
+            OP_REG_LIT(^, *ip, T_u8, );
             return 1;
         case OP_XOR16_REG_LIT:
-            OP_REG_LIT(^, *ip, T_u16, SET_CCR_FROM_REG(reg, T_i16));
+            OP_REG_LIT(^, *ip, T_u16, );
             return 1;
         case OP_XOR32_REG_LIT:
-            OP_REG_LIT(^, *ip, T_u32, SET_CCR_FROM_REG(reg, T_i32));
+            OP_REG_LIT(^, *ip, T_u32, );
             return 1;
         case OP_XOR64_REG_LIT:
-            OP_REG_LIT(^, *ip, T_u64, SET_CCR_FROM_REG(reg, T_i64));
+            OP_REG_LIT(^, *ip, T_u64, );
             return 1;
         case OP_XOR_REG_REG:
-            OP_REG_REG(^, *ip, T_u64, SET_CCR_FROM_REG(r1, WORD_T));
+            OP_REG_REG(^, *ip, T_u64, );
             return 1;
         case OP_XOR_MEM_MEM:
-            OP_APPLYF_MEM_MEM(*ip, bitwise_xor, SET_CCR_FROM_MEM((T_u8 *)buf1, bytes));
+            OP_APPLYF_MEM_MEM(*ip, bitwise_xor, );
             return 1;
         case OP_NOT_REG:
-            OP_REG(~, , *ip, WORD_T, SET_CCR_FROM_REG(reg, WORD_T));
+            OP_REG(~, , *ip, WORD_T, );
             return 1;
         case OP_NOT_MEM:
-            OP_APPLYF_MEM(*ip, bitwise_not, SET_CCR_FROM_MEM((T_u8 *)cpu->mem + addr, bytes));
+            OP_APPLYF_MEM(*ip, bitwise_not, );
             return 1;
         case OP_NEG:
-            OP_REG(-, , *ip, WORD_T, SET_CCR_FROM_REG(reg, WORD_T));
+            OP_REG(-, , *ip, WORD_T, );
             return 1;
         case OP_NEGF32:
-            OP_REG(-, , *ip, T_f32, SET_CCR_FROM_REG(reg, T_f32));
+            OP_REG(-, , *ip, T_f32, );
             return 1;
         case OP_NEGF64:
-            OP_REG(-, , *ip, T_f64, SET_CCR_FROM_REG(reg, T_f64));
+            OP_REG(-, , *ip, T_f64, );
             return 1;
         case OP_LRSHIFT_LIT:
-            OP_REG_LIT(>>, *ip, T_u8, SET_CCR_FROM_REG(reg, WORD_T));
+            OP_REG_LIT(>>, *ip, T_u8, );
             return 1;
         case OP_LRSHIFT_REG:
-            OP_REG_REG(>>, *ip, WORD_T, SET_CCR_FROM_REG(r1, WORD_T));
+            OP_REG_REG(>>, *ip, WORD_T, );
             return 1;
         case OP_ARSHIFT_LIT:
-            ARS_LIT(*ip, T_u8, SET_CCR_FROM_REG(reg, WORD_T));
+            ARS_LIT(*ip, T_u8, );
             return 1;
         case OP_ARSHIFT_REG:
-            ARS_REG(*ip, SET_CCR_FROM_REG(r1, WORD_T));
+            ARS_REG(*ip, );
             return 1;
         case OP_LLSHIFT_LIT:
-            OP_REG_LIT(<<, *ip, T_u8, SET_CCR_FROM_REG(reg, WORD_T));
+            OP_REG_LIT(<<, *ip, T_u8, );
             return 1;
         case OP_LLSHIFT_REG:
-            OP_REG_REG(<<, *ip, WORD_T, SET_CCR_FROM_REG(r1, WORD_T));
+            OP_REG_REG(<<, *ip, WORD_T, );
             return 1;
         case OP_CVT_i8_i16:
             OP_CVT(*ip, T_i8, T_i16);
@@ -363,6 +363,9 @@ int cpu_mem_exec(struct CPU *cpu, OPCODE_T opcode, UWORD_T *ip) {
             return 1;
         case OP_CMPF64_REG_REG:
             CMP_REG_REG(*ip, T_f64);
+            return 1;
+        case OP_CMP_LIT_LIT:
+            CMP_LIT_LIT(*ip, WORD_T);
             return 1;
         case OP_CMP_REG_LIT:
             CMP_REG_LIT(*ip, WORD_T);

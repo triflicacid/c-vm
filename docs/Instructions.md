@@ -4,6 +4,7 @@ Below is the full list of instructions supported by the assembler.
 
 (See `cpu/opcodes.h` for the list of opcode numerical constants)
 
+**IMPORTANT** The CCR has been removed. it has been kept in the documentation for legacy reasons.
 - `CCR` : changes the instruction makes to the CCR register. Given in-order: `NZVC` -- **N**egative, **Z**ero, o**V**erflow, **C**arry.
   - `*` means the bit is changed
   - `-` means the bit is untouched
@@ -41,6 +42,7 @@ Below is the full list of instructions supported by the assembler.
 | cf64i64 | OP_CVT_f64_i64 | `<reg: u8>` | Convert value in register from 64-bit float to 64-bit integer | `cf64i64 r2` | `----` |
 | cmp | OP_CMP_REG_REG | `<reg: u8>`, `<reg: u8>` | Compare the value of two registers. Set `REG_CMP` appropriately. | `cmp r1, r2` | `----` |
 | cmp | OP_CMP_REG_LIT | `<reg: u8>`, `<lit: word>` | Compare the value of a register to a literal. Set `REG_CMP` appropriately. | `cmp r1, 10` | `----` |
+| cmp | OP_CMP_LIT_LIT | `<lit: word>`, `<lit: word>` | Compare the value os two literal words. Set `REG_CMP` appropriately. | `cmp 1, 10` | `----` |
 | cmp | OP_CMP_MEM_MEM | `<bytes: u8>`, `<addr1: uword>`, `<addr2: uword>` | Compare the value of two n-byte buffers. Set `REG_CMP` appropriately. | `cmp 12, [200], [212]` | `----` |
 | cmpf32 | OP_CMPF32_REG_REG | `<reg: u8>`, `<reg: u8>` | Compare the value of two registers as 32-bit floats. Set `REG_CMP` appropriately. | `cmpf32 r1, r2` | `----` |
 | cmpf32 | OP_CMPF32_REG_LIT | `<reg: u8>`, `<lit: f32>` | Compare the value of two registers as 32-bit floats. Set `REG_CMP` appropriately. | `cmpf32 r1, 10` | `----` |

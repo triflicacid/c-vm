@@ -69,16 +69,16 @@
 
 // Move value of type `type` at memory address at `ip` to register offset at
 // `ip+1`
-#define MOV_MEM_REG(ip, type)                 \
-    {                                         \
-        UWORD_T addr = MEM_READ(ip, UWORD_T); \
-        ip += sizeof(UWORD_T);                \
-        T_u8 reg = MEM_READ(ip, T_u8);        \
-        ERR_CHECK_REG(reg) else {             \
-            ip += sizeof(T_u8);               \
-            type data = MEM_READ(addr, type); \
-            cpu->regs[reg] = *(WORD_T *)&data;\
-        }                                     \
+#define MOV_MEM_REG(ip, type)                  \
+    {                                          \
+        UWORD_T addr = MEM_READ(ip, UWORD_T);  \
+        ip += sizeof(UWORD_T);                 \
+        T_u8 reg = MEM_READ(ip, T_u8);         \
+        ERR_CHECK_REG(reg) else {              \
+            ip += sizeof(T_u8);                \
+            type data = MEM_READ(addr, type);  \
+            cpu->regs[reg] = *(WORD_T *)&data; \
+        }                                      \
     }
 
 // Move value of type `type` from register at `ip` to memory address at `ip+1`
@@ -161,7 +161,7 @@
     }
 
 // Perform operation between register and literal : reg = reg op lit
-#define OP_REG_LIT(op, ip, litT, extra)                    \
+#define OP_REG_LIT(op, ip, litT, extra)             \
     {                                               \
         T_u8 reg = MEM_READ(ip, T_u8);              \
         ERR_CHECK_REG(reg) else {                   \
@@ -221,7 +221,7 @@
     }
 
 // Perform operation on one register : reg = pre reg post
-#define OP_REG(pre, post, ip, type, extra)                        \
+#define OP_REG(pre, post, ip, type, extra)                 \
     {                                                      \
         T_u8 reg = MEM_READ(ip, T_u8);                     \
         ERR_CHECK_REG(reg) else {                          \
@@ -317,7 +317,7 @@
 // Instruction syntax `<bytes: u8> <addr1: uword> <addr2: uword>`. In-place
 // modify `addr1` result of `fname(addr1, addr2, addr1, bytes)`. Set `retVar` to
 // return value of `fname`.
-#define OP_APPLYF_MEM_MEM(ip, fname, extra)                     \
+#define OP_APPLYF_MEM_MEM(ip, fname, extra)              \
     {                                                    \
         T_u8 bytes = MEM_READ(ip, T_u8);                 \
         ip += sizeof(T_u8);                              \
@@ -374,6 +374,16 @@
             ip += sizeof(type);                                        \
             cpu->regs[REG_CMP] = CMP(*(type *)(cpu->regs + reg), lit); \
         }                                                              \
+    }
+
+// Compare a two literals
+#define CMP_LIT_LIT(ip, type)                 \
+    {                                         \
+        type lit1 = MEM_READ(ip, type);       \
+        ip += sizeof(type);                   \
+        type lit2 = MEM_READ(ip, type);       \
+        ip += sizeof(type);                   \
+        cpu->regs[REG_CMP] = CMP(lit1, lit2); \
     }
 
 // Compare two memory addresses
@@ -537,20 +547,6 @@
             ip += sizeof(T_u8);                       \
             printf(flag, *(type *)(cpu->regs + reg)); \
         }                                             \
-    }
-
-// Set CCR from a register value. CCR: **00
-#define SET_CCR_FROM_REG(reg, type) SET_CCR(0, 0, (*(type *)&(cpu->regs[reg]) == 0), (*(type *)&(cpu->regs[reg]) < 0))
-
-// Set CCR from an n-byte buffer. 'src' must be a `unsigned char *`. CCR: **00
-#define SET_CCR_FROM_MEM(src, bytes) {\
-        char zero = 1;\
-        for (unsigned int off = 0; off < bytes; ++off)\
-            if (*(src + off) != 0) {\
-                zero = 0;\
-                break;\
-            }\
-        SET_CCR(0, 0, zero, ((*(src + (bytes - 1)) >> 7) == 1));\
     }
 
 /** Begin a fetch-execute cycle, starting at `ip`. Continue until error of HALT.

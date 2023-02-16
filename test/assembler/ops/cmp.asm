@@ -1,3 +1,4 @@
+cmp 1, 10
 cmp r1, 10
 cmp r1, r2
 cmpf32 r1, 10
