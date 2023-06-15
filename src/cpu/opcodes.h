@@ -90,22 +90,23 @@
 #define OP_MOV64_LIT_MEM 0x0019
 // Move k-bit literal to memory address.
 // Syntax: `mov <bytes: u8> <address: unsigned word> <data: n bytes>`
+//! [NOTE] Not implemented in the assembler
 #define OP_MOVN_LIT_MEM 0x001A
 
-// Move value stored at address [register + memory address], and store in
-// register. Syntax: `mov <addr: unsigned word> <register: u8> <register: u8>`
+// Move value stored at address [register + lit], and store in
+// register. Syntax: `mov <register: u8> <lit: unsigned word> <register: u8>`
 #define OP_MOV_LIT_OFF_REG 0x001B
-// Move 8-bit value stored at address [register + memory address], and store in
-// register. Syntax: `mov <addr: unsigned word> <register: u8> <register: u8>`
+// Move 8-bit value stored at address [register + lit], and store in
+// register. Syntax: `mov <register: u8> <lit: unsigned word> <register: u8>`
 #define OP_MOV8_LIT_OFF_REG 0x001C
-// Move 16-bit value stored at address [register + memory address], and store in
-// register. Syntax: `mov <addr: unsigned word> <register: u8> <register: u8>`
+// Move 16-bit value stored at address [register + lit], and store in
+// register. Syntax: `mov <register: u8> <lit: unsigned word> <register: u8>`
 #define OP_MOV16_LIT_OFF_REG 0x001D
-// Move 32-bit value stored at address [register + memory address], and store in
-// register. Syntax: `mov <addr: unsigned word> <register: u8> <register: u8>`
+// Move 32-bit value stored at address [register + lit], and store in
+// register. Syntax: `mov <register: u8> <lit: unsigned word> <register: u8>`
 #define OP_MOV32_LIT_OFF_REG 0x001E
-// Move 64-bit value stored at address [register + memory address], and store in
-// register. Syntax: `mov <addr: unsigned word> <register: u8> <register: u8>`
+// Move 64-bit value stored at address [register + lit], and store in
+// register. Syntax: `mov <register: u8> <lit: unsigned word> <register: u8>`
 #define OP_MOV64_LIT_OFF_REG 0x001F
 
 // Move word value at address to given register

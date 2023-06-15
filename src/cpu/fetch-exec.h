@@ -142,22 +142,26 @@
         }                                       \
     }
 
-// Move value of type `type` from [register + memory address] to another
+// Move value of type `type` from [register + lit] to another
 // register
-#define MOV_LIT_OFF_REG(ip, type)                                 \
-    {                                                             \
-        UWORD_T addr = MEM_READ(ip, UWORD_T);                     \
-        ip += sizeof(UWORD_T);                                    \
-        T_u8 r1 = MEM_READ(ip, T_u8);                             \
-        ERR_CHECK_REG(r1) {                                       \
-            ip += sizeof(T_u8);                                   \
-            T_u8 r2 = MEM_READ(ip, T_u8);                         \
-            ERR_CHECK_REG(r2) else {                              \
-                ip += sizeof(T_u8);                               \
-                type data = MEM_READ(addr + cpu->regs[r1], type); \
-                cpu->regs[r2] = data;                             \
-            }                                                     \
-        }                                                         \
+#define MOV_LIT_OFF_REG(ip, type)                                \
+    {                                                            \
+        T_u8 r1 = MEM_READ(ip, T_u8);                            \
+        ERR_CHECK_REG(r1)                                        \
+        else                                                     \
+        {                                                        \
+            ip += sizeof(T_u8);                                  \
+            WORD_T lit = MEM_READ(ip, WORD_T);                   \
+            ip += sizeof(WORD_T);                                \
+            T_u8 r2 = MEM_READ(ip, T_u8);                        \
+            ERR_CHECK_REG(r2)                                    \
+            else                                                 \
+            {                                                    \
+                ip += sizeof(T_u8);                              \
+                type data = MEM_READ(lit + cpu->regs[r1], type); \
+                cpu->regs[r2] = data;                            \
+            }                                                    \
+        }                                                        \
     }
 
 // Perform operation between register and literal : reg = reg op lit

@@ -1,2 +1,2 @@
-cmp 1, 1
+mov8 69, r1
 hlt

@@ -80,10 +80,12 @@ int main(int argc, char **argv) {
     long fsize = ftell(fp);
     rewind(fp);
     if (do_detail)
-        printf("Reading source file '%s' (%li bytes)\n\n",
+        printf("Reading source file '%s' (%li bytes)... ",
                (is_file_in ? file_in : "source.bin"), fsize);
     cpu_mem_fread(cpu, fp, addr_start, fsize);
     fclose(fp);
+    if (do_detail)
+        printf("Done.\n\n");
 
     cpu_fecycle(cpu);
 
