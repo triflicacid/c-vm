@@ -1,18 +1,20 @@
 # Assembler
 
-The assembler takes in a file of assembly code and outputs its equivalent machine code. The assembler is still in development.
+The assembler takes in a file of assembly code and outputs its equivalent machine code.
+THe assembler is located in `assembler/`.
+
+## Building
+
+To build the assembler, run CMake using `assembler/CMakeLists.txt`.
+By default, the output is `assembler/bin/`.
 
 ## Execution
 
-The source file is `assemble.c`.
-
-To compile, run `gcc assemble.c -o assemble.exe`.
-
-To execute, run `./assemble.exe [src] [options]` where
-  - `src` is the path to the assembly source file to assemble. If none is provided, it is defaulted to `source.asm`.
+To execute, run `./<bin> [src] [options]` where
+  - `src` is the path to the assembly source file to assemble.
   - `-d` switches on detail. Detail about the source file, line/col reached, error messages etc... are printed. If disabled, only the error number is printed.
   - `-d` enables debug mode, if it appears for a second time. Debug information around each assembler stage etc... is printed.
-  - `-o <file>` specifies an output file for machine code. If none is provided, is is defaulted to `source.bin`.
+  - `-o <file>` specifies an output file for machine code. If none is provided, defaults to `source.bin`.
   - `-p <file>` specifies an output file for post-processed assembly. This will output the assembly after the pre-processor has dealt with the source. If the flag is stated, but no input file is provided, `preproc.asm` is used.
 
 ## Assembling
@@ -97,10 +99,10 @@ Labels are placeholder names for addresses, and can be substituted in an instruc
 
 When defined, it is initialised with a value of the current offset is appeared at. Labels may be re-defined, in which case its offset will be updated accordingly.
 
-When a label is encounteredin an instruction...
-  - If the label is defined, it is immediatly replaced by its address. Replace all un-replaced references to this label.
+When a label is encountered in an instruction...
+  - If the label is defined, it is immediately replaced by its address. Replace all un-replaced references to this label.
   - If the label is not defined, this is cached.
 
 If a label is not defined, an error will be reported.
 
-See `test/assembler/labels.asm` for an example
+See `assembler/test/labels.asm` for an example.

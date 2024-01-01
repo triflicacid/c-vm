@@ -1,10 +1,9 @@
 # Instructions
 
 Below is the full list of instructions supported by the assembler.
+(See `processor/src/opcodes.h` for the list of opcode numerical constants)
 
-(See `cpu/opcodes.h` for the list of opcode numerical constants)
-
-**IMPORTANT** The CCR has been removed. it has been kept in the documentation for legacy reasons.
+**IMPORTANT** The CCR has been removed.
 
 - `CCR` : changes the instruction makes to the CCR register. Given in-order: `NZVC` -- **N**egative, **Z**ero, o**V**erflow, **C**arry.
   - `*` means the bit is changed

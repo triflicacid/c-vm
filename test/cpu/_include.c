@@ -1,6 +1,0 @@
-#include "../../src/cpu/bit-ops.c"
-#include "../../src/cpu/cpu.c"
-#include "../../src/cpu/err.c"
-#include "../../src/cpu/fetch-exec.c"
-#include "../../src/cpu/opcodes.h"
-#include "../../src/util.c"

@@ -1,0 +1,10 @@
+#include "parse_data.h"
+#include <string.h>
+#include <stdio.h>
+
+PARSEDATA_CREATE(u8, T_u8)
+PARSEDATA_CREATE(u16, T_u16)
+PARSEDATA_CREATE(u32, T_u32)
+PARSEDATA_CREATE(u64, T_u64)
+PARSEDATA_CREATE(f32, T_f32)
+PARSEDATA_CREATE(f64, T_f64)

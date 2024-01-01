@@ -2,21 +2,22 @@
 
 Basic virtual machine written in C.
 
-For more informations, see `docs/`, `tests/`.
+For more information, see `docs/`, `tests/`.
 
 ## Components
 - Basic "CPU"
 - Basic assembler (*in progress*)
-  - Source is `assemble.c`. See `docs/Assembler.md` for more.
+    - Source is `assemble.c`. See `docs/Assembler.md` for more.
 
 ### TODO
 - CPU
-  - Add Breakpoint instruction
-  - Implement instructions OP_PUSH_REGPTR, OP_POP_REGPTR
+    - Add Breakpoint instruction
+    - Implement instructions OP_PUSH_REGPTR, OP_POP_REGPTR
 - Assembler
-  - Support for expressions - RPN. Include dollar `$` variable for last address.
+    - Support for expressions - RPN. Include dollar `$` variable for last address.
 - Print to STDOUT (using memory mapping to map characters?)
 - Basic de-compiler? Given .bin, produce .asm
+- Compiler to C-like language
 
 ### Bugs
 
