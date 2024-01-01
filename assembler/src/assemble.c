@@ -4,7 +4,6 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "opcodes.h"
 #include "registers.h"
 #include "args.h"
 #include "chunk.h"
@@ -16,8 +15,7 @@
 #include "symbol.h"
 
 struct AsmError asm_error_create() {
-    struct AsmError err = {
-        .line = 0, .col = 0, .errc = ASM_ERR_NONE, .print = 0, .debug = 0};
+    struct AsmError err = {.line = 0, .col = 0, .errc = ASM_ERR_NONE, .print = 0, .debug = 0};
     return err;
 }
 
@@ -181,10 +179,10 @@ void asm_preprocess(struct AsmData* data, struct AsmError* err) {
                            cline->data.n);
                 // Remove this line and all lines past this point
                 struct LL_NODET_NAME(AsmLine)* line = data->lines, *next = 0;
-                while (line != 0 && line->next != cline) line = line->next;
-                line->next = 0;
+                while (line != NULL && line->next != cline) line = line->next;
+                line->next = NULL;
                 line = cline;
-                while (line != 0) {
+                while (line != NULL) {
                     next = line->next;
                     free(line->data.str);
                     free(line);
@@ -269,11 +267,8 @@ void asm_parse(struct AsmData* data, struct AsmError* err) {
                                 strcmp(lbl, (char*)arg->data.data) == 0) {
                                 if (err->debug)
                                     printf(
-                                        "Mnemonic \"%s\"/Opcode %u, arg %u: "
-                                        "label \"%s\" "
-                                        "-> addr [%llu]\n",
-                                        instruct->mnemonic, instruct->opcode, i,
-                                        lbl, offset);
+                                        "Mnemonic \"%s\"/Opcode %u, arg %u: label \"%s\" -> addr [%u]\n",
+                                        instruct->mnemonic, instruct->opcode, i, lbl, offset);
                                 arg->data.type = ASM_ARG_ADDR;
                                 arg->data.data = offset;
                             }
@@ -287,7 +282,7 @@ void asm_parse(struct AsmData* data, struct AsmError* err) {
                 label->addr = offset;
                 free(lbl);
             }
-            int size = 0;
+
             for (; pos < slen && IS_WHITESPACE(string[pos]); ++pos)
                 ;
             if (pos == slen) {  // End of line?
@@ -349,7 +344,7 @@ void asm_parse(struct AsmData* data, struct AsmError* err) {
                 if (pos == slen) break;
 
                 if (string[pos] == '\'') {  // CHARACTER LITERAL
-                    int j = 0, k = 0;
+                    int j = 0;
                     char data[sizeof(UWORD_T)] = {0};
                     while (j < sizeof(data) && pos < slen &&
                            string[pos] == '\'') {
@@ -681,12 +676,9 @@ void asm_parse(struct AsmData* data, struct AsmError* err) {
                 if (arg->data.type == ASM_ARG_LABEL) {
                     if (err->print)
                         printf(CONSOLE_RED
-                               "ERROR!" CONSOLE_RESET
-                               " Instruction \"%s\" (+%u): reference to "
-                               "undefined "
-                               "label \"%s\"\n",
-                               instruct->mnemonic, chunk->data.offset,
-                               arg->data.data);
+                               "ERROR!" CONSOLE_RESET " Instruction \"%s\" (+%llu): reference to undefined "
+                               "label \"%llu\"\n",
+                               instruct->mnemonic, chunk->data.offset, arg->data.data);
                     err->line = 0;  // Unknown.
                     err->col = 0;   // Unknown.
                     err->errc = ASM_ERR_LABEL;
@@ -715,7 +707,7 @@ char* asm_compile(struct AsmData* data, struct AsmError* err) {
                     if (err->print)
                         printf(CONSOLE_RED
                                "ERROR!" CONSOLE_RESET
-                               " Unknown opcode whilst decoding: %llu (x%X)\n",
+                               " Unknown opcode whilst decoding: %hu (x%X)\n",
                                instruct->opcode, instruct->opcode);
                     err->line = 0;  // Unknown.
                     err->col = 0;   // Unknown.

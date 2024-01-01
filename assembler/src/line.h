@@ -1,5 +1,5 @@
-#ifndef __ASM_LINE_H__
-#define __ASM_LINE_H__
+#ifndef ASM_LINE_H_
+#define ASM_LINE_H_
 
 #include "linked-list.h"
 

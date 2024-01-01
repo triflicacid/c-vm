@@ -1,5 +1,5 @@
-#ifndef __OPCODES_H__
-#define __OPCODES_H__
+#ifndef CPU_OPCODES_H_
+#define CPU_OPCODES_H_
 
 #define OPCODE_T T_u16
 #define OPCODE_T_FLAG "%u"
@@ -276,7 +276,7 @@
 // Arithmetically shifts right (preserves sign) register by a literal amount.
 // CCR: **00. Syntax: `sar <reg: u8> <lit: u8>`
 #define OP_ARSHIFT_LIT 0x007C
-// Arithmetically shifts right (preserves sign) register by a register' value.
+// Arithmetically shifts right (preserves sign) register by a register's value.
 // CCR: **00. Syntax: `sar <reg: u8> <reg: u8>`
 #define OP_ARSHIFT_REG 0x007D
 
@@ -340,7 +340,7 @@
 // Add two `byte`-length buffers together. Indicate carry.
 // Syntax: `add <bytes: u8> <addr1: uword> <addr2: uword>`
 #define OP_ADD_MEM_MEM 0x0096
-// Add a byte to a n-byte region in memory
+// Add a byte to an n-byte region in memory
 // Syntax: `add <bytes: u8> <addr: uword> <data: u8>`
 #define OP_ADD_MEM_LIT 0x0097
 

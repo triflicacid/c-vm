@@ -11,7 +11,7 @@ Registers are single-word storage containers. They are represented by an array. 
 - `REG_ERR`. This register stores the current error code of the CPU. Error constants are defined in `cpu/err.h`. Additional error information is stored in `REG_FLAG`.
 - `REG_IP`. Stores the Instruction Pointer - the address of the next instruction to be fetched and executed. When an error occurs, may point to the location in memory which triggered the error.
 - `REG_SP`. Stores the Stack Pointer - points to the address of the topmost stack item.
-- `REG_SSIZE`. Stores the size (in bytes) of the stack.
+- `REG_STACK_SIZE`. Stores the size (in bytes) of the stack.
 - `REG_FP`. Stores the Frame Pointer - points to the top of the last saved stack frame.
 - `REG_FSIZE`. Stores the current stack frames' size.
 

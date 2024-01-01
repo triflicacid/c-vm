@@ -19,7 +19,7 @@ void asm_print_instruction(struct AsmInstruction *instruct) {
 void asm_free_instruction_chunk(struct AsmChunk *chunk) {
     struct AsmInstruction *instruct = chunk->data;
     free(instruct->mnemonic);
-    struct LL_NODET_NAME(AsmArgument) *arg = instruct->args, *next = 0;
+    struct LL_NODET_NAME(AsmArgument) *arg = instruct->args, *next = NULL;
     while (arg != 0) {
         next = arg->next;
         free(arg);

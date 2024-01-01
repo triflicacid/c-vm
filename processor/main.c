@@ -5,12 +5,11 @@
 
 #include "bit-ops.h"
 #include "cpu.h"
-#include "fetch-exec.h"
 
 int main(int argc, char **argv) {
     char *file_in, *file_out;
     bool is_file_in = 0, is_file_out = 0, do_detail = 0;
-    UWORD_T addr_start = 0, mem_size = 0xFFF, stack_size = 0x1FF;
+    WORD_T addr_start = 0, mem_size = 0xFFF, stack_size = 0x1FF;
     for (int i = 1; i < argc; ++i) {
         if (argv[i][0] == '-') {
             switch (argv[i][1]) {
@@ -23,8 +22,7 @@ int main(int argc, char **argv) {
                         printf("-m: expected number\n");
                         return EXIT_FAILURE;
                     }
-                    mem_size = strtoull(
-                        argv[i], (char **)(argv[i] + strlen(argv[0])), 10);
+                    mem_size = strtoll(argv[i], (char **)(argv[i] + strlen(argv[0])), 10);
                     break;
                 case 'o':  // Out file
                     i++;
@@ -43,8 +41,7 @@ int main(int argc, char **argv) {
                         return EXIT_FAILURE;
                     }
 
-                    stack_size = strtoull(
-                        argv[i], (char **)(argv[i] + strlen(argv[0])), 10);
+                    stack_size = strtoll(argv[i], (char **)(argv[i] + strlen(argv[0])), 10);
                     break;
                 default:
                     printf("Unknown option '%s'\n", argv[i]);
@@ -59,15 +56,16 @@ int main(int argc, char **argv) {
         }
     }
 
-    struct CPU _cpu = cpu_create(mem_size);
-    struct CPU *cpu = &_cpu;
-    cpu->regs[REG_SSIZE] = stack_size;
+    // Create CPU and set stack size
+    CPU cpu = cpu_create(mem_size);
+    cpu_set_stack_size(cpu, stack_size);
 
-    FILE *fout;
+    // Set CPUs output file
+    FILE *fout = NULL;
     if (is_file_out) {
         if (do_detail) printf("Set STDOUT='%s'\n", file_out);
         fout = fopen(file_out, "w");
-        cpu->out = fout;
+        cpu_set_fout(cpu, fout);
     }
 
     if (do_detail) {
@@ -76,20 +74,22 @@ int main(int argc, char **argv) {
         printf("\n");
     }
 
+    // Read binary source file
     FILE *fp = fopen((is_file_in ? file_in : "source.bin"), "rb");
     fseek(fp, 0, SEEK_END);
     long fsize = ftell(fp);
     rewind(fp);
     if (do_detail)
-        printf("Reading source file '%s' (%li bytes)... ",
-               (is_file_in ? file_in : "source.bin"), fsize);
-    cpu_mem_fread(cpu, fp, addr_start, fsize);
+        printf("Reading source file '%s' (%li bytes)... ", (is_file_in ? file_in : "source.bin"), fsize);
+    cpu_load_file_into_mem(cpu, fp, addr_start, fsize);
     fclose(fp);
     if (do_detail)
         printf("Done.\n\n");
 
-    cpu_fecycle(cpu);
+    // Run fetch-execute cycle
+    cpu_fetch_execute_cycle(cpu);
 
+    // Dispose of resources
     cpu_destroy(cpu);
     if (is_file_out) fclose(fout);
     if (do_detail) printf("[Done]");

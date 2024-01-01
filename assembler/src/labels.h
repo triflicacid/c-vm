@@ -1,5 +1,5 @@
-#ifndef __ASM_LABELS_H__
-#define __ASM_LABELS_H__
+#ifndef ASM_LABELS_H_
+#define ASM_LABELS_H_
 
 #include "linked-list.h"
 

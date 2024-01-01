@@ -1,5 +1,5 @@
-#ifndef __REGISTERS_H__
-#define __REGISTERS_H__
+#ifndef CPU_REGISTERS_H_
+#define CPU_REGISTERS_H_
 
 // Registers: general 0-9, ip
 // Register for flags
@@ -21,8 +21,8 @@
 #define REG_SP 13
 #define REG_SP_SYM "sp"
 // Stores size (bytes) of stack
-#define REG_SSIZE 14
-#define REG_SSIZE_SYM "ss"
+#define REG_STACK_SIZE 14
+#define REG_STACK_SIZE_SYM "ss"
 // Frame pointer
 #define REG_FP 15
 #define REG_FP_SYM "fp"
@@ -32,31 +32,16 @@
 #define REG_RESV 5
 
 // == CCR Bits ==
-#define CCR_CARRY 0
-#define CCR_OVERFL 1
-#define CCR_ZERO 2
-#define CCR_MINUS 3
-
-// Set states of the CCR - pass 0 or 1 to update, else pass -1. Must have `struct CPU *cpu`
-#define SET_CCR(C, V, Z, N) \
-    if (C > -1) cpu->regs[REG_CCR] = (cpu->regs[REG_CCR] & ~1) | C;\
-    if (V > -1) cpu->regs[REG_CCR] = (cpu->regs[REG_CCR] & ~2) | (V << 1);\
-    if (Z > -1) cpu->regs[REG_CCR] = (cpu->regs[REG_CCR] & ~4) | (Z << 2);\
-    if (N > -1) cpu->regs[REG_CCR] = (cpu->regs[REG_CCR] & ~8) | (N << 3);
-
-#include "cpu.h"
-#include "err.h"
-
-/** Given a register mnemonic, return its offset, or -1. */
-T_i8 cpu_reg_offset_from_string(const char *string);
-
-/** Print register contents */
-int cpu_reg_print(struct CPU *cpu);
-
-/** Set contents of register */
-void cpu_reg_write(struct CPU *cpu, unsigned int reg_offset, WORD_T value);
-
-/** Get contents of register Instruction Pointer */
-WORD_T cpu_reg_read(struct CPU *cpu, unsigned int reg_offset);
+//#define CCR_CARRY 0
+//#define CCR_OVERFL 1
+//#define CCR_ZERO 2
+//#define CCR_MINUS 3
+//
+//// Set states of the CCR - pass 0 or 1 to update, else pass -1. Must have `CPU cpu`
+//#define SET_CCR(C, V, Z, N) \
+//    if (C > -1) cpu->regs[REG_CCR] = (cpu->regs[REG_CCR] & ~1) | C;\
+//    if (V > -1) cpu->regs[REG_CCR] = (cpu->regs[REG_CCR] & ~2) | (V << 1);\
+//    if (Z > -1) cpu->regs[REG_CCR] = (cpu->regs[REG_CCR] & ~4) | (Z << 2);\
+//    if (N > -1) cpu->regs[REG_CCR] = (cpu->regs[REG_CCR] & ~8) | (N << 3);
 
 #endif

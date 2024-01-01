@@ -1,5 +1,5 @@
-#ifndef __ASM_PARSE_DATA_H__
-#define __ASM_PARSE_DATA_H__
+#ifndef ASM_PARSE_DATA_H_
+#define ASM_PARSE_DATA_H_
 
 #include "linked-list.h"
 #include "util.h"

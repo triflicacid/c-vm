@@ -1,5 +1,5 @@
-#ifndef __ASM_CHUNK_H__
-#define __ASM_CHUNK_H__
+#ifndef ASM_CHUNK_H_
+#define ASM_CHUNK_H_
 
 #include "linked-list.h"
 

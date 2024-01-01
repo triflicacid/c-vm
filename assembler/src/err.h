@@ -1,5 +1,5 @@
-#ifndef __ASM_ERR_H__
-#define __ASM_ERR_H__
+#ifndef ASM_ERR_H_
+#define ASM_ERR_H_
 
 #define ASM_ERR_NONE 0
 

@@ -3,5 +3,6 @@ project(assembler)
 
 file(GLOB src "src/*.c" "../util/*.c")
 
+include_directories("src")
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${PROJECT_SOURCE_DIR}/bin)
-add_executable(assembler "main.c" ${src} "../processor/src/registers.c")
+add_executable(assembler "main.c" ${src})

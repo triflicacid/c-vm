@@ -1,5 +1,5 @@
-#ifndef __ASM_INSTRUCTION_ARG_H__
-#define __ASM_INSTRUCTION_ARG_H__
+#ifndef ASM_INSTRUCTION_ARG_H_
+#define ASM_INSTRUCTION_ARG_H_
 
 #include "linked-list.h"
 

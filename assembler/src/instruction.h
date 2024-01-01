@@ -1,12 +1,12 @@
-#ifndef __ASM_INSTRUCTION_H__
-#define __ASM_INSTRUCTION_H__
+#ifndef ASM_INSTRUCTION_H_
+#define ASM_INSTRUCTION_H_
 
 #include "args.h"
-#include "opcodes.h"
+#include "processor/src/opcodes.h"
 
 struct AsmInstruction {
     char *mnemonic;      // Instruction mnemonic
-    OPCODE_T opcode;     // Instructiom opcode (when decoded)
+    OPCODE_T opcode;     // Instruction opcode (when decoded)
     unsigned int bytes;  // Byte-width of instruction (when decoded)
     struct LL_NODET_NAME(AsmArgument) * args;  // Linked list of arguments
 };

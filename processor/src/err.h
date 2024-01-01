@@ -1,11 +1,11 @@
-#ifndef __ERR_H__
-#define __ERR_H__
+#ifndef CPU_ERR_H_
+#define CPU_ERR_H_
 
 #define ERRNO_T int
 
 #include "cpu.h"
 
-// CPU - set error. Requires `struct CPU *cpu`
+// CPU - set error. Requires `CPU cpu`
 #define ERR_SET(errn, data)         \
     {                               \
         cpu->regs[REG_ERR] = errn;  \
@@ -44,7 +44,7 @@
 
 // Check for stack overflow
 #define ERR_CHECK_STACK_OFLOW()                                         \
-    if (cpu->regs[REG_SP] < cpu->mem_size - 1 - cpu->regs[REG_SSIZE]) { \
+    if (cpu->regs[REG_SP] < cpu->mem_size - 1 - cpu->regs[REG_STACK_SIZE]) { \
         ERR_SET(ERR_STACK_OFLOW, cpu->regs[REG_SP]);                    \
     }
 
@@ -53,8 +53,5 @@
     if (cpu->regs[REG_SP] > cpu->mem_size) { \
         ERR_SET(ERR_STACK_UFLOW, 0);         \
     }
-
-/** Print error information */
-void err_print(struct CPU *cpu);
 
 #endif
