@@ -6,7 +6,7 @@ Errors are thrown when something irreparably goes wrong.
 
 These are errors which are thrown during machine code execution. The error code is stored in `REG_ERR` and associated error data is stored in `REG_FLAG`.
 
-| Error | REG_FLAG | Description |
+| error | REG_FLAG | Description |
 |-|-|-|
 | `ERR_NONE` | *N/A* | No error |
 | `ERR_MEMOOB` | Memory address | Attempted to access out-of-bounds memory address |

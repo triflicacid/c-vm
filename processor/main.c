@@ -5,11 +5,12 @@
 
 #include "bit-ops.h"
 #include "cpu.h"
+#include "binary_header.h"
 
 int main(int argc, char **argv) {
     char *file_in, *file_out;
     bool is_file_in = 0, is_file_out = 0, do_detail = 0;
-    WORD_T addr_start = 0, mem_size = 0xFFF, stack_size = 0x1FF;
+    WORD_T mem_size = 0xFFF, stack_size = 0x1FF;
     for (int i = 1; i < argc; ++i) {
         if (argv[i][0] == '-') {
             switch (argv[i][1]) {
@@ -75,16 +76,35 @@ int main(int argc, char **argv) {
     }
 
     // Read binary source file
-    FILE *fp = fopen((is_file_in ? file_in : "source.bin"), "rb");
+    FILE *fp = fopen((is_file_in ? file_in : "program"), "rb");
     fseek(fp, 0, SEEK_END);
     long fsize = ftell(fp);
     rewind(fp);
     if (do_detail)
         printf("Reading source file '%s' (%li bytes)... ", (is_file_in ? file_in : "source.bin"), fsize);
-    cpu_load_file_into_mem(cpu, fp, addr_start, fsize);
+
+    // Read header
+    struct binary_header_data header = {0};
+    fread(&header, sizeof(header), 1, fp);
+    if (do_detail) {
+        printf("Loaded header (%llu bytes).\n- Execution start offset: +%08llX\n", sizeof(header), header.start_addr);
+    }
+
+    // Move to program body
+    if (fseek(fp, (long) sizeof(header), SEEK_SET) != 0) {
+        printf("Error: failed to seek in file; binary corrupted.\n");
+        return EXIT_FAILURE;
+    }
+
+    // Load program into memory
+    cpu_load_file_into_mem(cpu, fp, 0, fsize - sizeof(header));
     fclose(fp);
+
     if (do_detail)
         printf("Done.\n\n");
+
+    // Load program header
+    cpu_load_header(cpu, &header);
 
     // Run fetch-execute cycle
     cpu_fetch_execute_cycle(cpu);

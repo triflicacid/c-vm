@@ -106,21 +106,23 @@ int main(int argc, char **argv) {
         linked_list_print_AsmLabel(data.labels);
         printf("--- Chunks ---\n");
         linked_list_print_AsmChunk(data.chunks);
-        printf("TOTAL BYTES: %llu\n", data.bytes);
+        printf("Program Head: %llu bytes.\n- Execution start offset: +%08llX\n", sizeof(data.head_data), data.head_data.start_addr);
+        printf("Program Body: %llu bytes\n", data.bytes);
     }
 
     // COMPILE
     if (debug) printf(CONSOLE_GREEN "=== COMPILE ===\n" CONSOLE_RESET);
-    char *buf = asm_compile(&data, &err);
+    char *buf = NULL;
+    size_t buf_size = asm_compile(&data, &err, &buf);
     if (err.errc) goto end;
-    if (debug) printf("> Buffer of size %llu bytes at %p.\n", data.bytes, buf);
+    if (debug) printf("> Buffer of size %llu bytes at %p.\n", buf_size, buf);
 
     if (buf != NULL) {
         fp = fopen(is_file_out ? file_out : "source.bin", "wb");
-        fwrite(buf, data.bytes, 1, fp);
+        fwrite(buf, buf_size, 1, fp);
         fclose(fp);
         if (do_detail)
-            printf("Written %llu bytes to file '%s'\n", data.bytes,
+            printf("Written %llu bytes to file '%s'\n", buf_size,
                    is_file_out ? file_out : "source.bin");
         free(buf);
     }

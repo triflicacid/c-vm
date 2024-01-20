@@ -45,6 +45,8 @@ Assembly source files are read line-by-line, and have the following syntax: `[la
 Labels come in the form `label:`
   - `label` is a word containing letters and numbers. (See section on labels for more.)
 
+Code execution starts at the special label `main`.
+
 If `mnemonic` is one of `u8, u16, u32, u64`, this is a data constant.
   - `args` is a comma- or space-seperated list of constants. If no `args` are provided, insert a `0`.
     - `...[r]` - Numeric constants. These may be followed by a radix suffix `r`.  

@@ -4,11 +4,6 @@
 #include <stdio.h>
 #include "util.h"
 
-#define WORD_T T_i64
-#define WORD_T_FLAG "%lli"
-#define UWORD_T T_u64
-#define UWORD_T_FLAG "%llu"
-
 // Check if memory address is valid. Expects defined `CPU cpu`
 #define MEM_CHECK(addr) (addr >= 0 && addr < cpu->mem_size)
 
@@ -40,6 +35,7 @@ typedef struct CPU * CPU;
 #include "err.h"
 #include "opcodes.h"
 #include "registers.h"
+#include "binary_header.h"
 
 /** Create a new CPU struct */
 CPU cpu_create(WORD_T mem_size);
@@ -642,6 +638,9 @@ void cpu_err_print(CPU cpu);
             printf(flag, *(type *)(cpu->regs + reg)); \
         }                                             \
     }
+
+/** Load binary header */
+void cpu_load_header(CPU cpu, struct binary_header_data *header);
 
 /** Begin a fetch-execute cycle, starting at `ip`. Continue until error of HALT.
  * Return number of cycles. */

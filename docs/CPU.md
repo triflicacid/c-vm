@@ -26,11 +26,15 @@ By default, the output is `processor/bin/`.
 
 The file `execute.c` reads a binary source file and executes it on the CPU.
 
-To compile, run `gcc execute.c -o execute.exe`.
-
 To execute, run `./<bin> [<file>] [-p] [-m <size>] [-s <size>]`
   - `file` is the source file. Default is `source.bin`.
   - `-d` enables the printing of extra information.
   - `-m` sets the CPUs memory size to `size`.
   - `-o` sets output file (STDOUT). Note, this is only for output caused by instructions, and not error/debug info.
   - `-s` sets the CPUs stack size to `size`.
+
+## Binary Layout
+
+Compiled binary files have the following structure:
+- `start_offset: WORD` - address offset of program start.
+- `program: BYTES` - program instructions/data.

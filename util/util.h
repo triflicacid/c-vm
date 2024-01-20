@@ -1,5 +1,5 @@
-#ifndef __UTIL_H_
-#define __UTIL_H_
+#ifndef UTIL_UTIL_H_
+#define UTIL_UTIL_H_
 
 #define T_i8 char
 #define T_u8 unsigned char
@@ -11,6 +11,11 @@
 #define T_u64 unsigned long long int
 #define T_f32 float
 #define T_f64 double
+
+#define WORD_T T_i64
+#define WORD_T_FLAG "%lli"
+#define UWORD_T T_u64
+#define UWORD_T_FLAG "%llu"
 
 #define IS_BIG_ENDIAN \
     (!(union {        \
@@ -73,7 +78,8 @@
     (c >= 'a' ? c - 'a' + 10  \
               : (c >= 'A' ? c - 'A' + 10 : (c >= '0' ? c - '0' : 0)))
 
-#define CONSOLE_RED "\033[0;31m"
+#define CONSOLE_RED "\033[0;91m"
+#define CONSOLE_RED_BG "\033[0;101m"
 #define CONSOLE_GREEN "\033[0;32m"
 #define CONSOLE_BLUE "\033[0;34m"
 #define CONSOLE_YELLOW "\033[0;33m"
@@ -81,16 +87,16 @@
 
 /** Print seqence of bytes e.g. for `int` call print_bytes(&var, sizeof(int)) to
  * print `XX XX XX XX ` */
-void print_bytes(const void *data, const unsigned int length);
+void print_bytes(const void *data, unsigned int length);
 
 /** Print seqence of bytes e.g. for `int` call print_bin(&var, sizeof(int)) to
  * print `BBBBBBBB BBBBBBBB BBBBBBBB BBBBBBBB` */
-void print_bin(const void *data, const unsigned int length);
+void print_bin(const void *data, unsigned int length);
 
 /** Print seqence of characters */
-void print_chars(const char *data, const unsigned int chars);
+void print_chars(const char *data, unsigned int chars);
 
-/** Given a radix suffix, return integer radix. Return -1 ifinvalid radix. */
+/** Given a radix suffix, return integer radix. Return -1 if invalid radix. */
 int get_radix(char suffix);
 
 /** Given a string input containing a number of base "radix", return index where

@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.6)
-project(processor)
+project(processor LANGUAGES C)
 set(CMAKE_VERBOSE_MAKEFILE ON)
 
 file(GLOB src "src/*.c" "../util/*.c")

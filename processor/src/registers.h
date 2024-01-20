@@ -31,6 +31,11 @@
 // Preserve first `n` registers
 #define REG_RESV 5
 
+#include "util.h"
+
+// Size of preserved data section in stack frame
+#define STACK_FRAME_PRESERVED_DATA_SIZE (sizeof(WORD_T) * REG_RESV + sizeof(UWORD_T) * 2)
+
 // == CCR Bits ==
 //#define CCR_CARRY 0
 //#define CCR_OVERFL 1

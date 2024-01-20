@@ -4,7 +4,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <conio.h>
-#include <string.h>
 
 #include "err.h"
 #include "bit-ops.h"
@@ -156,11 +155,11 @@ int cpu_reg_print(CPU cpu) {
     return ERR_NONE;
 }
 
-void cpu_reg_write(CPU cpu, unsigned int reg_offset, WORD_T value) {
+inline void cpu_reg_write(CPU cpu, unsigned int reg_offset, WORD_T value) {
     cpu->regs[reg_offset] = value;
 }
 
-WORD_T cpu_reg_read(CPU cpu, unsigned int reg_offset) {
+inline WORD_T cpu_reg_read(CPU cpu, unsigned int reg_offset) {
     return cpu->regs[reg_offset];
 }
 
@@ -786,6 +785,10 @@ unsigned int cpu_fetch_execute_cycle(CPU cpu) {
         printf("\n");
     }
     return i;
+}
+
+void cpu_load_header(CPU cpu, struct binary_header_data *header) {
+    cpu_reg_write(cpu, REG_IP, header->start_addr);
 }
 
 static void cpu_push_stack_frame(CPU cpu) {

@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.6)
-project(assembler)
+project(assembler LANGUAGES C)
 
 file(GLOB src "src/*.c" "../util/*.c")
 

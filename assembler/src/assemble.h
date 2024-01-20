@@ -18,7 +18,7 @@
 // Compiling
 #define ASM_STAGE_COMPILE 4
 
-// Is instruction/argument seperator?
+// Is instruction/argument separator?
 #define IS_SEPERATOR(c) (c == ',')
 
 // If this character is encountered, create a new token
@@ -76,6 +76,7 @@
 #include "labels.h"
 #include "line.h"
 #include "symbol.h"
+#include "processor/src/binary_header.h"
 
 struct AsmData {
     int stage;                 // Stage of assembly
@@ -84,6 +85,7 @@ struct AsmData {
     struct LL_NODET_NAME(AsmSymbol) * symbols;  // Symbols (constants)
     struct LL_NODET_NAME(AsmLabel) * labels;    // Labels
     struct LL_NODET_NAME(AsmChunk) * chunks;    // Chunks (writable data)
+    struct binary_header_data head_data;
 };
 
 // Create `struct AsmData`
@@ -103,13 +105,12 @@ unsigned long long asm_write_lines(struct LL_NODET_NAME(AsmLine) * lines,
 /** Given a linked list of lines, pre-process them */
 void asm_preprocess(struct AsmData *data, struct AsmError *err);
 
-/** Given linekd list of lines, parse it to an AST */
+/** Given linked list of lines, parse it to an AST */
 void asm_parse(struct AsmData *data, struct AsmError *err);
 
-/** Given instruction AST, compile to a byte buffer. Return pointer to said
- * buffer. Size is data.bytes. Return 0 (null) if data.bytes==0 or there is an
+/** Given instruction AST, compile to a byte buffer. Return size of buffer, and set arg. Return 0 (null) if data.bytes==0 or there is an
  * error. */
-char *asm_compile(struct AsmData *data, struct AsmError *err);
+size_t asm_compile(struct AsmData *data, struct AsmError *err, char **buf);
 
 /** Given an instruction, populate instruct->bytes and instruct->opcode. Return
  * error. */

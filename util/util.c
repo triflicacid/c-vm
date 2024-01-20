@@ -3,13 +3,17 @@
 #include <stdlib.h>
 #include <stdio.h>
 
-void print_bytes(const void *data, const T_u32 len) {
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+void print_bytes(const void *data, T_u32 len) {
     for (T_u32 off = 0; off < len; ++off) {
         printf("%.2X ", *((T_u8 *)data + off));
     }
 }
 
-void print_bin(const void *data, const T_u32 len) {
+void print_bin(const void *data, T_u32 len) {
     for (int i = 0; i < len; ++i) {
         T_u8 byte = *((T_u8 *)data + i);
         for (int j = 7; j >= 0; --j)
@@ -18,7 +22,7 @@ void print_bin(const void *data, const T_u32 len) {
     }
 }
 
-void print_chars(const char *data, const T_u32 chars) {
+void print_chars(const char *data, T_u32 chars) {
     for (T_u32 off = 0; off < chars; ++off) {
         printf("%c", data[off]);
     }
@@ -204,3 +208,7 @@ char *extract_string(const char *string, unsigned int start, unsigned int len) {
     buf[len] = '\0';
     return buf;
 }
+
+#ifdef __cplusplus
+}
+#endif

@@ -13,6 +13,7 @@
 #include "line.h"
 #include "parse_data.h"
 #include "symbol.h"
+#include "processor/src/binary_header.h"
 
 struct AsmError asm_error_create() {
     struct AsmError err = {.line = 0, .col = 0, .errc = ASM_ERR_NONE, .print = 0, .debug = 0};
@@ -213,10 +214,14 @@ void asm_preprocess(struct AsmData* data, struct AsmError* err) {
     }
 }
 
+static const char ASM_START_LABEL[] = "main";
+
 void asm_parse(struct AsmData* data, struct AsmError* err) {
     data->stage = ASM_STAGE_PARSE;
+    int main_label_line = -1, main_label_col = -1; // Track "main" label
     unsigned int offset = 0;
     struct LL_NODET_NAME(AsmLine)* cline = data->lines;
+
     while (cline != 0) {
         int pos = 0;
         const unsigned int slen = cline->data.len, line = cline->data.n;
@@ -243,6 +248,31 @@ void asm_parse(struct AsmData* data, struct AsmError* err) {
             if (err->debug) {
                 printf("Label \"%s\" at offset +%u\n", lbl, offset);
             }
+
+            // "Main" label?
+            if (strncmp(lbl, ASM_START_LABEL, sizeof(ASM_START_LABEL) - 1) == 0) {
+                if (err->debug) {
+                    printf(" -> Found main label (start_addr=%i)\n", offset);
+                }
+
+                if (main_label_line >= 0) {
+                    if (err->print) {
+                        printf(CONSOLE_RED
+                               "ERROR!" CONSOLE_RESET
+                               " Line %i, column %i:\nFound duplicate label \"%s\" (first encountered at line %i, column %i)\n",
+                               line, pos, ASM_START_LABEL, main_label_line, main_label_col);
+                    }
+                    err->col = pos;
+                    err->line = cline->data.n;
+                    err->errc = ASM_ERR_GENERIC;
+                    return;
+                }
+
+                main_label_line = (int) cline->data.n;
+                main_label_col = pos;
+                data->head_data.start_addr = offset;
+            }
+
             // Does label already exist?
             struct AsmLabel* label =
                 linked_list_find_AsmLabel(data->labels, lbl);
@@ -692,17 +722,27 @@ void asm_parse(struct AsmData* data, struct AsmError* err) {
     }
 }
 
-char* asm_compile(struct AsmData* data, struct AsmError* err) {
+size_t asm_compile(struct AsmData* data, struct AsmError* err, char **result_buf) {
     data->stage = ASM_STAGE_COMPILE;
     if (data->bytes == 0) return 0;   // Return NULL if nothing to write
-    char* buf = malloc(data->bytes);  // Create byte buffer
+
+    size_t size = sizeof(struct binary_header_data) + data->bytes;
+    *result_buf = malloc(size);  // Create byte buffer
     struct LL_NODET_NAME(AsmChunk)* chunk = data->chunks;
+
+    // Write head
+    memcpy(*result_buf, &data->head_data, sizeof(data->head_data));
+
+    // Get program buffer
+    char *prog_buf = *result_buf + sizeof(data->head_data);
+
+    // Write program body
     while (chunk != 0) {
         switch (chunk->data.type) {
             case ASM_CHUNKT_INSTRUCTION: {
                 struct AsmInstruction* instruct = chunk->data.data;
                 int errc =
-                    asm_write_instruction(buf, chunk->data.offset, instruct);
+                    asm_write_instruction(prog_buf, chunk->data.offset, instruct);
                 if (errc != ASM_ERR_NONE) {
                     if (err->print)
                         printf(CONSOLE_RED
@@ -712,13 +752,13 @@ char* asm_compile(struct AsmData* data, struct AsmError* err) {
                     err->line = 0;  // Unknown.
                     err->col = 0;   // Unknown.
                     err->errc = errc;
-                    free(buf);
+                    free(*result_buf);
                     return 0;
                 }
                 break;
             }
             case ASM_CHUNKT_DATA:
-                memcpy(buf + chunk->data.offset, chunk->data.data,
+                memcpy(prog_buf + chunk->data.offset, chunk->data.data,
                        chunk->data.bytes);
                 break;
             default:
@@ -730,12 +770,13 @@ char* asm_compile(struct AsmData* data, struct AsmError* err) {
                 err->line = 0;  // Unknown.
                 err->col = 0;   // Unknown.
                 err->errc = ASM_ERR_GENERIC;
-                free(buf);
+                free(*result_buf);
                 return 0;
         }
         chunk = chunk->next;
     }
-    return buf;
+
+    return size;
 }
 
 int asm_decode_instruction(struct AsmInstruction* instruct) {
