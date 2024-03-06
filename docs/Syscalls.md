@@ -3,16 +3,23 @@
 Syscalls, or system calls, are built-in operations which may be invoked by the user.
 Syscalls are invoked using the `syscall` instruction. The operation code is located in `r0`. Subsequenst arguments, if any, are sequentially located in `r1`, `r2`, ...
 
-| Service                   | Code | Arguments | Description                                                                                         |
-|---------------------------|------|-----------|-----------------------------------------------------------------------------------------------------|
-| Exit                      | -1   |           | Exit program.                                                                                       |
-| Print integer             | 0    | data      | Print word as integer.                                                                              |
-| Print unsigned integer    | 1    | data      | Print word as unsigned integer.                                                                     |
-| Print hexadecimal         | 2    | data      | Print word as hexadecimal.                                                                          |
-| Print float               | 3    | data      | Print word as float.                                                                                |
-| Print double              | 4    | data      | Print word as double.                                                                               |
-| Print character           | 5    | data      | Print word as a sequence of characters up to `\0`.                                                  |
-| Print string              | 6    | addr, len | Print `len` bytes starting from `addr` as a string. If `len` is 0, treat string as null-terminated. |
-| [*Debug*] Print registers | 100  |           | Prints contents of registers                                                                        |
-| [*Debug*] Print memory    | 101  | addr, len | Print memory from `addr`.                                                                           |
-| [*Debug*] Print stack     | 102  |           | Print contents of stack.                                                                            |
+| Service                   | Code | Arguments        | Description                                                                                                                                                                     |
+|---------------------------|------|------------------|---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| Exit                      | -1   |                  | Exit program.                                                                                                                                                                   |
+| Print integer             | 0    | data             | Print word as integer (`i64`).                                                                                                                                                  |
+| Print unsigned integer    | 1    | data             | Print word as unsigned integer (`u64`).                                                                                                                                         |
+| Print hexadecimal         | 2    | data             | Print word as hexadecimal (`u64`).                                                                                                                                              |
+| Print float               | 3    | data             | Print word as float (`f32`).                                                                                                                                                    |
+| Print double              | 4    | data             | Print word as double (`f64`).                                                                                                                                                   |
+| Print character           | 5    | data             | Print word as a sequence of characters up to `\0`.                                                                                                                              |
+| Print string              | 6    | addr, len        | Print `len` bytes starting from `addr` as a string. If `len` is 0, treat string as null-terminated.                                                                             |
+| Input integer             | 10   |                  | Prompt user for input, read integer to `r1` (`i64`).                                                                                                                            |
+| Input unsigned integer    | 11   |                  | Prompt user for input, read unsigned integer to `r1` (`u64`).                                                                                                                   |
+| Input hexadecimal         | 12   |                  | Prompt user for input, read integer as lowercase hexadecimal to `r1` (`u64`).                                                                                                   |
+| Input float               | 13   |                  | Prompt user for input, read float to `r1` (`f32`).                                                                                                                              |
+| Input double              | 14   |                  | Prompt user for input, read double to `r1` (`f64`).                                                                                                                             |
+| Input character           | 15   |                  | Prompt user for input, read a character to `r1` (`u8`).                                                                                                                         |
+| Input string              | 16   | addr, max_length | Read string from user. Write at most `max_length` characters to `addr`. String is null-terminated, which is **not** included in the length. Populate `r3` with string's length. |
+| [*Debug*] Print registers | 100  |                  | Prints contents of registers                                                                                                                                                    |
+| [*Debug*] Print memory    | 101  | addr, len        | Print memory from `addr`.                                                                                                                                                       |
+| [*Debug*] Print stack     | 102  |                  | Print contents of stack.                                                                                                                                                        |

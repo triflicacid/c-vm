@@ -7,6 +7,14 @@
 #define SC_PRINT_CHAR 5
 #define SC_PRINT_STR 6
 
+#define SC_INPUT_INT 10
+#define SC_INPUT_UINT 11
+#define SC_INPUT_HEX 12
+#define SC_INPUT_FLT 13
+#define SC_INPUT_DBL 14
+#define SC_INPUT_CHAR 15
+#define SC_INPUT_STR 16
+
 #define SC_PRINT_REGISTERS 100
 #define SC_PRINT_MEMORY 101
 #define SC_PRINT_STACK 102

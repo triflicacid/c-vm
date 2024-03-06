@@ -4,6 +4,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <conio.h>
+#include <string.h>
 
 #include "err.h"
 #include "bit-ops.h"
@@ -743,14 +744,6 @@ int cpu_execute_opcode(CPU cpu, OPCODE_T opcode, WORD_T *ip) {
         case OP_PRINT_DBL_REG:
         PRINT_REG(*ip, T_f64, "%lf")
             return 1;
-        case OP_GET_CHAR: {
-            T_u8 reg = MEM_READ(*ip, T_u8);
-            ERR_CHECK_REG(reg) else {
-                *ip += sizeof(T_u8);
-                cpu->regs[reg] = getch();
-            }
-            return 1;
-        }
         default:  // Unknown instruction
             ERR_SET(ERR_UNINST, opcode)
             return 0;
@@ -883,6 +876,51 @@ int cpu_syscall(CPU cpu, int op) {
             }
 
             return 1;
+
+        case SC_INPUT_CHAR:
+            cpu->regs[1] = getch();
+            return 1;
+
+        case SC_INPUT_INT:
+            scanf("%lli", cpu->regs + 1);
+            return 1;
+
+        case SC_INPUT_UINT:
+            scanf("%llu", cpu->regs + 1);
+            return 1;
+
+        case SC_INPUT_HEX:
+            scanf("%llx", cpu->regs + 1);
+            return 1;
+
+        case SC_INPUT_FLT:
+            scanf("%f", (float *) (cpu->regs + 1));
+            return 1;
+
+        case SC_INPUT_DBL:
+            scanf("%lf", (double *) (cpu->regs + 1));
+            return 1;
+
+        case SC_INPUT_STR: {
+            int max_length = (int) cpu->regs[2];
+            char *buffer = malloc(max_length + 1);
+
+            // Read input
+            fgets(buffer, max_length, stdin);
+
+            // Ensure the string ends in \0
+            buffer[strcspn(buffer, "\n")] = '\0';
+
+            // Record length
+            int length = (int) strlen(buffer);
+
+            // CoStore results
+            memcpy((char *) cpu->mem + cpu->regs[1], buffer, length);
+            cpu->regs[3] = length;
+
+            free(buffer);
+            return 1;
+        }
 
         // DEBUG
         case SC_PRINT_REGISTERS:

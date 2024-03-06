@@ -45,10 +45,6 @@
 // Syntax: `prd <reg: u8>`
 #define OP_PRINT_DBL_REG 0xFFED
 
-// Get character from STDIN and write to register
-// Syntax: `inp <reg: u8>`
-#define OP_GET_CHAR 0xFFD0
-
 // Move literal to register.
 // Syntax: `mov <data: word> <register: u8>`
 #define OP_MOV_LIT_REG 0x0010
