@@ -220,16 +220,6 @@ void cpu_err_print(CPU cpu) {
 int cpu_execute_opcode(CPU cpu, OPCODE_T opcode, WORD_T *ip) {
     // printf("<OPCODE=%X>\n", opcode);
     switch (opcode) {
-        case OP_PREG:
-            cpu_reg_print(cpu);
-            return 1;
-        case OP_PMEM:
-            cpu_mem_print(cpu, 500, 16, 1, 16);
-            return 1;
-        case OP_PSTACK:
-            cpu_stack_print(cpu);
-            return 1;
-
         case OP_NOP:
             return 1;
         case OP_HALT:
@@ -784,7 +774,7 @@ unsigned int cpu_fetch_execute_cycle(CPU cpu) {
         cnt = cpu_execute(cpu);
         i++;
     }
-    printf("Process finished with code %lli after %i cycles.\n", *err, i);
+    printf("\nProcess finished with code %lli after %i cycles.\n", *err, i);
     if (*err != 0) {
         cpu_err_print(cpu);
         printf("\n");
@@ -886,18 +876,28 @@ int cpu_syscall(CPU cpu, int op) {
         }
 
         case SC_PRINT_STR:
-        {
-            UWORD_T addr = cpu->regs[2];
-            int len = (int) cpu->regs[1];
-
-            for (int i = 0; i < len; ++i) {
-                ERR_CHECK_ADDR(addr + i) else {
-                    fprintf(cpu->out, "%c", MEM_READ(addr + i, char));
-                }
+            if (cpu->regs[2] == 0) { // Null-terminated
+                fprintf(cpu->out, "%s", (char *) cpu->mem + cpu->regs[1]);
+            } else {
+                fprintf(cpu->out, "%.*s", (int) cpu->regs[2], (char *) cpu->mem + cpu->regs[1]);
             }
 
             return 1;
-        }
+
+        // DEBUG
+        case SC_PRINT_REGISTERS:
+            cpu_reg_print(cpu);
+            return 1;
+
+        // DEBUG
+        case SC_PRINT_MEMORY:
+            cpu_mem_print(cpu, cpu->regs[1], cpu->regs[2], 1, 16);
+            return 1;
+
+        // DEBUG
+        case SC_PRINT_STACK:
+            cpu_stack_print(cpu);
+            return 1;
 
         default:
             ERR_SET(ERR_SYSCAL, op);

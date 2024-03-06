@@ -13,3 +13,5 @@ This directory contains numerous documents explaining certain aspects of this re
 - `Instructions.md` - Full list of instructions implemented in the assembler.
 
 - `Registers.md` - Gives more information surrounding the CPUs registers.
+
+- `Syscalls.md` - Gives details on available system calls (`syscall` command).

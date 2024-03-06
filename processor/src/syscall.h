@@ -6,3 +6,7 @@
 #define SC_PRINT_DBL 4
 #define SC_PRINT_CHAR 5
 #define SC_PRINT_STR 6
+
+#define SC_PRINT_REGISTERS 100
+#define SC_PRINT_MEMORY 101
+#define SC_PRINT_STACK 102

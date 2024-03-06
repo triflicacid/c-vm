@@ -554,11 +554,11 @@ void asm_parse(struct AsmData* data, struct AsmError* err) {
                             struct LL_NODET_NAME(AsmArgument)* node = malloc(
                                 sizeof(struct LL_NODET_NAME(AsmArgument)));
                             node->data.type = ASM_ARG_LIT;
-                            if (has_dp) {  // Float
+                            if (has_dp) {  // Decimal (f64)
                                 double lit =
                                     fbase_to_10(sub, radix == -1 ? 10 : radix);
                                 node->data.data = *(unsigned long long*)&lit;
-                            } else {  // Integer
+                            } else {  // Integer (u64)
                                 unsigned long long lit =
                                     base_to_10(sub, radix == -1 ? 10 : radix);
                                 node->data.data = lit;
@@ -1341,18 +1341,6 @@ int asm_decode_instruction(struct AsmInstruction* instruct) {
             DECODE_INST1(OP_PRINT_UINT_REG, T_u8)
         } else
             return ASM_ERR_BAD_ARGS;
-    } else if (strcmp(instruct->mnemonic, "prs") == 0) {
-        if (argc == 0) {
-            instruct->opcode = OP_PSTACK;
-            instruct->bytes = sizeof(OPCODE_T);
-        } else
-            return ASM_ERR_BAD_ARGS;
-    } else if (strcmp(instruct->mnemonic, "prr") == 0) {
-        if (argc == 0) {
-            instruct->opcode = OP_PREG;
-            instruct->bytes = sizeof(OPCODE_T);
-        } else
-            return ASM_ERR_BAD_ARGS;
     } else if (strcmp(instruct->mnemonic, "psh") == 0) {
         if (argc == 1 && ASM_ARG_IS_LIT(instruct->args->data.type)) {
             DECODE_INST1(OP_PUSH_LIT, WORD_T)
@@ -1912,12 +1900,6 @@ int asm_write_instruction(void* buf, unsigned long long offset,
             break;
         case OP_PRINT_UINT_REG:
             WRITE_INST1(OP_PRINT_UINT_REG, T_u8)
-            break;
-        case OP_PSTACK:
-            BUF_WRITEK(offset, OPCODE_T, OP_PSTACK);
-            break;
-        case OP_PREG:
-            BUF_WRITEK(offset, OPCODE_T, OP_PREG);
             break;
         case OP_PUSH_LIT:
             WRITE_INST1(OP_PUSH_LIT, WORD_T)

@@ -70,7 +70,7 @@ int main(int argc, char **argv) {
     }
 
     if (do_detail) {
-        printf("Initlialising CPU...\n");
+        printf("Initialising CPU...\n");
         cpu_print_details(cpu);
         printf("\n");
     }

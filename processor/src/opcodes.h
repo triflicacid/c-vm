@@ -11,14 +11,6 @@
 // HALT
 #define OP_HALT 0xFFFF
 
-// DEBUG: PRINT MEMORY
-#define OP_PMEM 0xFFFA
-// DEBUG: PRINT REGISTERS
-#define OP_PREG 0xFFFB
-// DEBUG: Print contents of the stack as hexadecimal
-// Syntax: `prs`
-#define OP_PSTACK 0xFFFC
-
 // Print hex `bytes` bytes from memory
 // Syntax: `prh <bytes: u8> <addr: uword>`
 #define OP_PRINT_HEX_MEM 0xFFE0

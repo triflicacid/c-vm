@@ -4,5 +4,5 @@ prh 12, [100]
 prh r1
 prb ip
 prb 12, [100]
-prs
+
 hlt
