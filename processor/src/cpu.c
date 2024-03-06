@@ -7,6 +7,7 @@
 
 #include "err.h"
 #include "bit-ops.h"
+#include "syscall.h"
 
 /** Push a new stack frame to the stack */
 static void cpu_push_stack_frame(CPU cpu);
@@ -206,6 +207,9 @@ void cpu_err_print(CPU cpu) {
             case ERR_STACK_OFLOW:
                 printf("ERROR: Stack overflow - address %.8llX is out-of-bounds (stack lower bound: %.8llX)\n",
                        data, cpu->mem_size - cpu->regs[REG_STACK_SIZE]);
+                break;
+            case ERR_SYSCAL:
+                printf("ERROR: Unknown syscall operation %i\n", (int) data);
                 break;
             default:
                 break;
@@ -697,12 +701,13 @@ int cpu_execute_opcode(CPU cpu, OPCODE_T opcode, WORD_T *ip) {
             *ip = cpu->regs[reg];
             return 1;
         }
+        case OP_SYSCALL:
+            return cpu_syscall(cpu, (int) cpu->regs[0]);
         case OP_RET:
             cpu_pop_stack_frame(cpu);
             return 1;
-
         case OP_PRINT_HEX_MEM:
-        OP_APPLYF_MEM(*ip, print_bytes, )
+            OP_APPLYF_MEM(*ip, print_bytes, )
             return 1;
         case OP_PRINT_HEX_REG: {
             T_u8 reg = MEM_READ(*ip, T_u8);
@@ -720,10 +725,10 @@ int cpu_execute_opcode(CPU cpu, OPCODE_T opcode, WORD_T *ip) {
             return 1;
         }
         case OP_PRINT_BIN_MEM:
-        OP_APPLYF_MEM(*ip, print_bin, )
+            OP_APPLYF_MEM(*ip, print_bin, )
             return 1;
         case OP_PRINT_CHARS_MEM:
-        OP_APPLYF_MEM(*ip, print_chars, )
+            OP_APPLYF_MEM(*ip, print_chars, )
             return 1;
         case OP_PRINT_CHARS_REG: {
             T_u8 reg = MEM_READ(*ip, T_u8);
@@ -737,7 +742,7 @@ int cpu_execute_opcode(CPU cpu, OPCODE_T opcode, WORD_T *ip) {
             return 1;
         }
         case OP_PRINT_CHARS_LIT:
-        OP_APPLYF_LIT(*ip, print_chars)
+            OP_APPLYF_LIT(*ip, print_chars)
             return 1;
         case OP_PRINT_INT_REG:
         PRINT_REG(*ip, T_i64, "%lli")
@@ -757,7 +762,7 @@ int cpu_execute_opcode(CPU cpu, OPCODE_T opcode, WORD_T *ip) {
             return 1;
         }
         default:  // Unknown instruction
-        ERR_SET(ERR_UNINST, opcode)
+            ERR_SET(ERR_UNINST, opcode)
             return 0;
     }
 }
@@ -834,4 +839,68 @@ static void cpu_pop_stack_frame(CPU cpu) {
     }
 
     cpu->regs[REG_FP] += frame_size;
+}
+
+int cpu_syscall(CPU cpu, int op) {
+    void *data = cpu->regs + 1;
+
+    switch (op) {
+        case SC_EXIT:
+            // TODO print exit code?
+            return 0;
+
+        case SC_PRINT_INT:
+            fprintf(cpu->out, "%lli", *(long long *) data);
+            return 1;
+
+        case SC_PRINT_UINT:
+            fprintf(cpu->out, "%llu", *(unsigned long long *) data);
+            return 1;
+
+        case SC_PRINT_HEX:
+        {
+            T_u8 *addr = data;
+            for (int off = 0; off < sizeof(WORD_T); ++off)
+                fprintf(cpu->out, "%.2X", addr[off]);
+
+            return 1;
+        }
+
+        case SC_PRINT_FLT:
+            fprintf(cpu->out, "%f", *(float *) data);
+            return 1;
+
+        case SC_PRINT_DBL:
+            fprintf(cpu->out, "%lf", *(double *) data);
+            return 1;
+
+        case SC_PRINT_CHAR:
+        {
+            T_u8 *addr = data;
+            for (int off = 0; off < sizeof(WORD_T); ++off) {
+                T_u8 ch = *(addr + off);
+                if (ch == '\0') break;
+                fprintf(cpu->out, "%c", ch);
+            }
+            return 1;
+        }
+
+        case SC_PRINT_STR:
+        {
+            UWORD_T addr = cpu->regs[2];
+            int len = (int) cpu->regs[1];
+
+            for (int i = 0; i < len; ++i) {
+                ERR_CHECK_ADDR(addr + i) else {
+                    fprintf(cpu->out, "%c", MEM_READ(addr + i, char));
+                }
+            }
+
+            return 1;
+        }
+
+        default:
+            ERR_SET(ERR_SYSCAL, op);
+            return 0;
+    }
 }

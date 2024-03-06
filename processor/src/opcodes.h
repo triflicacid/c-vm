@@ -573,6 +573,8 @@
 // Call value in register
 // Syntax: `cal <reg: u8>`
 #define OP_CALL_REG 0x0131
+// Invoke system call
+#define OP_SYSCALL 0x0132
 
 // Return from subroutine
 // Syntax: `ret`

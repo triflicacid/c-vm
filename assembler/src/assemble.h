@@ -25,12 +25,22 @@
 #define IS_TOKEN_SEP(c) \
     (c == ' ' || c == '\t' || c == '(' || c == '[' || c == '{' || c == ',')
 
+// Write instruction to machine code with no arguments. `offset`
+// must be declared.
+#define WRITE_INST0(opcode)               \
+    BUF_WRITEK(offset, OPCODE_T, opcode);
+
 // Write instruction to machine code with 1 argument. `offset` and `instruct`
 // must be declared.
 #define WRITE_INST1(opcode, type)               \
     BUF_WRITEK(offset, OPCODE_T, opcode);       \
     BUF_WRITEK(offset + sizeof(OPCODE_T), type, \
                (type)instruct->args->data.data);
+
+// Decode instruction in struct AsmInstruction *
+#define DECODE_INST0(_opcode) \
+    instruct->opcode = _opcode;     \
+    instruct->bytes = sizeof(OPCODE_T);
 
 // Decode instruction in struct AsmInstruction *
 #define DECODE_INST1(_opcode, type) \

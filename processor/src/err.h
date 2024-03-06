@@ -54,4 +54,7 @@
         ERR_SET(ERR_STACK_UFLOW, 0);         \
     }
 
+// Unknown syscall operation
+#define ERR_SYSCAL 6
+
 #endif

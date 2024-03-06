@@ -88,6 +88,9 @@ int cpu_execute_opcode(CPU cpu, OPCODE_T opcode, WORD_T *ip);
  * execution. */
 int cpu_execute(CPU cpu);
 
+/** Execute a syscall, return if we should continue execution. */
+int cpu_syscall(CPU cpu, int op);
+
 /** Print the contents of a CPUs stack */
 void cpu_stack_print(CPU cpu);
 

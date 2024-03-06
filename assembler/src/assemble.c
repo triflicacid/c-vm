@@ -877,6 +877,11 @@ int asm_decode_instruction(struct AsmInstruction* instruct) {
             DECODE_INST1(OP_CALL_REG, T_u8)
         } else
             return ASM_ERR_ARGS;
+    } else if (strcmp(instruct->mnemonic, "syscall") == 0) {
+        if (argc == 0) {
+            DECODE_INST0(OP_SYSCALL)
+        } else
+            return ASM_ERR_ARGS;
     } else if (strcmp(instruct->mnemonic, "ci8i16") == 0) {
         if (argc == 1 && instruct->args->data.type == ASM_ARG_REG) {
             DECODE_INST1(OP_CVT_i8_i16, T_u8)
@@ -1605,6 +1610,9 @@ int asm_write_instruction(void* buf, unsigned long long offset,
             break;
         case OP_CALL_REG:
             WRITE_INST1(OP_CALL_REG, T_u8)
+            break;
+        case OP_SYSCALL:
+            WRITE_INST0(OP_SYSCALL)
             break;
         case OP_CVT_i8_i16:
             WRITE_INST1(OP_CVT_i8_i16, T_u8)
