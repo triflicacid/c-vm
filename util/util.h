@@ -85,11 +85,11 @@
 #define CONSOLE_YELLOW "\033[0;33m"
 #define CONSOLE_RESET "\033[0m"
 
-/** Print seqence of bytes e.g. for `int` call print_bytes(&var, sizeof(int)) to
+/** Print sequence of bytes e.g. for `int` call print_bytes(&var, sizeof(int)) to
  * print `XX XX XX XX ` */
 void print_bytes(const void *data, unsigned int length);
 
-/** Print seqence of bytes e.g. for `int` call print_bin(&var, sizeof(int)) to
+/** Print sequence of bytes e.g. for `int` call print_bin(&var, sizeof(int)) to
  * print `BBBBBBBB BBBBBBBB BBBBBBBB BBBBBBBB` */
 void print_bin(const void *data, unsigned int length);
 
@@ -118,5 +118,8 @@ T_u64 bytes_to_int(char *ptr, int len);
 
 /** Get substring. REMEMBER to free() the returned pointer. */
 char *extract_string(const char *string, unsigned int start, unsigned int len);
+
+/** Return is valid label name: [A-Za-z][0-9A-Za-z]* */
+int is_valid_label_name(int len, const char *label);
 
 #endif

@@ -245,6 +245,21 @@ void asm_parse(struct AsmData* data, struct AsmError* err) {
         // LABEL
         if (string[mptr + mlen - 1] == ':') {
             char* lbl = extract_string(string, mptr, mlen - 1);  // Label string
+
+            if (!is_valid_label_name(mlen - 1, lbl)) {
+                if (err->print) {
+                    printf(CONSOLE_RED
+                           "ERROR!" CONSOLE_RESET
+                           " Line %i, column %i:\nInvalid label form - \"%s\"\n",
+                           line, pos, lbl);
+                }
+                err->col = pos;
+                err->line = cline->data.n;
+                err->errc = ASM_ERR_INVALID_LABEL;
+                free(lbl);
+                return;
+            }
+
             if (err->debug) {
                 printf("Label \"%s\" at offset +%u\n", lbl, offset);
             }
@@ -261,6 +276,7 @@ void asm_parse(struct AsmData* data, struct AsmError* err) {
                 err->col = pos;
                 err->line = cline->data.n;
                 err->errc = ASM_ERR_INVALID_LABEL;
+                free(lbl);
                 return;
             }
 
@@ -280,6 +296,7 @@ void asm_parse(struct AsmData* data, struct AsmError* err) {
                     err->col = pos;
                     err->line = cline->data.n;
                     err->errc = ASM_ERR_INVALID_LABEL;
+                    free(lbl);
                     return;
                 }
 
@@ -480,6 +497,7 @@ void asm_parse(struct AsmData* data, struct AsmError* err) {
                         free(chunk_node);
                         return;
                     }
+
                     if (IS_CHAR(string[pos + 1])) {  // Register pointer?
                         T_i8 reg_off =
                             cpu_reg_offset_from_string((char*)string + pos + 1);
@@ -487,6 +505,22 @@ void asm_parse(struct AsmData* data, struct AsmError* err) {
                             // Exists?
                             char* sub =
                                 extract_string(string, pos + 1, len - 2);
+
+                            if (!is_valid_label_name(len - 2, sub)) {
+                                if (err->print) {
+                                    printf(CONSOLE_RED
+                                           "ERROR!" CONSOLE_RESET
+                                           " Line %i, column %i:\nInvalid label form - \"%s\"\n",
+                                           line, pos, sub);
+                                }
+                                err->col = pos;
+                                err->line = cline->data.n;
+                                err->errc = ASM_ERR_INVALID_LABEL;
+                                free(sub);
+                                free(chunk_node);
+                                return;
+                            }
+
                             struct AsmLabel* lbl =
                                 linked_list_find_AsmLabel(data->labels, sub);
                             struct LL_NODET_NAME(AsmArgument)* node = malloc(
@@ -569,6 +603,22 @@ void asm_parse(struct AsmData* data, struct AsmError* err) {
                             // Exists?
                             struct AsmLabel* lbl =
                                 linked_list_find_AsmLabel(data->labels, sub);
+
+                            if (!is_valid_label_name(sublen, sub)) {
+                                if (err->print) {
+                                    printf(CONSOLE_RED
+                                           "ERROR!" CONSOLE_RESET
+                                           " Line %i, column %i:\nInvalid label form - \"%s\"\n",
+                                           line, pos, sub);
+                                }
+                                err->col = pos;
+                                err->line = cline->data.n;
+                                err->errc = ASM_ERR_INVALID_LABEL;
+                                free(sub);
+                                free(chunk_node);
+                                return;
+                            }
+
                             struct LL_NODET_NAME(AsmArgument)* node = malloc(
                                 sizeof(struct LL_NODET_NAME(AsmArgument)));
                             if (lbl == 0) {

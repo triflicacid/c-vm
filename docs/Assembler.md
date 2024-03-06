@@ -19,20 +19,18 @@ To execute, run `./<bin> [src] [options]` where
 Upon execution, the command line arguments will be parsed. If successful, the file will be read and a status code returned (described below).
 If one or more instances of `-d`, further detail will be printed to the console.
 
-### Status Codes
-
-| Code | Name                | Description                                       |
-|------|---------------------|---------------------------------------------------|
-| 0    | `OK`                | Success; no error.                                |
-| 1    | `ERR_SYNTAX`        | Generic syntax error. See detailed output.        | 
-| 2    | `ERR_MNEMONIC`      | Unknown mnemonic.                                 |
-| 3    | `ERR_BAD_ARGS`      | Unknown argument combination for the mnemonic.    |
-| 4    | `ERR_DIRECTIVE`     | Syntax error: unknown directive.                  |
-| 5    | `ERR_UNKNOWN_LABEL` | Reference to unknown label (label not defined).   |
-| 6    | `ERR_INVALID_LABEL` | Invalid label (shadows main label/register name). |
-| 10   | `ERR_INTERNAL`      | [*internal*] Generic internal error.              |
-| 11   | `ERR_OPCODE`        | [*internal*] Unknown opcode when compiling.       |
-| 12   | `ERR_CHUNK`         | [*internal*] Chunk collision error.               |
+| Code | Name                | Description                                                       |
+|------|---------------------|-------------------------------------------------------------------|
+| 0    | `OK`                | Success; no error.                                                |
+| 1    | `ERR_SYNTAX`        | Generic syntax error. See detailed output.                        | 
+| 2    | `ERR_MNEMONIC`      | Unknown mnemonic.                                                 |
+| 3    | `ERR_BAD_ARGS`      | Unknown argument combination for the mnemonic.                    |
+| 4    | `ERR_DIRECTIVE`     | Syntax error: unknown directive.                                  |
+| 5    | `ERR_UNKNOWN_LABEL` | Reference to unknown label (label not defined).                   |
+| 6    | `ERR_INVALID_LABEL` | Invalid label (invalid name or shadows main label/register name). |
+| 10   | `ERR_INTERNAL`      | [*internal*] Generic internal error.                              |
+| 11   | `ERR_OPCODE`        | [*internal*] Unknown opcode when compiling.                       |
+| 12   | `ERR_CHUNK`         | [*internal*] Chunk collision error.                               |
 
 Note: *internal* errors should not occur and are used for debug purposes only.
 
