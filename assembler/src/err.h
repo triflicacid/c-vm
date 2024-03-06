@@ -1,43 +1,35 @@
 #ifndef ASM_ERR_H_
 #define ASM_ERR_H_
 
-#define ASM_ERR_NONE 0
+// No error
+#define ASM_OK 0
 
-// General error
-#define ASM_ERR_GENERIC 1
-
-// Argument count exceeded
-#define ASM_ERR_TOO_MANY_ARGS 2
-
-// Unknown argument
-#define ASM_ERR_ARG 3
-
-// Assembler: invalid register
-#define ASM_ERR_REG 4
-
-// Assembler: invalid address
-#define ASM_ERR_ADDR 5
-
-// Assembler: chunk collision error
-#define ASM_ERR_MEMORY 6
+// Generic syntax error
+#define ASM_ERR_SYNTAX 1
 
 // Assembler: unknown mnemonic
-#define ASM_ERR_MNEMONIC 7
+#define ASM_ERR_MNEMONIC 2
 
 // Assembler: invalid argument combination
-#define ASM_ERR_BAD_ARGS 8
-
-// Assembler: cannot decode opcode
-#define ASM_ERR_OPCODE 9
+#define ASM_ERR_BAD_ARGS 3
 
 // Assembler: unknown directive
-#define ASM_ERR_DIRECTIVE 10
+#define ASM_ERR_DIRECTIVE 4
 
 // Assembler: unknown label encountered
-#define ASM_ERR_UNKNOWN_LABEL 11
+#define ASM_ERR_UNKNOWN_LABEL 5
 
 // Assembler: invalid label name
-#define ASM_ERR_INVALID_LABEL 12
+#define ASM_ERR_INVALID_LABEL 6
+
+// Assembler: generic internal error, should not happen when not in development.
+#define ASM_ERR_INTERNAL 10
+
+// Assembler: cannot decode opcode
+#define ASM_ERR_OPCODE 11
+
+// Assembler: chunk collision error
+#define ASM_ERR_CHUNK 12
 
 
 // Assembler - contain error info

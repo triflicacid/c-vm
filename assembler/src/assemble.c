@@ -16,7 +16,7 @@
 #include "processor/src/binary_header.h"
 
 struct AsmError asm_error_create() {
-    struct AsmError err = {.line = 0, .col = 0, .errc = ASM_ERR_NONE, .print = 0, .debug = 0};
+    struct AsmError err = {.line = 0, .col = 0, .errc = ASM_OK, .print = 0, .debug = 0};
     return err;
 }
 
@@ -408,14 +408,14 @@ void asm_parse(struct AsmData* data, struct AsmError* err) {
                                                    '\0'};
                                     printf(CONSOLE_RED
                                            "ERROR!" CONSOLE_RESET
-                                           " Line %i, column %i:\nExpected ' "
+                                           " Line %i, column %i:\nSyntax: expected ' "
                                            "after character expression "
                                            "%s <-- '\n",
                                            line, pos, astr);
                                 }
                                 err->col = pos;
                                 err->line = cline->data.n;
-                                err->errc = ASM_ERR_GENERIC;
+                                err->errc = ASM_ERR_SYNTAX;
                                 asm_free_instruction_chunk(chunk);
                                 free(chunk_node);
                                 return;
@@ -469,14 +469,13 @@ void asm_parse(struct AsmData* data, struct AsmError* err) {
                             char* astr = extract_string(string, pos, len);
                             printf(CONSOLE_RED
                                    "ERROR!" CONSOLE_RESET
-                                   " Line %i, column %i:\nExpected ']' after "
-                                   "address expression: '%s' <-- ]\n",
+                                   " Line %i, column %i:\nSyntax: Expected ']' to close group: '%s' <-- ]\n",
                                    line, pos, astr);
                             free(astr);
                         }
                         err->col = pos;
                         err->line = cline->data.n;
-                        err->errc = ASM_ERR_ADDR;
+                        err->errc = ASM_ERR_SYNTAX;
                         asm_free_instruction_chunk(chunk);
                         free(chunk_node);
                         return;
@@ -600,14 +599,14 @@ void asm_parse(struct AsmData* data, struct AsmError* err) {
                         char* astr = extract_string(string, pos, len);
                         printf(CONSOLE_RED
                                "ERROR!" CONSOLE_RESET
-                               " Line %i, column %i:\nUnknown argument format "
+                               " Line %i, column %i:\nSyntax: unknown argument format "
                                "'%s'\n",
                                line, pos, astr);
                         free(astr);
                     }
                     err->col = pos;
                     err->line = cline->data.n;
-                    err->errc = ASM_ERR_ARG;
+                    err->errc = ASM_ERR_SYNTAX;
                     asm_free_instruction_chunk(chunk);
                     free(chunk_node);
                     return;
@@ -623,12 +622,12 @@ void asm_parse(struct AsmData* data, struct AsmError* err) {
                     if (err->print)
                         printf(CONSOLE_RED
                                "ERROR!" CONSOLE_RESET
-                               " Line %i, column %i:\nExpected comma, found "
+                               " Line %i, column %i:\nSyntax: expected comma, found "
                                "'%c'\n",
                                line, pos, string[pos]);
                     err->col = pos;
                     err->line = cline->data.n;
-                    err->errc = ASM_ERR_GENERIC;
+                    err->errc = ASM_ERR_SYNTAX;
                     asm_free_instruction_chunk(chunk);
                     free(chunk_node);
                     return;
@@ -700,7 +699,7 @@ void asm_parse(struct AsmData* data, struct AsmError* err) {
                         line, pos, collision->bytes, collision->offset);
                 err->col = pos;
                 err->line = cline->data.n;
-                err->errc = ASM_ERR_MEMORY;
+                err->errc = ASM_ERR_CHUNK;
                 asm_destroy_chunk(chunk);
                 free(chunk_node);
                 return;
@@ -758,7 +757,7 @@ size_t asm_compile(struct AsmData* data, struct AsmError* err, char **result_buf
                 struct AsmInstruction* instruct = chunk->data.data;
                 int errc =
                     asm_write_instruction(prog_buf, chunk->data.offset, instruct);
-                if (errc != ASM_ERR_NONE) {
+                if (errc != ASM_OK) {
                     if (err->print)
                         printf(CONSOLE_RED
                                "ERROR!" CONSOLE_RESET
@@ -784,7 +783,7 @@ size_t asm_compile(struct AsmData* data, struct AsmError* err, char **result_buf
                            chunk->data.type);
                 err->line = 0;  // Unknown.
                 err->col = 0;   // Unknown.
-                err->errc = ASM_ERR_GENERIC;
+                err->errc = ASM_ERR_INTERNAL;
                 free(*result_buf);
                 return 0;
         }
@@ -1518,7 +1517,7 @@ int asm_decode_instruction(struct AsmInstruction* instruct) {
             return ASM_ERR_BAD_ARGS;
     } else
         return ASM_ERR_MNEMONIC;
-    return ASM_ERR_NONE;
+    return ASM_OK;
 }
 
 int asm_write_instruction(void* buf, unsigned long long offset,
@@ -2052,5 +2051,5 @@ int asm_write_instruction(void* buf, unsigned long long offset,
         default:
             return ASM_ERR_OPCODE;
     }
-    return ASM_ERR_NONE;
+    return ASM_OK;
 }
