@@ -1,6 +1,6 @@
 mov 0, r0
-mov [num], r1
+mov [r5], r1
 syscall
 hlt
 
-num: u8 123
+r5: u8 123

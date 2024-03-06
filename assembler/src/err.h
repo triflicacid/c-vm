@@ -18,23 +18,27 @@
 // Assembler: invalid address
 #define ASM_ERR_ADDR 5
 
-// Asembler: out of memory
+// Assembler: chunk collision error
 #define ASM_ERR_MEMORY 6
 
 // Assembler: unknown mnemonic
 #define ASM_ERR_MNEMONIC 7
 
 // Assembler: invalid argument combination
-#define ASM_ERR_ARGS 8
-
-// Assembler: unknown label encountered
-#define ASM_ERR_LABEL 9
+#define ASM_ERR_BAD_ARGS 8
 
 // Assembler: cannot decode opcode
-#define ASM_ERR_UNK_OPCODE 10
+#define ASM_ERR_OPCODE 9
 
 // Assembler: unknown directive
-#define ASM_ERR_DIRECTIVE 13
+#define ASM_ERR_DIRECTIVE 10
+
+// Assembler: unknown label encountered
+#define ASM_ERR_UNKNOWN_LABEL 11
+
+// Assembler: invalid label name
+#define ASM_ERR_INVALID_LABEL 12
+
 
 // Assembler - contain error info
 struct AsmError {
