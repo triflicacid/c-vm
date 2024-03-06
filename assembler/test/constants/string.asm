@@ -1,5 +1,5 @@
-mov string, r1
-mov br, r2
+mov [string], r1
+mov [br], r2
 prh r1
 prc r2
 prc r1

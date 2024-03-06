@@ -1,4 +1,4 @@
-mov num, r1
+mov [num], r1
 prh r1
 hlt
 

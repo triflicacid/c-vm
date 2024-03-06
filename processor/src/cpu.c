@@ -591,31 +591,31 @@ int cpu_execute_opcode(CPU cpu, OPCODE_T opcode, WORD_T *ip) {
         case OP_CMP_MEM_MEM:
         CMP_MEM_MEM(*ip)
             return 1;
-        case OP_JMP_ADDR:
+        case OP_JMP_LIT:
         SET_LIT(*ip, *ip, UWORD_T)
             return 1;
         case OP_JMP_REG:
         SET_REG(*ip, *ip, UWORD_T)
             return 1;
-        case OP_JMP_EQ_ADDR:
+        case OP_JMP_EQ_LIT:
         JMP_LIT_IF(*ip, ==, CMP_EQ)
             return 1;
         case OP_JMP_EQ_REG:
         JMP_REG_IF(*ip, ==, CMP_EQ)
             return 1;
-        case OP_JMP_GT_ADDR:
+        case OP_JMP_GT_LIT:
         JMP_LIT_IF(*ip, ==, CMP_GT)
             return 1;
         case OP_JMP_GT_REG:
         JMP_REG_IF(*ip, ==, CMP_GT)
             return 1;
-        case OP_JMP_LT_ADDR:
+        case OP_JMP_LT_LIT:
         JMP_LIT_IF(*ip, ==, CMP_LT)
             return 1;
         case OP_JMP_LT_REG:
         JMP_REG_IF(*ip, ==, CMP_LT)
             return 1;
-        case OP_JMP_NEQ_ADDR:
+        case OP_JMP_NEQ_LIT:
         JMP_LIT_IF(*ip, !=, CMP_EQ)
             return 1;
         case OP_JMP_NEQ_REG:

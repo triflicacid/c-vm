@@ -293,13 +293,13 @@ void asm_parse(struct AsmData* data, struct AsmError* err) {
                         struct LL_NODET_NAME(AsmArgument)* arg = instruct->args;
                         unsigned int i = 0;
                         while (arg != 0) {
-                            if (arg->data.type == ASM_ARG_LABEL &&
+                            if (ASM_ARG_IS_LABEL(arg->data.type) &&
                                 strcmp(lbl, (char*)arg->data.data) == 0) {
                                 if (err->debug)
                                     printf(
                                         "Mnemonic \"%s\"/Opcode %u, arg %u: label \"%s\" -> addr [%u]\n",
                                         instruct->mnemonic, instruct->opcode, i, lbl, offset);
-                                arg->data.type = ASM_ARG_ADDR;
+                                arg->data.type = ASM_ARG_DEREF_LABEL(arg->data.type);
                                 arg->data.data = offset;
                             }
                             ++i;
@@ -443,7 +443,7 @@ void asm_parse(struct AsmData* data, struct AsmError* err) {
                     memcpy(&(node->data.data), data, sizeof(data));
                     linked_list_insertnode_AsmArgument(node, &(instruct->args),
                                                        -1);
-                } else if (string[pos] == '[') {  // Address/Register pointer
+                } else if (string[pos] == '[') {  // Address/Register pointer/Label address
                     unsigned int len = 0;
                     while (pos + len < slen &&
                            !(IS_WHITESPACE(string[pos + len]) ||
@@ -478,7 +478,7 @@ void asm_parse(struct AsmData* data, struct AsmError* err) {
                             struct LL_NODET_NAME(AsmArgument)* node = malloc(
                                 sizeof(struct LL_NODET_NAME(AsmArgument)));
                             if (lbl == 0) {
-                                node->data.type = ASM_ARG_LABEL;
+                                node->data.type = ASM_ARG_LABEL_ADDR;
                                 node->data.data = (unsigned long long)sub;
                             } else {
                                 node->data.type = ASM_ARG_ADDR;
@@ -558,7 +558,7 @@ void asm_parse(struct AsmData* data, struct AsmError* err) {
                             struct LL_NODET_NAME(AsmArgument)* node = malloc(
                                 sizeof(struct LL_NODET_NAME(AsmArgument)));
                             if (lbl == 0) {
-                                node->data.type = ASM_ARG_LABEL;
+                                node->data.type = ASM_ARG_LABEL_LIT;
                                 node->data.data = (unsigned long long)sub;
                             } else {
                                 node->data.type = ASM_ARG_ADDR;
@@ -571,7 +571,7 @@ void asm_parse(struct AsmData* data, struct AsmError* err) {
                         struct LL_NODET_NAME(AsmArgument)* node =
                             malloc(sizeof(struct LL_NODET_NAME(AsmArgument)));
                         node->data.type = ASM_ARG_REG;
-                        node->data.data = reg_off;
+                        node->data.data = (unsigned char) reg_off;
                         linked_list_insertnode_AsmArgument(
                             node, &(instruct->args), -1);
                     }
@@ -703,12 +703,12 @@ void asm_parse(struct AsmData* data, struct AsmError* err) {
             struct LL_NODET_NAME(AsmArgument)* arg = instruct->args;
             unsigned int i = 0;
             while (arg != 0) {
-                if (arg->data.type == ASM_ARG_LABEL) {
+                if (ASM_ARG_IS_LABEL(arg->data.type)) {
                     if (err->print)
                         printf(CONSOLE_RED
                                "ERROR!" CONSOLE_RESET " Instruction \"%s\" (+%llu): reference to undefined "
-                               "label \"%llu\"\n",
-                               instruct->mnemonic, chunk->data.offset, arg->data.data);
+                               "label \"%s\"\n",
+                               instruct->mnemonic, chunk->data.offset, (char *) arg->data.data);
                     err->line = 0;  // Unknown.
                     err->col = 0;   // Unknown.
                     err->errc = ASM_ERR_LABEL;
@@ -795,27 +795,24 @@ int asm_decode_instruction(struct AsmInstruction* instruct) {
             return ASM_ERR_ARGS;
     } else if (strcmp(instruct->mnemonic, "add") == 0) {
         if (argc == 2 && instruct->args->data.type == ASM_ARG_REG &&
-            instruct->args->next->data.type == ASM_ARG_LIT) {
+            ASM_ARG_IS_LIT(instruct->args->next->data.type)) {
             DECODE_INST2(OP_ADD_REG_LIT, T_u8, WORD_T)
         } else if (argc == 2 && instruct->args->data.type == ASM_ARG_REG &&
                    instruct->args->next->data.type == ASM_ARG_REG) {
             DECODE_INST2(OP_ADD_REG_REG, T_u8, T_u8)
-        } else if (argc == 3 && instruct->args->data.type == ASM_ARG_LIT &&
-                   (instruct->args->next->data.type == ASM_ARG_ADDR ||
-                    instruct->args->next->data.type == ASM_ARG_LABEL) &&
-                   (instruct->args->next->next->data.type == ASM_ARG_ADDR ||
-                    instruct->args->next->next->data.type == ASM_ARG_LABEL)) {
+        } else if (argc == 3 && ASM_ARG_IS_LIT(instruct->args->data.type) &&
+                   ASM_ARG_IS_ADDR(instruct->args->next->data.type) &&
+                   ASM_ARG_IS_ADDR(instruct->args->next->next->data.type)) {
             DECODE_INST3(OP_ADD_MEM_MEM, T_u8, UWORD_T, UWORD_T)
-        } else if (argc == 3 && instruct->args->data.type == ASM_ARG_LIT &&
-                   (instruct->args->next->data.type == ASM_ARG_ADDR ||
-                    instruct->args->next->data.type == ASM_ARG_LABEL) &&
-                   instruct->args->next->next->data.type == ASM_ARG_LIT) {
+        } else if (argc == 3 && ASM_ARG_IS_LIT(instruct->args->data.type) &&
+                   ASM_ARG_IS_ADDR(instruct->args->next->data.type) &&
+                   ASM_ARG_IS_LIT(instruct->args->next->next->data.type)) {
             DECODE_INST3(OP_ADD_MEM_LIT, T_u8, UWORD_T, T_u8)
         } else
             return ASM_ERR_ARGS;
     } else if (strcmp(instruct->mnemonic, "addf32") == 0) {
         if (argc == 2 && instruct->args->data.type == ASM_ARG_REG &&
-            instruct->args->next->data.type == ASM_ARG_LIT) {
+            ASM_ARG_IS_LIT(instruct->args->next->data.type)) {
             DECODE_INST2(OP_ADDF32_REG_LIT, T_u8, T_f32)
         } else if (argc == 2 && instruct->args->data.type == ASM_ARG_REG &&
                    instruct->args->next->data.type == ASM_ARG_REG) {
@@ -824,7 +821,7 @@ int asm_decode_instruction(struct AsmInstruction* instruct) {
             return ASM_ERR_ARGS;
     } else if (strcmp(instruct->mnemonic, "addf64") == 0) {
         if (argc == 2 && instruct->args->data.type == ASM_ARG_REG &&
-            instruct->args->next->data.type == ASM_ARG_LIT) {
+            ASM_ARG_IS_LIT(instruct->args->next->data.type)) {
             DECODE_INST2(OP_ADDF64_REG_LIT, T_u8, T_f64)
         } else if (argc == 2 && instruct->args->data.type == ASM_ARG_REG &&
                    instruct->args->next->data.type == ASM_ARG_REG) {
@@ -833,45 +830,43 @@ int asm_decode_instruction(struct AsmInstruction* instruct) {
             return ASM_ERR_ARGS;
     } else if (strcmp(instruct->mnemonic, "and") == 0) {
         if (argc == 2 && instruct->args->data.type == ASM_ARG_REG &&
-            instruct->args->next->data.type == ASM_ARG_LIT) {
+            ASM_ARG_IS_LIT(instruct->args->next->data.type)) {
             DECODE_INST2(OP_AND_REG_LIT, T_u8, WORD_T)
         } else if (argc == 2 && instruct->args->data.type == ASM_ARG_REG &&
                    instruct->args->next->data.type == ASM_ARG_REG) {
             DECODE_INST2(OP_AND_REG_REG, T_u8, T_u8)
-        } else if (argc == 3 && instruct->args->data.type == ASM_ARG_LIT &&
-                   (instruct->args->next->data.type == ASM_ARG_ADDR ||
-                    instruct->args->next->data.type == ASM_ARG_LABEL) &&
-                   (instruct->args->next->next->data.type == ASM_ARG_ADDR ||
-                    instruct->args->next->next->data.type == ASM_ARG_LABEL)) {
+        } else if (argc == 3 && ASM_ARG_IS_LIT(instruct->args->data.type) &&
+                   ASM_ARG_IS_ADDR(instruct->args->next->data.type) &&
+                   ASM_ARG_IS_ADDR(instruct->args->next->next->data.type)) {
             DECODE_INST3(OP_AND_MEM_MEM, T_u8, UWORD_T, UWORD_T)
         } else
             return ASM_ERR_ARGS;
     } else if (strcmp(instruct->mnemonic, "and8") == 0) {
         if (argc == 2 && instruct->args->data.type == ASM_ARG_REG &&
-            instruct->args->next->data.type == ASM_ARG_LIT) {
+            ASM_ARG_IS_LIT(instruct->args->next->data.type)) {
             DECODE_INST2(OP_AND8_REG_LIT, T_u8, T_u8)
         } else
             return ASM_ERR_ARGS;
     } else if (strcmp(instruct->mnemonic, "and16") == 0) {
         if (argc == 2 && instruct->args->data.type == ASM_ARG_REG &&
-            instruct->args->next->data.type == ASM_ARG_LIT) {
+            ASM_ARG_IS_LIT(instruct->args->next->data.type)) {
             DECODE_INST2(OP_AND16_REG_LIT, T_u8, T_u16)
         } else
             return ASM_ERR_ARGS;
     } else if (strcmp(instruct->mnemonic, "and32") == 0) {
         if (argc == 2 && instruct->args->data.type == ASM_ARG_REG &&
-            instruct->args->next->data.type == ASM_ARG_LIT) {
+            ASM_ARG_IS_LIT(instruct->args->next->data.type)) {
             DECODE_INST2(OP_AND32_REG_LIT, T_u8, T_u32)
         } else
             return ASM_ERR_ARGS;
     } else if (strcmp(instruct->mnemonic, "and64") == 0) {
         if (argc == 2 && instruct->args->data.type == ASM_ARG_REG &&
-            instruct->args->next->data.type == ASM_ARG_LIT) {
+            ASM_ARG_IS_LIT(instruct->args->next->data.type)) {
             DECODE_INST2(OP_AND64_REG_LIT, T_u8, T_u64)
         } else
             return ASM_ERR_ARGS;
     } else if (strcmp(instruct->mnemonic, "cal") == 0) {
-        if (argc == 1 && instruct->args->data.type == ASM_ARG_LIT) {
+        if (argc == 1 && ASM_ARG_IS_LIT(instruct->args->data.type)) {
             DECODE_INST1(OP_CALL_LIT, UWORD_T)
         } else if (argc == 1 && instruct->args->data.type == ASM_ARG_REG) {
             DECODE_INST1(OP_CALL_REG, T_u8)
@@ -934,25 +929,23 @@ int asm_decode_instruction(struct AsmInstruction* instruct) {
             return ASM_ERR_ARGS;
     } else if (strcmp(instruct->mnemonic, "cmp") == 0) {
         if (argc == 2 && instruct->args->data.type == ASM_ARG_REG &&
-            instruct->args->next->data.type == ASM_ARG_LIT) {
+            ASM_ARG_IS_LIT(instruct->args->next->data.type)) {
             DECODE_INST2(OP_CMP_REG_LIT, T_u8, WORD_T)
         } else if (argc == 2 && instruct->args->data.type == ASM_ARG_REG &&
                    instruct->args->next->data.type == ASM_ARG_REG) {
             DECODE_INST2(OP_CMP_REG_REG, T_u8, T_u8)
-        } else if (argc == 3 && instruct->args->data.type == ASM_ARG_LIT &&
-                   (instruct->args->next->data.type == ASM_ARG_ADDR ||
-                    instruct->args->next->data.type == ASM_ARG_LABEL) &&
-                   (instruct->args->next->next->data.type == ASM_ARG_ADDR ||
-                    instruct->args->next->next->data.type == ASM_ARG_LABEL)) {
+        } else if (argc == 3 && ASM_ARG_IS_LIT(instruct->args->data.type) &&
+                   ASM_ARG_IS_ADDR(instruct->args->next->data.type) &&
+                   ASM_ARG_IS_ADDR(instruct->args->next->next->data.type)) {
             DECODE_INST3(OP_CMP_MEM_MEM, T_u8, UWORD_T, UWORD_T)
-        } else if (argc == 2 && instruct->args->data.type == ASM_ARG_LIT &&
-                   instruct->args->next->data.type == ASM_ARG_LIT) {
+        } else if (argc == 2 && ASM_ARG_IS_LIT(instruct->args->data.type) &&
+                   ASM_ARG_IS_LIT(instruct->args->next->data.type)) {
             DECODE_INST2(OP_CMP_LIT_LIT, WORD_T, WORD_T)
         } else
             return ASM_ERR_ARGS;
     } else if (strcmp(instruct->mnemonic, "cmpf32") == 0) {
         if (argc == 2 && instruct->args->data.type == ASM_ARG_REG &&
-            instruct->args->next->data.type == ASM_ARG_LIT) {
+            ASM_ARG_IS_LIT(instruct->args->next->data.type)) {
             DECODE_INST2(OP_CMPF32_REG_LIT, T_u8, T_f32)
         } else if (argc == 2 && instruct->args->data.type == ASM_ARG_REG &&
                    instruct->args->next->data.type == ASM_ARG_REG) {
@@ -961,7 +954,7 @@ int asm_decode_instruction(struct AsmInstruction* instruct) {
             return ASM_ERR_ARGS;
     } else if (strcmp(instruct->mnemonic, "cmpf64") == 0) {
         if (argc == 2 && instruct->args->data.type == ASM_ARG_REG &&
-            instruct->args->next->data.type == ASM_ARG_LIT) {
+            ASM_ARG_IS_LIT(instruct->args->next->data.type)) {
             DECODE_INST2(OP_CMPF64_REG_LIT, T_u8, T_f64)
         } else if (argc == 2 && instruct->args->data.type == ASM_ARG_REG &&
                    instruct->args->next->data.type == ASM_ARG_REG) {
@@ -970,7 +963,7 @@ int asm_decode_instruction(struct AsmInstruction* instruct) {
             return ASM_ERR_ARGS;
     } else if (strcmp(instruct->mnemonic, "div") == 0) {
         if (argc == 2 && instruct->args->data.type == ASM_ARG_REG &&
-            instruct->args->next->data.type == ASM_ARG_LIT) {
+            ASM_ARG_IS_LIT(instruct->args->next->data.type)) {
             DECODE_INST2(OP_DIV_REG_LIT, T_u8, WORD_T)
         } else if (argc == 2 && instruct->args->data.type == ASM_ARG_REG &&
                    instruct->args->next->data.type == ASM_ARG_REG) {
@@ -979,7 +972,7 @@ int asm_decode_instruction(struct AsmInstruction* instruct) {
             return ASM_ERR_ARGS;
     } else if (strcmp(instruct->mnemonic, "divf32") == 0) {
         if (argc == 2 && instruct->args->data.type == ASM_ARG_REG &&
-            instruct->args->next->data.type == ASM_ARG_LIT) {
+            ASM_ARG_IS_LIT(instruct->args->next->data.type)) {
             DECODE_INST2(OP_DIVF32_REG_LIT, T_u8, T_f32)
         } else if (argc == 2 && instruct->args->data.type == ASM_ARG_REG &&
                    instruct->args->next->data.type == ASM_ARG_REG) {
@@ -988,7 +981,7 @@ int asm_decode_instruction(struct AsmInstruction* instruct) {
             return ASM_ERR_ARGS;
     } else if (strcmp(instruct->mnemonic, "divf64") == 0) {
         if (argc == 2 && instruct->args->data.type == ASM_ARG_REG &&
-            instruct->args->next->data.type == ASM_ARG_LIT) {
+            ASM_ARG_IS_LIT(instruct->args->next->data.type)) {
             DECODE_INST2(OP_DIVF64_REG_LIT, T_u8, T_f64)
         } else if (argc == 2 && instruct->args->data.type == ASM_ARG_REG &&
                    instruct->args->next->data.type == ASM_ARG_REG) {
@@ -1003,63 +996,54 @@ int asm_decode_instruction(struct AsmInstruction* instruct) {
     } else if (strcmp(instruct->mnemonic, "jmp") == 0) {
         if (argc == 1 && instruct->args->data.type == ASM_ARG_REG) {
             DECODE_INST1(OP_JMP_REG, T_u8)
-        } else if (argc == 1 && (instruct->args->data.type == ASM_ARG_ADDR ||
-                                 instruct->args->data.type == ASM_ARG_LABEL)) {
-            DECODE_INST1(OP_JMP_ADDR, UWORD_T)
+        } else if (argc == 1 && ASM_ARG_IS_LIT(instruct->args->data.type)) {
+            DECODE_INST1(OP_JMP_LIT, UWORD_T)
         } else
             return ASM_ERR_ARGS;
     } else if (strcmp(instruct->mnemonic, "jeq") == 0) {
         if (argc == 1 && instruct->args->data.type == ASM_ARG_REG) {
             DECODE_INST1(OP_JMP_EQ_REG, T_u8)
-        } else if (argc == 1 && (instruct->args->data.type == ASM_ARG_ADDR ||
-                                 instruct->args->data.type == ASM_ARG_LABEL)) {
-            DECODE_INST1(OP_JMP_EQ_ADDR, UWORD_T)
+        } else if (argc == 1 && ASM_ARG_IS_LIT(instruct->args->data.type)) {
+            DECODE_INST1(OP_JMP_EQ_LIT, UWORD_T)
         } else
             return ASM_ERR_ARGS;
     } else if (strcmp(instruct->mnemonic, "jne") == 0) {
         if (argc == 1 && instruct->args->data.type == ASM_ARG_REG) {
             DECODE_INST1(OP_JMP_NEQ_REG, T_u8)
-        } else if (argc == 1 && (instruct->args->data.type == ASM_ARG_ADDR ||
-                                 instruct->args->data.type == ASM_ARG_LABEL)) {
-            DECODE_INST1(OP_JMP_NEQ_ADDR, UWORD_T)
+        } else if (argc == 1 && ASM_ARG_IS_LIT(instruct->args->data.type)) {
+            DECODE_INST1(OP_JMP_NEQ_LIT, UWORD_T)
         } else
             return ASM_ERR_ARGS;
     } else if (strcmp(instruct->mnemonic, "jlt") == 0) {
         if (argc == 1 && instruct->args->data.type == ASM_ARG_REG) {
             DECODE_INST1(OP_JMP_LT_REG, T_u8)
-        } else if (argc == 1 && (instruct->args->data.type == ASM_ARG_ADDR ||
-                                 instruct->args->data.type == ASM_ARG_LABEL)) {
-            DECODE_INST1(OP_JMP_LT_ADDR, UWORD_T)
+        } else if (argc == 1 && ASM_ARG_IS_LIT(instruct->args->data.type)) {
+            DECODE_INST1(OP_JMP_LT_LIT, UWORD_T)
         } else
             return ASM_ERR_ARGS;
     } else if (strcmp(instruct->mnemonic, "jgt") == 0) {
         if (argc == 1 && instruct->args->data.type == ASM_ARG_REG) {
             DECODE_INST1(OP_JMP_GT_REG, T_u8)
-        } else if (argc == 1 && (instruct->args->data.type == ASM_ARG_ADDR ||
-                                 instruct->args->data.type == ASM_ARG_LABEL)) {
-            DECODE_INST1(OP_JMP_GT_ADDR, UWORD_T)
+        } else if (argc == 1 && ASM_ARG_IS_LIT(instruct->args->data.type)) {
+            DECODE_INST1(OP_JMP_GT_LIT, UWORD_T)
         } else
             return ASM_ERR_ARGS;
     } else if (strcmp(instruct->mnemonic, "mov") == 0) {
-        if (argc == 2 && instruct->args->data.type == ASM_ARG_LIT &&
+        if (argc == 2 && ASM_ARG_IS_LIT(instruct->args->data.type) &&
             instruct->args->next->data.type == ASM_ARG_REG) {
             DECODE_INST2(OP_MOV_LIT_REG, WORD_T, T_u8)
         } else if (argc == 3 && instruct->args->data.type == ASM_ARG_REG &&
-            instruct->args->next->data.type == ASM_ARG_LIT &&
+            ASM_ARG_IS_LIT(instruct->args->next->data.type) &&
             instruct->args->next->next->data.type == ASM_ARG_REG) {
             DECODE_INST3(OP_MOV_LIT_OFF_REG, T_u8, WORD_T, T_u8)
-        } else if (argc == 2 && instruct->args->data.type == ASM_ARG_LIT &&
-                   (instruct->args->next->data.type == ASM_ARG_ADDR ||
-                    instruct->args->next->data.type == ASM_ARG_LABEL)) {
+        } else if (argc == 2 && ASM_ARG_IS_LIT(instruct->args->data.type) &&
+                   ASM_ARG_IS_ADDR(instruct->args->next->data.type)) {
             DECODE_INST2(OP_MOV_LIT_MEM, WORD_T, UWORD_T)
-        } else if (argc == 2 &&
-                   (instruct->args->data.type == ASM_ARG_ADDR ||
-                    instruct->args->data.type == ASM_ARG_LABEL) &&
+        } else if (argc == 2 && ASM_ARG_IS_ADDR(instruct->args->data.type) &&
                    instruct->args->next->data.type == ASM_ARG_REG) {
             DECODE_INST2(OP_MOV_MEM_REG, UWORD_T, T_u8)
         } else if (argc == 2 && instruct->args->data.type == ASM_ARG_REG &&
-                   (instruct->args->next->data.type == ASM_ARG_ADDR ||
-                    instruct->args->next->data.type == ASM_ARG_LABEL)) {
+                   ASM_ARG_IS_ADDR(instruct->args->next->data.type)) {
             DECODE_INST2(OP_MOV_REG_MEM, T_u8, UWORD_T)
         } else if (argc == 2 && instruct->args->data.type == ASM_ARG_REGPTR &&
                    instruct->args->next->data.type == ASM_ARG_REG) {
@@ -1073,24 +1057,21 @@ int asm_decode_instruction(struct AsmInstruction* instruct) {
         } else
             return ASM_ERR_ARGS;
     } else if (strcmp(instruct->mnemonic, "mov8") == 0) {
-        if (argc == 2 && instruct->args->data.type == ASM_ARG_LIT &&
+        if (argc == 2 && ASM_ARG_IS_LIT(instruct->args->data.type) &&
             instruct->args->next->data.type == ASM_ARG_REG) {
             DECODE_INST2(OP_MOV8_LIT_REG, T_u8, T_u8)
         } else if (argc == 2 &&
-            (instruct->args->data.type == ASM_ARG_ADDR ||
-             instruct->args->data.type == ASM_ARG_LABEL) &&
+            ASM_ARG_IS_ADDR(instruct->args->next->data.type) &&
             instruct->args->next->data.type == ASM_ARG_REG) {
             DECODE_INST2(OP_MOV8_MEM_REG, UWORD_T, T_u8)
-        } else if (argc == 2 && instruct->args->data.type == ASM_ARG_LIT &&
-                   (instruct->args->next->data.type == ASM_ARG_ADDR ||
-                    instruct->args->next->data.type == ASM_ARG_LABEL)) {
+        } else if (argc == 2 && ASM_ARG_IS_LIT(instruct->args->data.type) &&
+                   ASM_ARG_IS_ADDR(instruct->args->next->data.type)) {
             DECODE_INST2(OP_MOV8_LIT_MEM, T_u8, UWORD_T)
         } else if (argc == 2 && instruct->args->data.type == ASM_ARG_REG &&
-                   (instruct->args->next->data.type == ASM_ARG_ADDR ||
-                    instruct->args->next->data.type == ASM_ARG_LABEL)) {
+                   ASM_ARG_IS_ADDR(instruct->args->next->data.type)) {
             DECODE_INST2(OP_MOV8_REG_MEM, T_u8, WORD_T)
         } else if (argc == 3 && instruct->args->data.type == ASM_ARG_REG &&
-            instruct->args->next->data.type == ASM_ARG_LIT &&
+            ASM_ARG_IS_LIT(instruct->args->next->data.type) &&
             instruct->args->next->next->data.type == ASM_ARG_REG) {
             DECODE_INST3(OP_MOV8_LIT_OFF_REG, T_u8, WORD_T, T_u8)
         } else if (argc == 2 && instruct->args->data.type == ASM_ARG_REGPTR &&
@@ -1102,25 +1083,22 @@ int asm_decode_instruction(struct AsmInstruction* instruct) {
         } else
             return ASM_ERR_ARGS;
     } else if (strcmp(instruct->mnemonic, "mov16") == 0) {
-        if (argc == 2 && instruct->args->data.type == ASM_ARG_LIT &&
+        if (argc == 2 && ASM_ARG_IS_LIT(instruct->args->data.type) &&
             instruct->args->next->data.type == ASM_ARG_REG) {
             DECODE_INST2(OP_MOV16_LIT_REG, T_u16, T_u8)
         } else if (argc == 2 &&
-            (instruct->args->data.type == ASM_ARG_ADDR ||
-             instruct->args->data.type == ASM_ARG_LABEL) &&
+            ASM_ARG_IS_ADDR(instruct->args->next->data.type) &&
             instruct->args->next->data.type == ASM_ARG_REG) {
             DECODE_INST2(OP_MOV16_MEM_REG, UWORD_T, T_u8)
-        } else if (argc == 2 && instruct->args->data.type == ASM_ARG_LIT &&
-                   (instruct->args->next->data.type == ASM_ARG_ADDR ||
-                    instruct->args->next->data.type == ASM_ARG_LABEL)) {
+        } else if (argc == 2 && ASM_ARG_IS_LIT(instruct->args->data.type) &&
+                   ASM_ARG_IS_ADDR(instruct->args->next->data.type)) {
             DECODE_INST2(OP_MOV16_LIT_MEM, T_u16, UWORD_T)
         } else if (argc == 3 && instruct->args->data.type == ASM_ARG_REG &&
-            instruct->args->next->data.type == ASM_ARG_LIT &&
+            ASM_ARG_IS_LIT(instruct->args->next->data.type) &&
             instruct->args->next->next->data.type == ASM_ARG_REG) {
             DECODE_INST3(OP_MOV16_LIT_OFF_REG, T_u8, WORD_T, T_u8)
         } else if (argc == 2 && instruct->args->data.type == ASM_ARG_REG &&
-                   (instruct->args->next->data.type == ASM_ARG_ADDR ||
-                    instruct->args->next->data.type == ASM_ARG_LABEL)) {
+                   ASM_ARG_IS_ADDR(instruct->args->next->data.type)) {
             DECODE_INST2(OP_MOV16_REG_MEM, T_u8, WORD_T)
         } else if (argc == 2 && instruct->args->data.type == ASM_ARG_REGPTR &&
                    instruct->args->next->data.type == ASM_ARG_REG) {
@@ -1131,24 +1109,21 @@ int asm_decode_instruction(struct AsmInstruction* instruct) {
         } else
             return ASM_ERR_ARGS;
     } else if (strcmp(instruct->mnemonic, "mov32") == 0) {
-        if (argc == 2 && instruct->args->data.type == ASM_ARG_LIT &&
+        if (argc == 2 && ASM_ARG_IS_LIT(instruct->args->data.type) &&
             instruct->args->next->data.type == ASM_ARG_REG) {
             DECODE_INST2(OP_MOV32_LIT_REG, T_u32, T_u8)
         } else if (argc == 2 &&
-            (instruct->args->data.type == ASM_ARG_ADDR ||
-             instruct->args->data.type == ASM_ARG_LABEL) &&
+            ASM_ARG_IS_ADDR(instruct->args->next->data.type) &&
             instruct->args->next->data.type == ASM_ARG_REG) {
             DECODE_INST2(OP_MOV32_MEM_REG, UWORD_T, T_u8)
-        } else if (argc == 2 && instruct->args->data.type == ASM_ARG_LIT &&
-                   (instruct->args->next->data.type == ASM_ARG_ADDR ||
-                    instruct->args->next->data.type == ASM_ARG_LABEL)) {
+        } else if (argc == 2 && ASM_ARG_IS_LIT(instruct->args->data.type) &&
+                   ASM_ARG_IS_ADDR(instruct->args->next->data.type)) {
             DECODE_INST2(OP_MOV32_LIT_MEM, T_u32, UWORD_T)
         } else if (argc == 2 && instruct->args->data.type == ASM_ARG_REG &&
-                   (instruct->args->next->data.type == ASM_ARG_ADDR ||
-                    instruct->args->next->data.type == ASM_ARG_LABEL)) {
+                   ASM_ARG_IS_ADDR(instruct->args->next->data.type)) {
             DECODE_INST2(OP_MOV32_REG_MEM, T_u8, WORD_T)
         } else if (argc == 3 && instruct->args->data.type == ASM_ARG_REG &&
-            instruct->args->next->data.type == ASM_ARG_LIT &&
+            ASM_ARG_IS_LIT(instruct->args->next->data.type) &&
             instruct->args->next->next->data.type == ASM_ARG_REG) {
             DECODE_INST3(OP_MOV32_LIT_OFF_REG, T_u8, WORD_T, T_u8)
         } else if (argc == 2 && instruct->args->data.type == ASM_ARG_REGPTR &&
@@ -1160,25 +1135,22 @@ int asm_decode_instruction(struct AsmInstruction* instruct) {
         } else
             return ASM_ERR_ARGS;
     } else if (strcmp(instruct->mnemonic, "mov64") == 0) {
-        if (argc == 2 && instruct->args->data.type == ASM_ARG_LIT &&
+        if (argc == 2 && ASM_ARG_IS_LIT(instruct->args->data.type) &&
             instruct->args->next->data.type == ASM_ARG_REG) {
             DECODE_INST2(OP_MOV64_LIT_REG, T_u64, T_u8)
         } else if (argc == 2 &&
-            (instruct->args->data.type == ASM_ARG_ADDR ||
-             instruct->args->data.type == ASM_ARG_LABEL) &&
+            ASM_ARG_IS_ADDR(instruct->args->next->data.type) &&
             instruct->args->next->data.type == ASM_ARG_REG) {
             DECODE_INST2(OP_MOV64_MEM_REG, UWORD_T, T_u8)
-        } else if (argc == 2 && instruct->args->data.type == ASM_ARG_LIT &&
-                   (instruct->args->next->data.type == ASM_ARG_ADDR ||
-                    instruct->args->next->data.type == ASM_ARG_LABEL)) {
+        } else if (argc == 2 && ASM_ARG_IS_LIT(instruct->args->data.type) &&
+                   ASM_ARG_IS_ADDR(instruct->args->next->data.type)) {
             DECODE_INST2(OP_MOV64_LIT_MEM, T_u64, UWORD_T)
         } else if (argc == 3 && instruct->args->data.type == ASM_ARG_REG &&
-            instruct->args->next->data.type == ASM_ARG_LIT &&
+            ASM_ARG_IS_LIT(instruct->args->next->data.type) &&
             instruct->args->next->next->data.type == ASM_ARG_REG) {
             DECODE_INST3(OP_MOV64_LIT_OFF_REG, T_u8, WORD_T, T_u8)
         } else if (argc == 2 && instruct->args->data.type == ASM_ARG_REG &&
-                   (instruct->args->next->data.type == ASM_ARG_ADDR ||
-                    instruct->args->next->data.type == ASM_ARG_LABEL)) {
+                   ASM_ARG_IS_ADDR(instruct->args->next->data.type)) {
             DECODE_INST2(OP_MOV64_REG_MEM, T_u8, WORD_T)
         } else if (argc == 2 && instruct->args->data.type == ASM_ARG_REGPTR &&
                    instruct->args->next->data.type == ASM_ARG_REG) {
@@ -1190,7 +1162,7 @@ int asm_decode_instruction(struct AsmInstruction* instruct) {
             return ASM_ERR_ARGS;
     } else if (strcmp(instruct->mnemonic, "mul") == 0) {
         if (argc == 2 && instruct->args->data.type == ASM_ARG_REG &&
-            instruct->args->next->data.type == ASM_ARG_LIT) {
+            ASM_ARG_IS_LIT(instruct->args->next->data.type)) {
             DECODE_INST2(OP_MUL_REG_LIT, T_u8, WORD_T)
         } else if (argc == 2 && instruct->args->data.type == ASM_ARG_REG &&
                    instruct->args->next->data.type == ASM_ARG_REG) {
@@ -1199,7 +1171,7 @@ int asm_decode_instruction(struct AsmInstruction* instruct) {
             return ASM_ERR_ARGS;
     } else if (strcmp(instruct->mnemonic, "mulf32") == 0) {
         if (argc == 2 && instruct->args->data.type == ASM_ARG_REG &&
-            instruct->args->next->data.type == ASM_ARG_LIT) {
+            ASM_ARG_IS_LIT(instruct->args->next->data.type)) {
             DECODE_INST2(OP_MULF32_REG_LIT, T_u8, T_f32)
         } else if (argc == 2 && instruct->args->data.type == ASM_ARG_REG &&
                    instruct->args->next->data.type == ASM_ARG_REG) {
@@ -1208,7 +1180,7 @@ int asm_decode_instruction(struct AsmInstruction* instruct) {
             return ASM_ERR_ARGS;
     } else if (strcmp(instruct->mnemonic, "mulf64") == 0) {
         if (argc == 2 && instruct->args->data.type == ASM_ARG_REG &&
-            instruct->args->next->data.type == ASM_ARG_LIT) {
+            ASM_ARG_IS_LIT(instruct->args->next->data.type)) {
             DECODE_INST2(OP_MULF64_REG_LIT, T_u8, T_f64)
         } else if (argc == 2 && instruct->args->data.type == ASM_ARG_REG &&
                    instruct->args->next->data.type == ASM_ARG_REG) {
@@ -1233,48 +1205,45 @@ int asm_decode_instruction(struct AsmInstruction* instruct) {
     } else if (strcmp(instruct->mnemonic, "not") == 0) {
         if (argc == 1 && instruct->args->data.type == ASM_ARG_REG) {
             DECODE_INST1(OP_NOT_REG, T_u8)
-        } else if (argc == 2 && instruct->args->data.type == ASM_ARG_LIT &&
-                   (instruct->args->next->data.type == ASM_ARG_ADDR ||
-                    instruct->args->next->data.type == ASM_ARG_LABEL)) {
+        } else if (argc == 2 && ASM_ARG_IS_LIT(instruct->args->data.type) &&
+                   ASM_ARG_IS_ADDR(instruct->args->next->data.type)) {
             DECODE_INST2(OP_NOT_MEM, T_u8, UWORD_T)
         } else
             return ASM_ERR_ARGS;
     } else if (strcmp(instruct->mnemonic, "or") == 0) {
         if (argc == 2 && instruct->args->data.type == ASM_ARG_REG &&
-            instruct->args->next->data.type == ASM_ARG_LIT) {
+            ASM_ARG_IS_LIT(instruct->args->next->data.type)) {
             DECODE_INST2(OP_OR_REG_LIT, T_u8, WORD_T)
         } else if (argc == 2 && instruct->args->data.type == ASM_ARG_REG &&
                    instruct->args->next->data.type == ASM_ARG_REG) {
             DECODE_INST2(OP_OR_REG_REG, T_u8, T_u8)
-        } else if (argc == 3 && instruct->args->data.type == ASM_ARG_LIT &&
-                   (instruct->args->next->data.type == ASM_ARG_ADDR ||
-                    instruct->args->next->data.type == ASM_ARG_LABEL) &&
-                   (instruct->args->next->next->data.type == ASM_ARG_ADDR ||
-                    instruct->args->next->next->data.type == ASM_ARG_LABEL)) {
+        } else if (argc == 3 && ASM_ARG_IS_LIT(instruct->args->data.type) &&
+                   ASM_ARG_IS_ADDR(instruct->args->next->data.type) &&
+                   ASM_ARG_IS_ADDR(instruct->args->next->next->data.type)) {
             DECODE_INST3(OP_OR_MEM_MEM, T_u8, UWORD_T, UWORD_T)
         } else
             return ASM_ERR_ARGS;
     } else if (strcmp(instruct->mnemonic, "or8") == 0) {
         if (argc == 2 && instruct->args->data.type == ASM_ARG_REG &&
-            instruct->args->next->data.type == ASM_ARG_LIT) {
+            ASM_ARG_IS_LIT(instruct->args->next->data.type)) {
             DECODE_INST2(OP_OR8_REG_LIT, T_u8, T_u8)
         } else
             return ASM_ERR_ARGS;
     } else if (strcmp(instruct->mnemonic, "or16") == 0) {
         if (argc == 2 && instruct->args->data.type == ASM_ARG_REG &&
-            instruct->args->next->data.type == ASM_ARG_LIT) {
+            ASM_ARG_IS_LIT(instruct->args->next->data.type)) {
             DECODE_INST2(OP_OR16_REG_LIT, T_u8, T_u16)
         } else
             return ASM_ERR_ARGS;
     } else if (strcmp(instruct->mnemonic, "or32") == 0) {
         if (argc == 2 && instruct->args->data.type == ASM_ARG_REG &&
-            instruct->args->next->data.type == ASM_ARG_LIT) {
+            ASM_ARG_IS_LIT(instruct->args->next->data.type)) {
             DECODE_INST2(OP_OR32_REG_LIT, T_u8, T_u32)
         } else
             return ASM_ERR_ARGS;
     } else if (strcmp(instruct->mnemonic, "or64") == 0) {
         if (argc == 2 && instruct->args->data.type == ASM_ARG_REG &&
-            instruct->args->next->data.type == ASM_ARG_LIT) {
+            ASM_ARG_IS_LIT(instruct->args->next->data.type)) {
             DECODE_INST2(OP_OR64_REG_LIT, T_u8, T_u64)
         } else
             return ASM_ERR_ARGS;
@@ -1283,12 +1252,11 @@ int asm_decode_instruction(struct AsmInstruction* instruct) {
             DECODE_INST1(OP_POP_REG, T_u8)
         } else if (argc == 1 && instruct->args->data.type == ASM_ARG_REGPTR) {
             DECODE_INST1(OP_POP_REGPTR, T_u8)
-        } else if (argc == 2 && instruct->args->data.type == ASM_ARG_LIT &&
+        } else if (argc == 2 && ASM_ARG_IS_LIT(instruct->args->data.type) &&
                    instruct->args->next->data.type == ASM_ARG_REGPTR) {
             DECODE_INST2(OP_POPN_REGPTR, T_u8, T_u8)
-        } else if (argc == 2 && instruct->args->data.type == ASM_ARG_LIT &&
-                   (instruct->args->next->data.type == ASM_ARG_ADDR ||
-                    instruct->args->next->data.type == ASM_ARG_LABEL)) {
+        } else if (argc == 2 && ASM_ARG_IS_LIT(instruct->args->data.type) &&
+                   ASM_ARG_IS_ADDR(instruct->args->next->data.type)) {
             DECODE_INST2(OP_POPN_MEM, T_u8, UWORD_T)
         } else
             return ASM_ERR_ARGS;
@@ -1323,16 +1291,14 @@ int asm_decode_instruction(struct AsmInstruction* instruct) {
     } else if (strcmp(instruct->mnemonic, "prb") == 0) {
         if (argc == 1 && instruct->args->data.type == ASM_ARG_REG) {
             DECODE_INST1(OP_PRINT_BIN_REG, T_u8)
-        } else if (argc == 2 && instruct->args->data.type == ASM_ARG_LIT &&
-                   (instruct->args->next->data.type == ASM_ARG_ADDR ||
-                    instruct->args->next->data.type == ASM_ARG_LABEL)) {
+        } else if (argc == 2 && ASM_ARG_IS_LIT(instruct->args->data.type) &&
+                   ASM_ARG_IS_ADDR(instruct->args->next->data.type)) {
             DECODE_INST2(OP_PRINT_BIN_MEM, T_u8, UWORD_T)
         } else
             return ASM_ERR_ARGS;
     } else if (strcmp(instruct->mnemonic, "prc") == 0) {
-        if (argc == 2 && instruct->args->data.type == ASM_ARG_LIT &&
-            (instruct->args->next->data.type == ASM_ARG_ADDR ||
-             instruct->args->next->data.type == ASM_ARG_LABEL)) {
+        if (argc == 2 && ASM_ARG_IS_LIT(instruct->args->data.type) &&
+            ASM_ARG_IS_ADDR(instruct->args->next->data.type)) {
             DECODE_INST2(OP_PRINT_CHARS_MEM, T_u8, UWORD_T)
         } else if (argc == 1 && instruct->args->data.type == ASM_ARG_REG) {
             DECODE_INST1(OP_PRINT_CHARS_REG, T_u8)
@@ -1344,9 +1310,8 @@ int asm_decode_instruction(struct AsmInstruction* instruct) {
         } else
             return ASM_ERR_ARGS;
     } else if (strcmp(instruct->mnemonic, "prh") == 0) {
-        if (argc == 2 && instruct->args->data.type == ASM_ARG_LIT &&
-            (instruct->args->next->data.type == ASM_ARG_ADDR ||
-             instruct->args->next->data.type == ASM_ARG_LABEL)) {
+        if (argc == 2 && ASM_ARG_IS_LIT(instruct->args->data.type) &&
+            ASM_ARG_IS_ADDR(instruct->args->next->data.type)) {
             DECODE_INST2(OP_PRINT_HEX_MEM, T_u8, UWORD_T)
         } else if (argc == 1 && instruct->args->data.type == ASM_ARG_REG) {
             DECODE_INST1(OP_PRINT_HEX_REG, T_u8)
@@ -1375,29 +1340,26 @@ int asm_decode_instruction(struct AsmInstruction* instruct) {
         } else
             return ASM_ERR_ARGS;
     } else if (strcmp(instruct->mnemonic, "psh") == 0) {
-        if (argc == 1 && instruct->args->data.type == ASM_ARG_LIT) {
+        if (argc == 1 && ASM_ARG_IS_LIT(instruct->args->data.type)) {
             DECODE_INST1(OP_PUSH_LIT, WORD_T)
-        } else if (argc == 1 && (instruct->args->data.type == ASM_ARG_ADDR ||
-                                 instruct->args->data.type == ASM_ARG_LABEL)) {
+        } else if (argc == 1 && ASM_ARG_IS_ADDR(instruct->args->data.type)) {
             DECODE_INST1(OP_PUSH_MEM, UWORD_T)
-        } else if (argc == 2 && instruct->args->data.type == ASM_ARG_LIT &&
-                   (instruct->args->next->data.type == ASM_ARG_ADDR ||
-                    instruct->args->next->data.type == ASM_ARG_LABEL)) {
+        } else if (argc == 2 && ASM_ARG_IS_LIT(instruct->args->data.type) &&
+                   ASM_ARG_IS_ADDR(instruct->args->next->data.type)) {
             DECODE_INST2(OP_PUSHN_MEM, T_u8, UWORD_T)
         } else if (argc == 1 && instruct->args->data.type == ASM_ARG_REG) {
             DECODE_INST1(OP_PUSH_REG, T_u8)
         } else if (argc == 1 && instruct->args->data.type == ASM_ARG_REGPTR) {
             DECODE_INST1(OP_PUSH_REGPTR, T_u8)
-        } else if (argc == 2 && instruct->args->data.type == ASM_ARG_LIT &&
+        } else if (argc == 2 && ASM_ARG_IS_LIT(instruct->args->data.type) &&
                    instruct->args->next->data.type == ASM_ARG_REGPTR) {
             DECODE_INST2(OP_PUSHN_REGPTR, T_u8, T_u8)
         } else
             return ASM_ERR_ARGS;
     } else if (strcmp(instruct->mnemonic, "psh8") == 0) {
-        if (argc == 1 && instruct->args->data.type == ASM_ARG_LIT) {
+        if (argc == 1 && ASM_ARG_IS_LIT(instruct->args->data.type)) {
             DECODE_INST1(OP_PUSH8_LIT, T_u8)
-        } else if (argc == 1 && (instruct->args->data.type == ASM_ARG_ADDR ||
-                                 instruct->args->data.type == ASM_ARG_LABEL)) {
+        } else if (argc == 1 && ASM_ARG_IS_ADDR(instruct->args->data.type)) {
             DECODE_INST1(OP_PUSH8_MEM, UWORD_T)
         } else if (argc == 1 && instruct->args->data.type == ASM_ARG_REG) {
             DECODE_INST1(OP_PUSH8_REG, T_u8)
@@ -1406,10 +1368,9 @@ int asm_decode_instruction(struct AsmInstruction* instruct) {
         } else
             return ASM_ERR_ARGS;
     } else if (strcmp(instruct->mnemonic, "psh16") == 0) {
-        if (argc == 1 && instruct->args->data.type == ASM_ARG_LIT) {
+        if (argc == 1 && ASM_ARG_IS_LIT(instruct->args->data.type)) {
             DECODE_INST1(OP_PUSH16_LIT, T_u16)
-        } else if (argc == 1 && (instruct->args->data.type == ASM_ARG_ADDR ||
-                                 instruct->args->data.type == ASM_ARG_LABEL)) {
+        } else if (argc == 1 && ASM_ARG_IS_ADDR(instruct->args->data.type)) {
             DECODE_INST1(OP_PUSH16_MEM, UWORD_T)
         } else if (argc == 1 && instruct->args->data.type == ASM_ARG_REG) {
             DECODE_INST1(OP_PUSH16_REG, T_u8)
@@ -1418,10 +1379,9 @@ int asm_decode_instruction(struct AsmInstruction* instruct) {
         } else
             return ASM_ERR_ARGS;
     } else if (strcmp(instruct->mnemonic, "psh32") == 0) {
-        if (argc == 1 && instruct->args->data.type == ASM_ARG_LIT) {
+        if (argc == 1 && ASM_ARG_IS_LIT(instruct->args->data.type)) {
             DECODE_INST1(OP_PUSH32_LIT, T_u32)
-        } else if (argc == 1 && (instruct->args->data.type == ASM_ARG_ADDR ||
-                                 instruct->args->data.type == ASM_ARG_LABEL)) {
+        } else if (argc == 1 && ASM_ARG_IS_ADDR(instruct->args->data.type)) {
             DECODE_INST1(OP_PUSH32_MEM, UWORD_T)
         } else if (argc == 1 && instruct->args->data.type == ASM_ARG_REG) {
             DECODE_INST1(OP_PUSH32_REG, T_u8)
@@ -1430,10 +1390,9 @@ int asm_decode_instruction(struct AsmInstruction* instruct) {
         } else
             return ASM_ERR_ARGS;
     } else if (strcmp(instruct->mnemonic, "psh64") == 0) {
-        if (argc == 1 && instruct->args->data.type == ASM_ARG_LIT) {
+        if (argc == 1 && ASM_ARG_IS_LIT(instruct->args->data.type)) {
             DECODE_INST1(OP_PUSH64_LIT, T_u64)
-        } else if (argc == 1 && (instruct->args->data.type == ASM_ARG_ADDR ||
-                                 instruct->args->data.type == ASM_ARG_LABEL)) {
+        } else if (argc == 1 && ASM_ARG_IS_ADDR(instruct->args->data.type)) {
             DECODE_INST1(OP_PUSH64_MEM, UWORD_T)
         } else if (argc == 1 && instruct->args->data.type == ASM_ARG_REG) {
             DECODE_INST1(OP_PUSH64_REG, T_u8)
@@ -1449,7 +1408,7 @@ int asm_decode_instruction(struct AsmInstruction* instruct) {
             return ASM_ERR_ARGS;
     } else if (strcmp(instruct->mnemonic, "sar") == 0) {
         if (argc == 2 && instruct->args->data.type == ASM_ARG_REG &&
-            instruct->args->next->data.type == ASM_ARG_LIT) {
+            ASM_ARG_IS_LIT(instruct->args->next->data.type)) {
             DECODE_INST2(OP_ARSHIFT_LIT, T_u8, T_u8)
         } else if (argc == 2 && instruct->args->data.type == ASM_ARG_REG &&
                    instruct->args->next->data.type == ASM_ARG_REG) {
@@ -1458,7 +1417,7 @@ int asm_decode_instruction(struct AsmInstruction* instruct) {
             return ASM_ERR_ARGS;
     } else if (strcmp(instruct->mnemonic, "sll") == 0) {
         if (argc == 2 && instruct->args->data.type == ASM_ARG_REG &&
-            instruct->args->next->data.type == ASM_ARG_LIT) {
+            ASM_ARG_IS_LIT(instruct->args->next->data.type)) {
             DECODE_INST2(OP_LLSHIFT_LIT, T_u8, T_u8)
         } else if (argc == 2 && instruct->args->data.type == ASM_ARG_REG &&
                    instruct->args->next->data.type == ASM_ARG_REG) {
@@ -1467,7 +1426,7 @@ int asm_decode_instruction(struct AsmInstruction* instruct) {
             return ASM_ERR_ARGS;
     } else if (strcmp(instruct->mnemonic, "slr") == 0) {
         if (argc == 2 && instruct->args->data.type == ASM_ARG_REG &&
-            instruct->args->next->data.type == ASM_ARG_LIT) {
+            ASM_ARG_IS_LIT(instruct->args->next->data.type)) {
             DECODE_INST2(OP_LRSHIFT_LIT, T_u8, T_u8)
         } else if (argc == 2 && instruct->args->data.type == ASM_ARG_REG &&
                    instruct->args->next->data.type == ASM_ARG_REG) {
@@ -1476,22 +1435,20 @@ int asm_decode_instruction(struct AsmInstruction* instruct) {
             return ASM_ERR_ARGS;
     } else if (strcmp(instruct->mnemonic, "sub") == 0) {
         if (argc == 2 && instruct->args->data.type == ASM_ARG_REG &&
-            instruct->args->next->data.type == ASM_ARG_LIT) {
+            ASM_ARG_IS_LIT(instruct->args->next->data.type)) {
             DECODE_INST2(OP_SUB_REG_LIT, T_u8, WORD_T)
         } else if (argc == 2 && instruct->args->data.type == ASM_ARG_REG &&
                    instruct->args->next->data.type == ASM_ARG_REG) {
             DECODE_INST2(OP_SUB_REG_REG, T_u8, T_u8)
-        } else if (argc == 3 && instruct->args->data.type == ASM_ARG_LIT &&
-                   (instruct->args->next->data.type == ASM_ARG_ADDR ||
-                    instruct->args->next->data.type == ASM_ARG_LABEL) &&
-                   (instruct->args->next->next->data.type == ASM_ARG_ADDR ||
-                    instruct->args->next->next->data.type == ASM_ARG_LABEL)) {
+        } else if (argc == 3 && ASM_ARG_IS_LIT(instruct->args->data.type) &&
+                   ASM_ARG_IS_ADDR(instruct->args->next->data.type) &&
+                   ASM_ARG_IS_ADDR(instruct->args->next->next->data.type)) {
             DECODE_INST3(OP_SUB_MEM_MEM, T_u8, UWORD_T, UWORD_T)
         } else
             return ASM_ERR_ARGS;
     } else if (strcmp(instruct->mnemonic, "subf32") == 0) {
         if (argc == 2 && instruct->args->data.type == ASM_ARG_REG &&
-            instruct->args->next->data.type == ASM_ARG_LIT) {
+            ASM_ARG_IS_LIT(instruct->args->next->data.type)) {
             DECODE_INST2(OP_SUBF32_REG_LIT, T_u8, T_f32)
         } else if (argc == 2 && instruct->args->data.type == ASM_ARG_REG &&
                    instruct->args->next->data.type == ASM_ARG_REG) {
@@ -1500,7 +1457,7 @@ int asm_decode_instruction(struct AsmInstruction* instruct) {
             return ASM_ERR_ARGS;
     } else if (strcmp(instruct->mnemonic, "subf64") == 0) {
         if (argc == 2 && instruct->args->data.type == ASM_ARG_REG &&
-            instruct->args->next->data.type == ASM_ARG_LIT) {
+            ASM_ARG_IS_LIT(instruct->args->next->data.type)) {
             DECODE_INST2(OP_SUBF64_REG_LIT, T_u8, T_f64)
         } else if (argc == 2 && instruct->args->data.type == ASM_ARG_REG &&
                    instruct->args->next->data.type == ASM_ARG_REG) {
@@ -1509,40 +1466,38 @@ int asm_decode_instruction(struct AsmInstruction* instruct) {
             return ASM_ERR_ARGS;
     } else if (strcmp(instruct->mnemonic, "xor") == 0) {
         if (argc == 2 && instruct->args->data.type == ASM_ARG_REG &&
-            instruct->args->next->data.type == ASM_ARG_LIT) {
+            ASM_ARG_IS_LIT(instruct->args->next->data.type)) {
             DECODE_INST2(OP_XOR_REG_LIT, T_u8, WORD_T)
         } else if (argc == 2 && instruct->args->data.type == ASM_ARG_REG &&
                    instruct->args->next->data.type == ASM_ARG_REG) {
             DECODE_INST2(OP_XOR_REG_REG, T_u8, T_u8)
-        } else if (argc == 3 && instruct->args->data.type == ASM_ARG_LIT &&
-                   (instruct->args->next->data.type == ASM_ARG_ADDR ||
-                    instruct->args->next->data.type == ASM_ARG_LABEL) &&
-                   (instruct->args->next->next->data.type == ASM_ARG_ADDR ||
-                    instruct->args->next->next->data.type == ASM_ARG_LABEL)) {
+        } else if (argc == 3 && ASM_ARG_IS_LIT(instruct->args->data.type) &&
+                   ASM_ARG_IS_ADDR(instruct->args->next->data.type) &&
+                   ASM_ARG_IS_ADDR(instruct->args->next->next->data.type)) {
             DECODE_INST3(OP_XOR_MEM_MEM, T_u8, UWORD_T, UWORD_T)
         } else
             return ASM_ERR_ARGS;
     } else if (strcmp(instruct->mnemonic, "xor8") == 0) {
         if (argc == 2 && instruct->args->data.type == ASM_ARG_REG &&
-            instruct->args->next->data.type == ASM_ARG_LIT) {
+            ASM_ARG_IS_LIT(instruct->args->next->data.type)) {
             DECODE_INST2(OP_XOR8_REG_LIT, T_u8, T_u8)
         } else
             return ASM_ERR_ARGS;
     } else if (strcmp(instruct->mnemonic, "xor16") == 0) {
         if (argc == 2 && instruct->args->data.type == ASM_ARG_REG &&
-            instruct->args->next->data.type == ASM_ARG_LIT) {
+            ASM_ARG_IS_LIT(instruct->args->next->data.type)) {
             DECODE_INST2(OP_XOR16_REG_LIT, T_u8, T_u16)
         } else
             return ASM_ERR_ARGS;
     } else if (strcmp(instruct->mnemonic, "xor32") == 0) {
         if (argc == 2 && instruct->args->data.type == ASM_ARG_REG &&
-            instruct->args->next->data.type == ASM_ARG_LIT) {
+            ASM_ARG_IS_LIT(instruct->args->next->data.type)) {
             DECODE_INST2(OP_XOR32_REG_LIT, T_u8, T_u32)
         } else
             return ASM_ERR_ARGS;
     } else if (strcmp(instruct->mnemonic, "xor64") == 0) {
         if (argc == 2 && instruct->args->data.type == ASM_ARG_REG &&
-            instruct->args->next->data.type == ASM_ARG_LIT) {
+            ASM_ARG_IS_LIT(instruct->args->next->data.type)) {
             DECODE_INST2(OP_XOR64_REG_LIT, T_u8, T_u64)
         } else
             return ASM_ERR_ARGS;
@@ -1692,32 +1647,32 @@ int asm_write_instruction(void* buf, unsigned long long offset,
         case OP_JMP_REG:
             WRITE_INST1(OP_JMP_REG, T_u8)
             break;
-        case OP_JMP_ADDR:
-            WRITE_INST1(OP_JMP_ADDR, UWORD_T)
+        case OP_JMP_LIT:
+            WRITE_INST1(OP_JMP_LIT, UWORD_T)
             break;
         case OP_JMP_EQ_REG:
             WRITE_INST1(OP_JMP_EQ_REG, T_u8)
             break;
-        case OP_JMP_EQ_ADDR:
-            WRITE_INST1(OP_JMP_EQ_ADDR, UWORD_T)
+        case OP_JMP_EQ_LIT:
+            WRITE_INST1(OP_JMP_EQ_LIT, UWORD_T)
             break;
         case OP_JMP_NEQ_REG:
             WRITE_INST1(OP_JMP_NEQ_REG, T_u8)
             break;
-        case OP_JMP_NEQ_ADDR:
-            WRITE_INST1(OP_JMP_NEQ_ADDR, UWORD_T)
+        case OP_JMP_NEQ_LIT:
+            WRITE_INST1(OP_JMP_NEQ_LIT, UWORD_T)
             break;
         case OP_JMP_LT_REG:
             WRITE_INST1(OP_JMP_LT_REG, T_u8)
             break;
-        case OP_JMP_LT_ADDR:
-            WRITE_INST1(OP_JMP_LT_ADDR, UWORD_T)
+        case OP_JMP_LT_LIT:
+            WRITE_INST1(OP_JMP_LT_LIT, UWORD_T)
             break;
         case OP_JMP_GT_REG:
             WRITE_INST1(OP_JMP_GT_REG, T_u8)
             break;
-        case OP_JMP_GT_ADDR:
-            WRITE_INST1(OP_JMP_GT_ADDR, UWORD_T)
+        case OP_JMP_GT_LIT:
+            WRITE_INST1(OP_JMP_GT_LIT, UWORD_T)
             break;
         case OP_MOV_LIT_REG:
             WRITE_INST2(OP_MOV_LIT_REG, WORD_T, T_u8)

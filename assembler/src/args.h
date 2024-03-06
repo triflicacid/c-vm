@@ -7,7 +7,20 @@
 #define ASM_ARG_ADDR 1
 #define ASM_ARG_REG 2
 #define ASM_ARG_REGPTR 3
-#define ASM_ARG_LABEL 4
+#define ASM_ARG_LABEL_LIT 4
+#define ASM_ARG_LABEL_ADDR 5
+
+// Check if an argument's data can be used as a literal
+#define ASM_ARG_IS_LIT(x) (x == ASM_ARG_LIT || x == ASM_ARG_LABEL_LIT)
+
+// Check if an argument's data can be used as an address
+#define ASM_ARG_IS_ADDR(x) (x == ASM_ARG_ADDR || x == ASM_ARG_LABEL_ADDR)
+
+// Check if an argument is a label
+#define ASM_ARG_IS_LABEL(x) (x == ASM_ARG_LABEL_ADDR || x == ASM_ARG_LABEL_LIT)
+
+// Given label, return representing type e.g., [label] -> [n]
+#define ASM_ARG_DEREF_LABEL(x) (x == ASM_ARG_LABEL_LIT ? ASM_ARG_LIT : ASM_ARG_ADDR)
 
 /** Structure representing an argument */
 struct AsmArgument {

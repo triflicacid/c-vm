@@ -1,5 +1,5 @@
-mov pi, r1
-mov br, r2
+mov [pi], r1
+mov [br], r2
 prh r1
 prc r2
 prd r1

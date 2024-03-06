@@ -27,8 +27,11 @@ int print_asm_arg(struct AsmArgument *arg) {
         case ASM_ARG_REGPTR:
             printf("register pointer '%llu'", arg->data);
             break;
-        case ASM_ARG_LABEL:
-            printf("label \"%s\"", (char *)arg->data);
+        case ASM_ARG_LABEL_LIT:
+            printf("label (literal) \"%s\"", (char *)arg->data);
+            break;
+        case ASM_ARG_LABEL_ADDR:
+            printf("label (address) \"%s\"", (char *)arg->data);
             break;
         default:
             printf("(unknown)");

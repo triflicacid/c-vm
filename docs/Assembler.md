@@ -97,14 +97,21 @@ Numbers containing `.` will be treated as floating-point.
 
 ## Labels
 
-Labels are placeholder names for addresses, and can be substituted in an instruction where an address would be expected.
+Labels are placeholder names for addresses, and can be substituted in an instruction where a literal or address would be expected. For example, if label `label=13`:
+
+```
+mov label, r0 --> mov 13, r0
+mov [label], r0 --> mov [13], r0
+```
 
 When defined, it is initialised with a value of the current offset is appeared at. Labels may be re-defined, in which case its offset will be updated accordingly.
 
 When a label is encountered in an instruction...
-  - If the label is defined, it is immediately replaced by its address. Replace all un-replaced references to this label.
+  - If the label is defined, it is immediately replaced by its value as a literal or an address (if surrounded in `[]`). Replace all un-replaced references to this label.
   - If the label is not defined, this is cached.
 
 If a label is not defined, an error will be reported.
+
+**Restrictions**: a label cannot be the name of a register.
 
 See `assembler/test/labels.asm` for an example.
