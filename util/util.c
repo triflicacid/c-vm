@@ -121,9 +121,9 @@ long long decode_escape_seq(char **ptr) {
     }
 }
 
-unsigned int scan_number(const char *string, int radix) {
+int scan_number(const char *string, int radix) {
     int found_dp = 0;
-    unsigned int i = 0;
+    int i = 0;
     if (string[i] == '-') ++i;
     while (string[i] != '\0' &&
            (string[i] == '_' || IS_BASE_CHAR(string[i], radix))) {

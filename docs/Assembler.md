@@ -47,17 +47,14 @@ The assembler works in the current way:
 - Resolve labels in AST
 - Convert into machine code and insert into a buffer
 
-## Pre-Processor
-
-These are evaluated before any assembling takes place
-
-- `%define [SYMBOL] [VALUE]` - defines the constant `SYMBOL` with value `VALUE`. `VALUE` contains everything from after `SYMBOL ` to end of the line. From this point, any occurances of `SYMBOL` is replaced by `VALUE`.
-- `%ignore` - ignore this line. Like a comment.
-- `%stop` - ignore anything after this point. "Stops" the assembler.
-
 ## Syntax
 
-Assembly source files are read line-by-line, and have the following syntax: `[label:] [mnemonic [...args]] [; Comment]`. Trailing whitespace is removed, and blank/empty lines are ignored.
+Assembly source files are read line-by-line, and have the following general syntax:
+```
+[label:] [mnemonic [...args]] [; Comment]
+```
+
+Trailing whitespace is removed, and blank/empty lines are ignored. Lines may also begin with directives which are handles by the pre-processor.
 
 Labels come in the form `label:`
   - `label` is a word containing letters and numbers. (See section on labels for more.)
@@ -80,9 +77,9 @@ Instructions come in the form `mnemonic [...args]` where the arguments consist o
   - `'c'`, where `c` is a character (or escape sequence), represents a **literal**. If multiple character literals follow eachother, they will be concatenated to an integer. Maximum is 8 characters.
   - `"..."`, where `...` is a string, represents a **literal**. Maximum length is 8 characters.
 
-See `Instructions.md` for a list of all implemeted instructions.
+See `Instructions.md` for a list of all implemented instructions.
 
-Comments start with a `;`, with everything after the semi-colon being ignored up until the next line
+Comments start with a `;`, with everything after the semicolon being ignored up until the next line
 
 ### Escape Literals
 
@@ -112,6 +109,48 @@ The validity of the digits is dependent upon the radix chosen e.g. `Fh` is valid
 Digits may be seperated by underscores `_`.
 
 Numbers containing `.` will be treated as floating-point.
+
+### Directives
+These are instructions to the pre-processor, and are handled before compilation. These modify the source code itself, so may be used for meta-programming.
+
+- `%define [SYMBOL] [VALUE]` - defines the constant `SYMBOL` with value `VALUE`. `VALUE` contains everything from after `SYMBOL ` to end of the line. From this point, any occurrences of `SYMBOL` is replaced by `VALUE`.
+```
+%define NUMBER 123
+mov NUMBER, r0
+-->
+mov 123, r0
+```
+- `%ignore` - ignore this line. Like a comment.
+```
+%ignore hlt
+mov 1, r1
+-->
+mov 1, r1
+```                                                                                                                                                                    
+- `%macro [NAME] <params, ...>` - defines a macro, which is an expandable block of instructions, with the following name. You may provide a list of arguments. All source lines after `%macro` are considered part of the macro's body and **cannot** be more directives -- only `%end` is permitted, which will terminate the macro body.
+After definition, when `NAME` is encountered in the `mnemonic` position, supplied arguments are passed to the parameters `<params, ...>`. Any instances of a parameter is replaced by its respective argument in the macro's body. The original line is removed and the modified macro's body is "pasted" in.
+```
+%macro print_int reg
+    mov reg, r1
+    mov 0, r0
+    syscall
+%end
+mov 42, r0
+print_int r0
+-->
+mov 42, r0
+mov r0, r1
+mov 0, r0
+syscall
+```        
+- `%stop` - ignore anything after this point. "Stops" the assembler.
+```
+mov 1, r1
+%stop
+illegal
+-->
+mov 1, r1
+```
 
 ## Labels
 

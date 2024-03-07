@@ -2,6 +2,7 @@
 #define ASM_CHUNK_H_
 
 #include "linked-list.h"
+#include "line.h"
 
 #define ASM_CHUNKT_UNKNOWN 0
 #define ASM_CHUNKT_INSTRUCTION 1
@@ -9,9 +10,10 @@
 
 struct AsmChunk {
     unsigned long long offset;  // Byte offset
-    unsigned int bytes;         // Byte length
+    int bytes;                  // Byte length
     int type;                   // Type of thing in chunk
     void *data;                 // Data stored in chunk.
+    struct AsmLine *line;       // Source line
 };
 
 LL_CREATE_NODET(AsmChunk, struct AsmChunk);

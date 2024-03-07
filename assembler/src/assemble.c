@@ -3,6 +3,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <stdbool.h>
 
 #include "registers.h"
 #include "args.h"
@@ -13,7 +14,7 @@
 #include "line.h"
 #include "parse_data.h"
 #include "symbol.h"
-#include "processor/src/binary_header.h"
+#include "macro.h"
 
 struct AsmError asm_error_create() {
     struct AsmError err = {.line = 0, .col = 0, .errc = ASM_OK, .print = 0, .debug = 0};
@@ -24,17 +25,18 @@ struct AsmData asm_data_create() {
     struct AsmData data = {.stage = ASM_STAGE_NONE,
                            .bytes = 0,
                            .lines = 0,
-                           .symbols = 0,
-                           .labels = 0,
-                           .chunks = 0};
+                           .symbols = NULL,
+                           .labels = NULL,
+                           .chunks = NULL,
+                           .macros = NULL};
     return data;
 }
 
 void asm_data_destroy(struct AsmData* data) {
-    if (data->lines != 0) linked_list_destroy_AsmLine(&(data->lines));
-    if (data->symbols != 0) linked_list_destroy_AsmLine(&(data->lines));
-    if (data->labels != 0) linked_list_destroy_AsmLabel(&(data->labels));
-    if (data->chunks != 0) linked_list_destroy_AsmChunk(&(data->chunks));
+    linked_list_destroy_AsmLine(&(data->lines));
+    linked_list_destroy_AsmLabel(&(data->labels));
+    linked_list_destroy_AsmChunk(&(data->chunks));
+    linked_list_destroy_AsmMacro(&(data->macros));
     data->stage = ASM_STAGE_NONE;
 }
 
@@ -42,15 +44,13 @@ void asm_read_lines(FILE* fp, struct AsmData* data, struct AsmError* err) {
     data->stage = ASM_STAGE_LINES;
     data->lines = 0;
     char string[ASM_MAX_LINE_LENGTH];  // Line buffer
-    unsigned int line = 0;             // Line number
+    int line = 0; // Line number
 
-    while (1) {
+    while (true) {
         if (!fgets(string, sizeof(string), fp)) break;
-        unsigned int len = 0, i;
+        int len = 0, i;
         // Calculate string length
-        for (i = 0; !(string[i] == '\0' || string[i] == '\n' ||
-                      string[i] == '\r' || string[i] == ';');
-             ++i, ++len)
+        for (i = 0; !(string[i] == '\0' || string[i] == '\n' || string[i] == '\r' || string[i] == ';'); ++i, ++len)
             ;
         i = 0;
         // Eat leading whitespace
@@ -60,19 +60,18 @@ void asm_read_lines(FILE* fp, struct AsmData* data, struct AsmError* err) {
         if (i < len) {
             char* str = extract_string(string, 0, len);
 
-            struct LL_NODET_NAME(AsmLine)* node =
-                malloc(sizeof(struct LL_NODET_NAME(AsmLine)));
+            struct LL_NODET_NAME(AsmLine)* node = malloc(sizeof(struct LL_NODET_NAME(AsmLine)));
             node->data.n = line;
             node->data.len = len;
             node->data.str = str;
+            node->data.note = NULL;
             linked_list_insertnode_AsmLine(node, &(data->lines), -1);
         }
         ++line;
     }
 }
 
-unsigned long long asm_write_lines(struct LL_NODET_NAME(AsmLine) * lines,
-                                   char** buffer) {
+unsigned long long asm_write_lines(struct LL_NODET_NAME(AsmLine) * lines, char** buffer) {
     unsigned long long bytes = 0;
     struct LL_NODET_NAME(AsmLine)* line = lines;
     while (line != 0) {
@@ -96,38 +95,56 @@ unsigned long long asm_write_lines(struct LL_NODET_NAME(AsmLine) * lines,
 void asm_preprocess(struct AsmData* data, struct AsmError* err) {
     data->stage = ASM_STAGE_PREPROC;
     struct LL_NODET_NAME(AsmLine)* cline = data->lines;
+    int cline_idx = 0;
+
+    bool in_macro = false;
+    struct AsmMacro *current_macro = NULL;
+
     while (cline != 0) {
-        unsigned int idx = 0;
-        unsigned int slen = cline->data.len;
+        int idx = 0;
+        int slen = cline->data.len;
         char* string = cline->data.str;
 
         // Eat leading ws
         while (idx < slen && IS_WHITESPACE(string[idx])) ++idx;
 
+        // Remove whitespace
+        if (idx != 0) {
+            string = malloc(slen - idx + 1);
+            memcpy(string, cline->data.str + idx, slen - idx + 1);
+            cline->data.len -= idx;
+            free(cline->data.str);
+            cline->data.str = string;
+            slen -= idx;
+            idx = 0;
+        }
+
         // Replace constants?
-        unsigned int idx2 = idx;
+        int idx2 = idx;
         struct LL_NODET_NAME(AsmSymbol)* csym = data->symbols;
         while (csym != 0) {
-            unsigned int len = strlen(csym->data.name),
-                         vlen = strlen(csym->data.value);
+            int len = (int) strlen(csym->data.name), vlen = (int) strlen(csym->data.value);
             while (idx2 < slen) {
-                // Eas ws
+                // Eas whitespace
                 while (idx2 < slen && IS_WHITESPACE(string[idx2])) ++idx2;
                 if (idx2 == slen) break;
 
-                unsigned int match = 1, idxn = 0;
+                bool match = 1;
+                int idxn = 0;
+
                 while (idxn < len && match &&
                        !IS_WHITESPACE(string[idx2 + idxn])) {
                     if (csym->data.name[idxn] != string[idx2 + idxn])
-                        match = 0;
+                        match = false;
                     else
                         ++idxn;
                 }
+
                 if (match) {
                     if (err->debug)
                         printf("FOUND match for symbol \"%s\" at %u:%u\n",
                                csym->data.name, cline->data.n, idx2);
-                    unsigned int new_len = slen - len + vlen;
+                    int new_len = slen - len + vlen;
                     char* new_str = malloc(new_len);
                     memcpy(new_str, string, idx2);
                     memcpy(new_str + idx2, csym->data.value, vlen);
@@ -137,80 +154,360 @@ void asm_preprocess(struct AsmData* data, struct AsmError* err) {
                     cline->data.str = string = new_str;
                     cline->data.len = slen = new_len;
                 }
+
                 // Skip to next ws
-                while (idx2 < slen && !IS_WHITESPACE(string[idx2])) ++idx2;
+                while (idx2 < slen && !IS_WHITESPACE(string[idx2]))
+                    ++idx2;
             }
             csym = csym->next;
         }
 
+
         if (string[idx] == '%') {               // Directive
-            unsigned int didx = idx, dlen = 0;  // Directive index/length
+            int didx = idx, dlen = 0;  // Directive index/length
             while (idx < slen && !IS_WHITESPACE(string[idx])) ++idx, ++dlen;
 
             char* directive = extract_string(string, didx + 1, dlen - 1);
-            if (strcmp(directive, "define") == 0) {  // %define
-                while (idx < slen && IS_WHITESPACE(string[idx])) ++idx;
-                // Extract symbol name
-                unsigned int name_i = idx, name_len = 0;
-                while (idx < slen && !IS_WHITESPACE(string[idx]))
-                    ++idx, ++name_len;
-                char* name = extract_string(string, name_i, name_len);
-                ++idx;
-                unsigned int vlen = slen - idx;  // Value length
-                // Extract value (read to EOL)
-                char* value = extract_string(string, idx, vlen);
-                if (err->debug)
-                    printf("[LINE %u] DEFINE \"%s\" TO BE \"%s\"\n",
-                           cline->data.n, name, value);
-                idx = slen;
 
-                struct LL_NODET_NAME(AsmSymbol)* node =
-                    malloc(sizeof(struct LL_NODET_NAME(AsmSymbol)));
-                node->data.name = name;
-                node->data.value = value;
-                linked_list_insertnode_AsmSymbol(node, &(data->symbols), -1);
-            } else if (strcmp(directive, "ignore") == 0) {  // %ignore
-                if (err->debug)
-                    printf("[LINE %u] %%%s: IGNORE THIS LINE\n", cline->data.n,
-                           directive);
-                // Ignore this line - it'll get removed at the end, anyway
-            } else if (strcmp(directive, "stop") == 0) {  // %stop
-                if (err->debug)
-                    printf("[LINE %u] %%stop: IGNORE PAST THIS POINT\n",
-                           cline->data.n);
-                // Remove this line and all lines past this point
-                struct LL_NODET_NAME(AsmLine)* line = data->lines, *next = 0;
-                while (line != NULL && line->next != cline) line = line->next;
-                line->next = NULL;
-                line = cline;
-                while (line != NULL) {
-                    next = line->next;
-                    free(line->data.str);
-                    free(line);
-                    line = next;
+            if (in_macro) {
+                if (strcmp(directive, "end") == 0) {
+                    if (err->debug)
+                        printf("[LINE %u] END MACRO \"%s\" (%i lines)\n",
+                               cline->data.n, current_macro->name, current_macro->line_count);
+
+                    in_macro = false;
+                } else {
+                    goto unknown_macro_error;
                 }
-                break;
             } else {
-                if (err->print)
-                    printf(CONSOLE_RED
-                           "ERROR!" CONSOLE_RESET
-                           " Line %i, column %i:\nUnknown directive "
-                           "%%%s\n",
-                           cline->data.n, idx, directive);
-                free(directive);
-                err->errc = ASM_ERR_DIRECTIVE;
-                return;
+                if (strcmp(directive, "define") == 0) {  // %define
+                    while (idx < slen && IS_WHITESPACE(string[idx])) ++idx;
+                    // Extract symbol name
+                    int name_i = idx, name_len = 0;
+                    while (idx < slen && !IS_WHITESPACE(string[idx]))
+                        ++idx, ++name_len;
+                    char* name = extract_string(string, name_i, name_len);
+                    ++idx;
+                    int vlen = slen - idx;  // Value length
+                    // Extract value (read to EOL)
+                    char* value = extract_string(string, idx, vlen);
+                    if (err->debug)
+                        printf("[LINE %u] DEFINE \"%s\" TO BE \"%s\"\n", cline->data.n, name, value);
+                    idx = slen;
+
+                    struct LL_NODET_NAME(AsmSymbol)* node =
+                            malloc(sizeof(struct LL_NODET_NAME(AsmSymbol)));
+                    node->data.name = name;
+                    node->data.value = value;
+                    linked_list_insertnode_AsmSymbol(node, &(data->symbols), -1);
+                } else if (strcmp(directive, "ignore") == 0) {  // %ignore
+                    if (err->debug)
+                        printf("[LINE %u] %%%s: IGNORE THIS LINE\n", cline->data.n, directive);
+                    // Ignore this line - it'll get removed at the end, anyway
+                } else if (strcmp(directive, "stop") == 0) {  // %stop
+                    if (err->debug)
+                        printf("[LINE %u] %%stop: IGNORE PAST THIS POINT\n", cline->data.n);
+                    // Remove this line and all lines past this point
+                    struct LL_NODET_NAME(AsmLine)* line = data->lines, *next = 0;
+                    while (line != NULL && line->next != cline) line = line->next;
+                    line->next = NULL;
+                    line = cline;
+                    while (line != NULL) {
+                        next = line->next;
+                        destroy_asm_line(&line->data);
+                        free(line);
+                        line = next;
+                    }
+                    break;
+                } else if (strcmp(directive, "macro") == 0) {
+                    in_macro = true;
+
+                    // Extract name
+                    while (idx < slen && IS_WHITESPACE(string[idx]))
+                        idx++;
+
+                    int start = idx;
+                    while (idx < slen && IS_SYMBOL_CHAR(string[idx]))
+                        idx++;
+
+                    int macro_name_length = idx - start;
+                    char *macro_name = extract_string(string, start, macro_name_length);
+
+                    // Check if macro has a valid name
+                    if (!is_valid_label_name(macro_name_length, macro_name)) {
+                        if (err->print) {
+                            printf(CONSOLE_RED "ERROR!" CONSOLE_RESET
+                                   " Line %i, column %i:\nInvalid macro name - \"%s\"\n",
+                                   cline->data.n, start, macro_name);
+                            asm_line_print_note(&cline->data);
+                        }
+                        err->col = start;
+                        err->line = cline->data.n;
+                        err->errc = ASM_ERR_INVALID_LABEL;
+                        free(macro_name);
+                        return;
+                    }
+
+                    // Does the macro already exist?
+                    struct AsmMacro **preexisting_macro = linked_list_find_AsmMacro(data->macros, macro_name);
+                    if (preexisting_macro != NULL) {
+                        if (err->print) {
+                            printf(CONSOLE_RED "ERROR!" CONSOLE_RESET
+                                   " Line %i, column %i:\nMacro \"%s\" is already defined\n",
+                                   cline->data.n, start, macro_name);
+                            asm_line_print_note(&cline->data);
+                        }
+                        err->col = start;
+                        err->line = cline->data.n;
+                        err->errc = ASM_ERR_INVALID_LABEL;
+                        free(macro_name);
+                        return;
+                    }
+
+                    // Start building the macro's structure
+                    current_macro = create_macro();
+                    current_macro->name = macro_name;
+
+                    if (err->debug)
+                        printf("[LINE %u] DEFINE MACRO \"%s\" ARGS ", cline->data.n, macro_name);
+
+                    // Parse arguments
+                    while (true) {
+                        while (idx < slen && IS_WHITESPACE(string[idx]))
+                            idx++;
+
+                        if (idx == slen || string[idx] == ';')
+                            break;
+
+                        start = idx;
+                        while (idx < slen && IS_SYMBOL_CHAR(string[idx]))
+                            idx++;
+
+                        int arg_length = idx - start;
+                        char *arg_name = extract_string(string, start, arg_length);
+
+                        if (!is_valid_label_name(arg_length, arg_name)) {
+                            if (err->print) {
+                                printf(CONSOLE_RED "ERROR!" CONSOLE_RESET
+                                       " Line %i, column %i:\nMacro \"%s\": invalid argument name \"%s\" (#%i)\n",
+                                       cline->data.n, start, macro_name, arg_name, current_macro->arg_count);
+                                asm_line_print_note(&cline->data);
+                            }
+                            err->col = start;
+                            err->line = cline->data.n;
+                            err->errc = ASM_ERR_INVALID_LABEL;
+                            destroy_macro(current_macro);
+                            return;
+                        }
+
+
+                        // Does the macro already exist?
+                        char **preexisting_arg = linked_list_find_String(current_macro->args, arg_name);
+                        if (preexisting_arg != 0) {
+                            if (err->print) {
+                                printf(CONSOLE_RED "ERROR!" CONSOLE_RESET
+                                       " Line %i, column %i:\nMacro \"%s\" - duplicate argument \"%s\"\n",
+                                       cline->data.n, start, macro_name, arg_name);
+                                asm_line_print_note(&cline->data);
+                            }
+                            err->col = start;
+                            err->line = cline->data.n;
+                            err->errc = ASM_ERR_INVALID_LABEL;
+                            free(arg_name);
+                            destroy_macro(current_macro);
+                            return;
+                        }
+
+                        // Insert argument into list
+                        linked_list_insert_String(arg_name, &current_macro->args, -1);
+                        current_macro->arg_count++;
+
+                        if (err->debug)
+                            printf("'%s' ", arg_name);
+
+                        if (idx >= slen)
+                            break;
+                    }
+
+                    if (err->debug)
+                        printf("\n");
+
+                    // Insert to macro store
+                    linked_list_insert_AsmMacro(current_macro, &data->macros, 0);
+                } else {
+                    goto unknown_macro_error;
+                }
             }
+
             free(directive);
             // Remote current line - it is done
             struct LL_NODET_NAME(AsmLine)* next = cline->next;
             linked_list_removenode_AsmLine(cline, &(data->lines));
-            free(cline->data.str);
-            free(cline);
             cline = next;
             continue;
+
+            unknown_macro_error:
+            if (err->print) {
+                printf(CONSOLE_RED "ERROR!" CONSOLE_RESET
+                       " Line %i, column %i:\nUnknown/invalid directive in this context: %%%s\n",
+                       cline->data.n, idx, directive);
+                asm_line_print_note(&cline->data);
+            }
+            free(directive);
+            err->errc = ASM_ERR_DIRECTIVE;
+            return;
         }
+
+        // If we are in a macro...
+        if (in_macro) {
+            linked_list_insert_String(string, &current_macro->lines, -1);
+            current_macro->line_count++;
+
+            // Remove line from the program
+            struct LL_NODET_NAME(AsmLine) *next = cline->next;
+            linked_list_removenode_AsmLine(cline, &(data->lines));
+            free(cline);
+            cline = next;
+
+            continue;
+        }
+
+        // Check if mnemonic is macro call
+        int start = idx;
+        while (idx < slen && !IS_WHITESPACE(string[idx]))
+            idx++;
+
+        int mnemonic_length = idx - start;
+        char *mnemonic = extract_string(string, start, mnemonic_length);
+
+        struct AsmMacro **macro = linked_list_find_AsmMacro(data->macros, mnemonic);
+        free(mnemonic);
+
+        if (macro != NULL) {
+            if (err->debug)
+                printf("[LINE %u] CALL TO MACRO \"%s\"\n", cline->data.n, (*macro)->name);
+
+            // Collect arguments
+            struct LL_NODET_NAME(String) *args = NULL;
+            int arg_count = 0;
+
+            while (true) {
+                while (idx < slen && IS_WHITESPACE(string[idx]))
+                    idx++;
+
+                start = idx;
+                while (idx < slen && !IS_WHITESPACE(string[idx]))
+                    idx++;
+
+                // Comma?
+                if (idx < slen && idx > start && string[idx - 1] == ',')
+                    idx--;
+
+                if (idx == start)
+                    break;
+
+                char *arg = extract_string(string, start, idx - start);
+                linked_list_insert_String(arg, &args, -1);
+                arg_count++;
+
+                if (string[idx] == ',')
+                    idx++;
+
+                if (idx >= slen || string[idx] == ';')
+                    break;
+            }
+
+            // Check argument length
+            if (arg_count != (*macro)->arg_count) {
+                if (err->print) {
+                    printf(CONSOLE_RED "ERROR!" CONSOLE_RESET
+                           " Line %i, column %i:\nMacro \"%s\" takes %i argument(s), %i provided.\n",
+                           cline->data.n, idx, (*macro)->name, (*macro)->arg_count, arg_count);
+                    asm_line_print_note(&cline->data);
+                }
+                err->errc = ASM_ERR_BAD_ARGS;
+                return;
+            }
+
+            // Insert macro's lines
+            struct LL_NODET_NAME(String) *macro_line = (*macro)->lines;
+            int macro_line_number = 1;
+            int line_insert_idx = cline_idx;
+
+            while (macro_line != NULL) {
+                // Make a copy of the line for local insertion
+                int line_length = (int) strlen(macro_line->data);
+                char *line_copy = malloc(line_length + 1);
+                memcpy(line_copy, macro_line->data, line_length);
+                line_copy[line_length] = '\0';
+
+                // Replace args
+                struct LL_NODET_NAME(String) *arg_name = (*macro)->args, *arg_data = args;
+                while (arg_name != NULL) {
+                    int arg_data_length = (int) strlen(arg_data->data);
+                    int arg_name_length = (int) strlen(arg_name->data);
+
+                    while (true) {
+                        char *ptr = strstr(line_copy, arg_name->data);
+
+                        if (ptr == NULL)
+                            break;
+
+                        start = (int) (ptr - line_copy);
+
+                        // Create new line
+                        int new_length = line_length - arg_name_length + arg_data_length;
+                        char *new_line = malloc(new_length + 1);
+
+                        if (err->debug)
+                            printf("  EXPANSION: replace parameter '%s' with data '%s'\n",
+                                   arg_name->data, arg_data->data);
+
+                        // Replace content
+                        memcpy(new_line, line_copy, start);
+                        memcpy(new_line + start, arg_data->data, arg_data_length);
+                        memcpy(new_line + start + arg_data_length, line_copy + start + arg_name_length, line_length - start - arg_name_length);
+                        new_line[new_length] = '\0';
+
+                        // Overwrite old line data
+                        line_length = new_length;
+                        free(line_copy);
+                        line_copy = new_line;
+                    }
+
+                    arg_name = arg_name->next;
+                    arg_data = arg_data->next;
+                }
+
+                // Insert into `cline` structure
+                struct LL_NODET_NAME(AsmLine)* node = malloc(sizeof(*node));
+                node->data.n = cline->data.n;
+                node->data.len = line_length;
+                node->data.str = line_copy;
+                node->data.note = malloc(128);
+                snprintf(node->data.note, 128, "Expanded from macro '%s' line %i (macro invoked on line %i)",
+                         (*macro)->name, macro_line_number, cline->data.n);
+                linked_list_insertnode_AsmLine(node, &(data->lines), line_insert_idx++);
+
+                macro_line = macro_line->next;
+
+                // TODO replacement
+            }
+
+            linked_list_destroy_String(&args);
+
+            // Remove line from the program
+            struct LL_NODET_NAME(AsmLine) *next = cline->next;
+            linked_list_removenode_AsmLine(cline, &(data->lines));
+            destroy_asm_line(&cline->data);
+            free(cline);
+            cline = next;
+
+            continue;
+        }
+
         cline = cline->next;
+        cline_idx++;
     }
 }
 
@@ -219,12 +516,13 @@ static const char ASM_START_LABEL[] = "main";
 void asm_parse(struct AsmData* data, struct AsmError* err) {
     data->stage = ASM_STAGE_PARSE;
     int main_label_line = -1, main_label_col = -1; // Track "main" label
-    unsigned int offset = 0;
+    int offset = 0;
     struct LL_NODET_NAME(AsmLine)* cline = data->lines;
+    int cline_idx = 0;
 
-    while (cline != 0) {
+    while (cline != NULL) {
         int pos = 0;
-        const unsigned int slen = cline->data.len, line = cline->data.n;
+        const int slen = cline->data.len, line = cline->data.n;
         const char* string = cline->data.str;
 
         // Eat leading whitespace
@@ -248,10 +546,10 @@ void asm_parse(struct AsmData* data, struct AsmError* err) {
 
             if (!is_valid_label_name(mlen - 1, lbl)) {
                 if (err->print) {
-                    printf(CONSOLE_RED
-                           "ERROR!" CONSOLE_RESET
+                    printf(CONSOLE_RED "ERROR!" CONSOLE_RESET
                            " Line %i, column %i:\nInvalid label form - \"%s\"\n",
                            line, pos, lbl);
+                    asm_line_print_note(&cline->data);
                 }
                 err->col = pos;
                 err->line = cline->data.n;
@@ -268,10 +566,10 @@ void asm_parse(struct AsmData* data, struct AsmError* err) {
             T_i8 reg = cpu_reg_offset_from_string(lbl);
             if (reg != -1) {
                 if (err->print) {
-                    printf(CONSOLE_RED
-                           "ERROR!" CONSOLE_RESET
+                    printf(CONSOLE_RED "ERROR!" CONSOLE_RESET
                            " Line %i, column %i:\nFound label which shadows a register - \"%s\"\n",
                            line, pos, lbl);
+                    asm_line_print_note(&cline->data);
                 }
                 err->col = pos;
                 err->line = cline->data.n;
@@ -288,10 +586,10 @@ void asm_parse(struct AsmData* data, struct AsmError* err) {
 
                 if (main_label_line >= 0) {
                     if (err->print) {
-                        printf(CONSOLE_RED
-                               "ERROR!" CONSOLE_RESET
+                        printf(CONSOLE_RED "ERROR!" CONSOLE_RESET
                                " Line %i, column %i:\nFound duplicate label \"%s\" (first encountered at line %i, column %i)\n",
                                line, pos, ASM_START_LABEL, main_label_line, main_label_col);
+                        asm_line_print_note(&cline->data);
                     }
                     err->col = pos;
                     err->line = cline->data.n;
@@ -308,6 +606,7 @@ void asm_parse(struct AsmData* data, struct AsmError* err) {
             // Does label already exist?
             struct AsmLabel* label =
                 linked_list_find_AsmLabel(data->labels, lbl);
+
             if (label == 0) {  // Create new label
                 struct LL_NODET_NAME(AsmLabel)* node =
                     malloc(sizeof(struct LL_NODET_NAME(AsmLabel)));
@@ -349,6 +648,7 @@ void asm_parse(struct AsmData* data, struct AsmError* err) {
                 ;
             if (pos == slen) {  // End of line?
                 cline = cline->next;
+                cline_idx++;
                 continue;
             }
             for (mptr = pos, mlen = 0;
@@ -357,12 +657,12 @@ void asm_parse(struct AsmData* data, struct AsmError* err) {
         }
 
         // Create data
-        struct LL_NODET_NAME(AsmChunk)* chunk_node =
-            malloc(sizeof(struct LL_NODET_NAME(AsmChunk)));
-        chunk_node->next = 0;
+        struct LL_NODET_NAME(AsmChunk)* chunk_node = malloc(sizeof(struct LL_NODET_NAME(AsmChunk)));
+        chunk_node->next = NULL;
         struct AsmChunk* chunk = &(chunk_node->data);
         chunk->offset = offset;
         chunk->bytes = 0;
+        chunk->line = &cline->data;
 
         // Get mnemonic
         char* mnemonic = malloc(mlen + 1);
@@ -421,14 +721,12 @@ void asm_parse(struct AsmData* data, struct AsmError* err) {
                                 pos += 3;
                             } else {
                                 if (err->print) {
-                                    char astr[] = {string[pos], string[pos + 1],
-                                                   '\0'};
-                                    printf(CONSOLE_RED
-                                           "ERROR!" CONSOLE_RESET
-                                           " Line %i, column %i:\nSyntax: expected ' "
-                                           "after character expression "
+                                    char astr[] = {string[pos], string[pos + 1], '\0'};
+                                    printf(CONSOLE_RED "ERROR!" CONSOLE_RESET
+                                           " Line %i, column %i:\nSyntax: expected ' after character expression "
                                            "%s <-- '\n",
                                            line, pos, astr);
+                                    asm_line_print_note(&cline->data);
                                 }
                                 err->col = pos;
                                 err->line = cline->data.n;
@@ -449,7 +747,7 @@ void asm_parse(struct AsmData* data, struct AsmError* err) {
                     linked_list_insertnode_AsmArgument(node, &(instruct->args),
                                                        -1);
                 } else if (string[pos] == '\"') {  // STRING LITERAL
-                    unsigned short j = 0;
+                    short j = 0;
                     char data[sizeof(UWORD_T)] = {0};
                     ++pos;
                     while (j < sizeof(data) && pos < slen) {
@@ -476,19 +774,18 @@ void asm_parse(struct AsmData* data, struct AsmError* err) {
                     linked_list_insertnode_AsmArgument(node, &(instruct->args),
                                                        -1);
                 } else if (string[pos] == '[') {  // Address/Register pointer/Label address
-                    unsigned int len = 0;
-                    while (pos + len < slen &&
-                           !(IS_WHITESPACE(string[pos + len]) ||
-                             IS_SEPERATOR(string[pos + len])))
+                    int len = 0;
+                    while (pos + len < slen && !(IS_WHITESPACE(string[pos + len]) || IS_SEPERATOR(string[pos + len])))
                         ++len;
+
                     if (string[pos + len - 1] != ']') {
                         if (err->print) {
                             char* astr = extract_string(string, pos, len);
-                            printf(CONSOLE_RED
-                                   "ERROR!" CONSOLE_RESET
+                            printf(CONSOLE_RED "ERROR!" CONSOLE_RESET
                                    " Line %i, column %i:\nSyntax: Expected ']' to close group: '%s' <-- ]\n",
                                    line, pos, astr);
                             free(astr);
+                            asm_line_print_note(&cline->data);
                         }
                         err->col = pos;
                         err->line = cline->data.n;
@@ -499,19 +796,17 @@ void asm_parse(struct AsmData* data, struct AsmError* err) {
                     }
 
                     if (IS_CHAR(string[pos + 1])) {  // Register pointer?
-                        T_i8 reg_off =
-                            cpu_reg_offset_from_string((char*)string + pos + 1);
+                        T_i8 reg_off = cpu_reg_offset_from_string((char*)string + pos + 1);
                         if (reg_off == -1) {  // Unknown register - label?
                             // Exists?
-                            char* sub =
-                                extract_string(string, pos + 1, len - 2);
+                            char* sub = extract_string(string, pos + 1, len - 2);
 
                             if (!is_valid_label_name(len - 2, sub)) {
                                 if (err->print) {
-                                    printf(CONSOLE_RED
-                                           "ERROR!" CONSOLE_RESET
+                                    printf(CONSOLE_RED "ERROR!" CONSOLE_RESET
                                            " Line %i, column %i:\nInvalid label form - \"%s\"\n",
                                            line, pos, sub);
+                                    asm_line_print_note(&cline->data);
                                 }
                                 err->col = pos;
                                 err->line = cline->data.n;
@@ -533,13 +828,12 @@ void asm_parse(struct AsmData* data, struct AsmError* err) {
                                 node->data.data = lbl->addr;
                                 free(sub);
                             }
-                            linked_list_insertnode_AsmArgument(
-                                node, &(instruct->args), -1);
+                            linked_list_insertnode_AsmArgument(node, &(instruct->args), -1);
                         } else {  // Register pointer
                             struct LL_NODET_NAME(AsmArgument)* node = malloc(
                                 sizeof(struct LL_NODET_NAME(AsmArgument)));
                             node->data.type = ASM_ARG_REGPTR;
-                            node->data.data = reg_off;
+                            node->data.data = (unsigned char) reg_off;
                             linked_list_insertnode_AsmArgument(
                                 node, &(instruct->args), -1);
                         }
@@ -547,22 +841,20 @@ void asm_parse(struct AsmData* data, struct AsmError* err) {
                     } else {
                         char* astr = extract_string(string, pos + 1, len - 2);
                         int radix = get_radix(astr[len - 3]);
-                        unsigned long long addr =
-                            base_to_10(astr, radix == -1 ? 10 : radix);
+                        unsigned long long addr = base_to_10(astr, radix == -1 ? 10 : radix);
                         free(astr);
 
                         struct LL_NODET_NAME(AsmArgument)* node =
                             malloc(sizeof(struct LL_NODET_NAME(AsmArgument)));
                         node->data.type = ASM_ARG_ADDR;
                         node->data.data = addr;
-                        linked_list_insertnode_AsmArgument(
-                            node, &(instruct->args), -1);
+                        linked_list_insertnode_AsmArgument(node, &(instruct->args), -1);
                     }
                     pos += len;
                 } else if (string[pos] == '-' || string[pos] == '+' ||
                            IS_DIGIT(string[pos]) ||
                            IS_CHAR(string[pos])) {  // Literal/Register
-                    unsigned int sublen = 0;
+                    int sublen = 0;
                     while (pos + sublen < slen &&
                            !IS_SEPERATOR(string[pos + sublen]) &&
                            !IS_WHITESPACE(string[pos + sublen]))
@@ -572,44 +864,36 @@ void asm_parse(struct AsmData* data, struct AsmError* err) {
                     T_i8 reg_off = cpu_reg_offset_from_string(sub);
                     if (reg_off == -1) {  // Is it a register?
                         int radix = get_radix(sub[sublen - 1]);
-                        unsigned int litend =
-                            scan_number(sub, radix == -1 ? 10 : radix);
-                        int has_dp = 0;
-                        for (int j = 0; j < sublen && !IS_WHITESPACE(sub[j]);
-                             ++j) {
+                        int litend = scan_number(sub, radix == -1 ? 10 : radix);
+                        bool has_dp = false;
+                        for (int j = 0; j < sublen && !IS_WHITESPACE(sub[j]); ++j) {
                             if (sub[j] == '.') {
-                                has_dp = 1;
+                                has_dp = true;
                                 break;
                             }
                         }
-                        if (litend == sublen ||
-                            (radix != -1 &&
-                             litend == sublen - 1)) {  // Is literal!
+                        if (litend == sublen || (radix != -1 && litend == sublen - 1)) {  // Is literal!
                             struct LL_NODET_NAME(AsmArgument)* node = malloc(
                                 sizeof(struct LL_NODET_NAME(AsmArgument)));
                             node->data.type = ASM_ARG_LIT;
                             if (has_dp) {  // Decimal (f64)
-                                double lit =
-                                    fbase_to_10(sub, radix == -1 ? 10 : radix);
+                                double lit = fbase_to_10(sub, radix == -1 ? 10 : radix);
                                 node->data.data = *(unsigned long long*)&lit;
                             } else {  // Integer (u64)
-                                unsigned long long lit =
-                                    base_to_10(sub, radix == -1 ? 10 : radix);
+                                unsigned long long lit = base_to_10(sub, radix == -1 ? 10 : radix);
                                 node->data.data = lit;
                             }
-                            linked_list_insertnode_AsmArgument(
-                                node, &(instruct->args), -1);
+                            linked_list_insertnode_AsmArgument(node, &(instruct->args), -1);
                         } else {  // Label
                             // Exists?
-                            struct AsmLabel* lbl =
-                                linked_list_find_AsmLabel(data->labels, sub);
+                            struct AsmLabel* lbl = linked_list_find_AsmLabel(data->labels, sub);
 
                             if (!is_valid_label_name(sublen, sub)) {
                                 if (err->print) {
-                                    printf(CONSOLE_RED
-                                           "ERROR!" CONSOLE_RESET
+                                    printf(CONSOLE_RED "ERROR!" CONSOLE_RESET
                                            " Line %i, column %i:\nInvalid label form - \"%s\"\n",
                                            line, pos, sub);
+                                    asm_line_print_note(&cline->data);
                                 }
                                 err->col = pos;
                                 err->line = cline->data.n;
@@ -619,8 +903,7 @@ void asm_parse(struct AsmData* data, struct AsmError* err) {
                                 return;
                             }
 
-                            struct LL_NODET_NAME(AsmArgument)* node = malloc(
-                                sizeof(struct LL_NODET_NAME(AsmArgument)));
+                            struct LL_NODET_NAME(AsmArgument)* node = malloc(sizeof(struct LL_NODET_NAME(AsmArgument)));
                             if (lbl == 0) {
                                 node->data.type = ASM_ARG_LABEL_LIT;
                                 node->data.data = (unsigned long long)sub;
@@ -642,17 +925,16 @@ void asm_parse(struct AsmData* data, struct AsmError* err) {
                     pos += sublen;
                 } else {  // Unknown argument form
                     if (err->print) {
-                        unsigned int len = 0;
+                        int len = 0;
                         while (pos + len < slen &&
                                !IS_WHITESPACE(string[pos + len]))
                             ++len;
                         char* astr = extract_string(string, pos, len);
-                        printf(CONSOLE_RED
-                               "ERROR!" CONSOLE_RESET
-                               " Line %i, column %i:\nSyntax: unknown argument format "
-                               "'%s'\n",
+                        printf(CONSOLE_RED "ERROR!" CONSOLE_RESET
+                               " Line %i, column %i:\nSyntax: unknown argument format '%s'\n",
                                line, pos, astr);
                         free(astr);
+                        asm_line_print_note(&cline->data);
                     }
                     err->col = pos;
                     err->line = cline->data.n;
@@ -669,12 +951,12 @@ void asm_parse(struct AsmData* data, struct AsmError* err) {
                 } else if (string[pos] == ',') {
                     ++pos;
                 } else {
-                    if (err->print)
-                        printf(CONSOLE_RED
-                               "ERROR!" CONSOLE_RESET
-                               " Line %i, column %i:\nSyntax: expected comma, found "
-                               "'%c'\n",
+                    if (err->print) {
+                        printf(CONSOLE_RED "ERROR!" CONSOLE_RESET
+                               " Line %i, column %i:\nSyntax: expected comma, found '%c'\n",
                                line, pos, string[pos]);
+                        asm_line_print_note(&cline->data);
+                    }
                     err->col = pos;
                     err->line = cline->data.n;
                     err->errc = ASM_ERR_SYNTAX;
@@ -686,11 +968,12 @@ void asm_parse(struct AsmData* data, struct AsmError* err) {
 
             int errc = asm_decode_instruction(instruct);
             if (errc == ASM_ERR_MNEMONIC) {
-                if (err->print)
-                    printf(CONSOLE_RED
-                           "ERROR!" CONSOLE_RESET
+                if (err->print) {
+                    printf(CONSOLE_RED "ERROR!" CONSOLE_RESET
                            " Line %i, column %i:\nUnknown mnemonic '%s'\n",
                            line, pos, instruct->mnemonic);
+                    asm_line_print_note(&cline->data);
+                }
                 err->col = pos;
                 err->line = cline->data.n;
                 err->errc = errc;
@@ -699,20 +982,17 @@ void asm_parse(struct AsmData* data, struct AsmError* err) {
                 return;
             } else if (errc == ASM_ERR_BAD_ARGS) {
                 if (err->print) {
-                    unsigned int argc =
-                        linked_list_size_AsmArgument(instruct->args);
-                    printf(CONSOLE_RED
-                           "ERROR!" CONSOLE_RESET
-                           " Line %i, column %i:\nUnknown argument(s) for "
-                           "\"%s\": [%u] ",
+                    unsigned int argc = linked_list_size_AsmArgument(instruct->args);
+                    printf(CONSOLE_RED "ERROR!" CONSOLE_RESET
+                           " Line %i, column %i:\nUnknown argument(s) for \"%s\": [%u] ",
                            line, pos, instruct->mnemonic, argc);
                     struct LL_NODET_NAME(AsmArgument)* curr = instruct->args;
-                    for (unsigned int i = 0; curr != 0;
-                         ++i, curr = curr->next) {
+                    for (int i = 0; curr != 0; ++i, curr = curr->next) {
                         print_asm_arg(&(curr->data));
                         if (i < argc - 1) printf("; ");
                     }
                     printf("\n");
+                    asm_line_print_note(&cline->data);
                 }
                 err->col = pos;
                 err->line = cline->data.n;
@@ -740,13 +1020,12 @@ void asm_parse(struct AsmData* data, struct AsmError* err) {
             if (collision == 0) {
                 linked_list_insertnode_AsmChunk(&(data->chunks), chunk_node);
             } else {
-                if (err->print)
-                    printf(
-                        CONSOLE_RED
-                        "ERROR!" CONSOLE_RESET
-                        " Line %i, column %i:\nChunk collision - %u bytes at "
-                        "%llu\n",
-                        line, pos, collision->bytes, collision->offset);
+                if (err->print) {
+                    printf(CONSOLE_RED "ERROR!" CONSOLE_RESET
+                           " Line %i, column %i:\nChunk collision - %i bytes at %llu\n",
+                           line, pos, collision->bytes, collision->offset);
+                    asm_line_print_note(&cline->data);
+                }
                 err->col = pos;
                 err->line = cline->data.n;
                 err->errc = ASM_ERR_CHUNK;
@@ -757,6 +1036,7 @@ void asm_parse(struct AsmData* data, struct AsmError* err) {
         }
         // Next line
         cline = cline->next;
+        cline_idx++;
     }
 
     // Check for labels (should be none).
@@ -768,12 +1048,13 @@ void asm_parse(struct AsmData* data, struct AsmError* err) {
             unsigned int i = 0;
             while (arg != 0) {
                 if (ASM_ARG_IS_LABEL(arg->data.type)) {
-                    if (err->print)
-                        printf(CONSOLE_RED
-                               "ERROR!" CONSOLE_RESET " Instruction \"%s\" (+%llu): reference to undefined "
-                               "label \"%s\"\n",
-                               instruct->mnemonic, chunk->data.offset, (char *) arg->data.data);
-                    err->line = 0;  // Unknown.
+                    if (err->print) {
+                        printf(CONSOLE_RED "ERROR!" CONSOLE_RESET
+                            " Line %i:\nInstruction \"%s\" (+%llu): reference to undefined label \"%s\"\n",
+                           chunk->data.line->n, instruct->mnemonic, chunk->data.offset, (char *) arg->data.data);
+                        asm_line_print_note(chunk->data.line);
+                    }
+                    err->line = chunk->data.line->n;
                     err->col = 0;   // Unknown.
                     err->errc = ASM_ERR_UNKNOWN_LABEL;
                     return;
@@ -805,15 +1086,15 @@ size_t asm_compile(struct AsmData* data, struct AsmError* err, char **result_buf
         switch (chunk->data.type) {
             case ASM_CHUNKT_INSTRUCTION: {
                 struct AsmInstruction* instruct = chunk->data.data;
-                int errc =
-                    asm_write_instruction(prog_buf, chunk->data.offset, instruct);
+                int errc = asm_write_instruction(prog_buf, chunk->data.offset, instruct);
                 if (errc != ASM_OK) {
-                    if (err->print)
-                        printf(CONSOLE_RED
-                               "ERROR!" CONSOLE_RESET
-                               " Unknown opcode whilst decoding: %hu (x%X)\n",
-                               instruct->opcode, instruct->opcode);
-                    err->line = 0;  // Unknown.
+                    if (err->print) {
+                        printf(CONSOLE_RED "ERROR!" CONSOLE_RESET
+                               " Line %i:\nUnknown opcode whilst decoding: %hu (x%X)\n",
+                               chunk->data.line->n, instruct->opcode, instruct->opcode);
+                        asm_line_print_note(chunk->data.line);
+                    }
+                    err->line = chunk->data.line->n;  // Unknown.
                     err->col = 0;   // Unknown.
                     err->errc = errc;
                     free(*result_buf);
@@ -822,14 +1103,12 @@ size_t asm_compile(struct AsmData* data, struct AsmError* err, char **result_buf
                 break;
             }
             case ASM_CHUNKT_DATA:
-                memcpy(prog_buf + chunk->data.offset, chunk->data.data,
-                       chunk->data.bytes);
+                memcpy(prog_buf + chunk->data.offset, chunk->data.data, chunk->data.bytes);
                 break;
             default:
                 if (err->print)
-                    printf(CONSOLE_RED
-                           "ERROR!" CONSOLE_RESET
-                           " Unknown data chunk type whist decoding: %i\n",
+                    printf(CONSOLE_RED "ERROR!" CONSOLE_RESET
+                           "Unknown data chunk type whist decoding: %i\n",
                            chunk->data.type);
                 err->line = 0;  // Unknown.
                 err->col = 0;   // Unknown.

@@ -40,6 +40,9 @@
 // Is an octal character?
 #define IS_OCTAL(n) (n >= '0' && n <= '8')
 
+// Is symbol permitted in common name
+#define IS_SYMBOL_CHAR(c) (c == '_' || IS_CHAR(c) || IS_DIGIT(c))
+
 // Is a hexadecimal character?
 #define IS_HEX(n) \
     ((n >= '0' && n <= '9') || (n >= 'A' && n <= 'F') || (n >= 'a' && n <= 'f'))
@@ -101,7 +104,7 @@ int get_radix(char suffix);
 
 /** Given a string input containing a number of base "radix", return index where
  * number ends. */
-unsigned int scan_number(const char *string, int radix);
+int scan_number(const char *string, int radix);
 
 /** Integer Base to double */
 unsigned long long base_to_10(const char *string, int radix);

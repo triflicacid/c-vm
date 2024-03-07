@@ -3,7 +3,7 @@
 #include <string.h>
 
 T_i8 cpu_reg_offset_from_string(const char *string) {
-    if (string[0] == 'r') return (T_i8) (string[1] - '0');
+    if (string[0] == 'r' && IS_DIGIT(string[1]) && !IS_DIGIT(string[2])) return (T_i8) (string[1] - '0');
     if (strcmp(string, REG_FLAG_SYM) == 0) return REG_FLAG;
     if (strcmp(string, REG_CMP_SYM) == 0) return REG_CMP;
     if (strcmp(string, REG_CCR_SYM) == 0) return REG_CCR;

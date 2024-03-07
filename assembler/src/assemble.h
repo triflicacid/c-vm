@@ -95,6 +95,7 @@ struct AsmData {
     struct LL_NODET_NAME(AsmSymbol) * symbols;  // Symbols (constants)
     struct LL_NODET_NAME(AsmLabel) * labels;    // Labels
     struct LL_NODET_NAME(AsmChunk) * chunks;    // Chunks (writable data)
+    struct LL_NODET_NAME(AsmMacro) * macros;    // Store macros
     struct binary_header_data head_data;
 };
 

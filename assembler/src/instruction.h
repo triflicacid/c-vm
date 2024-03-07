@@ -7,7 +7,7 @@
 struct AsmInstruction {
     char *mnemonic;      // Instruction mnemonic
     OPCODE_T opcode;     // Instruction opcode (when decoded)
-    unsigned int bytes;  // Byte-width of instruction (when decoded)
+    int bytes;           // Byte-width of instruction (when decoded)
     struct LL_NODET_NAME(AsmArgument) * args;  // Linked list of arguments
 };
 
