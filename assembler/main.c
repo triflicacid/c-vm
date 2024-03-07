@@ -64,6 +64,15 @@ int main(int argc, char **argv) {
         printf("Reading source file '%s'\n", file_in);
     FILE *fp = fopen(file_in, "r");
 
+    if (fp == NULL) {
+        if (debug) {
+            printf(CONSOLE_RED "ERROR!" CONSOLE_RESET " Cannot open file \"%s\"\n", file_in);
+        }
+
+        err.errc = ASM_FILE_NOT_FOUND;
+        goto end;
+    }
+
     if (debug) printf(CONSOLE_GREEN "=== GET LINES ===\n" CONSOLE_RESET);
     asm_read_lines(fp, &data, &err);
     if (err.errc) goto end;

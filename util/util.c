@@ -212,10 +212,10 @@ char *extract_string(const char *string, unsigned int start, unsigned int len) {
 int is_valid_label_name(int len, const char *label) {
     if (len == 0) return 0;
 
-    if (!IS_CHAR(label[0])) return 0;
+    if (!IS_CHAR(label[0]) && label[0] != '_') return 0;
 
     for (int i = 1; i < len; ++i) {
-        if (!(IS_CHAR(label[i]) || IS_DIGIT(label[i]))) {
+        if (!IS_SYMBOL_CHAR(label[i])) {
             break;
         }
     }

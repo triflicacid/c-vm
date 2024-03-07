@@ -22,6 +22,9 @@
 // Assembler: invalid label name
 #define ASM_ERR_INVALID_LABEL 6
 
+// Assembler: file does not exist
+#define ASM_FILE_NOT_FOUND 9
+
 // Assembler: generic internal error, should not happen when not in development.
 #define ASM_ERR_INTERNAL 10
 

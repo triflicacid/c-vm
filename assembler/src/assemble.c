@@ -334,6 +334,69 @@ void asm_preprocess(struct AsmData* data, struct AsmError* err) {
 
                     // Insert to macro store
                     linked_list_insert_AsmMacro(current_macro, &data->macros, 0);
+                } else if (strcmp(directive, "include") == 0) {
+                    while (idx < slen && IS_WHITESPACE(string[idx]))
+                        idx++;
+
+                    char *path = extract_string(string, idx, slen - idx);
+
+                    if (err->debug)
+                        printf("[LINE %u] %%%s: INCLUDE PATH %s\n", cline->data.n, directive, path);
+
+                    // TODO
+
+                    // Open file and get size
+                    FILE *fp = fopen(path, "r");
+
+                    if (fp == NULL) {
+                        if (err->print) {
+                            printf(CONSOLE_RED "ERROR!" CONSOLE_RESET
+                                   " Line %i, column %i: Cannot open file \"%s\"\n",
+                                   cline->data.n, idx, path);
+                            asm_line_print_note(&cline->data);
+                        }
+                        err->col = idx;
+                        err->line = cline->data.n;
+                        err->errc = ASM_FILE_NOT_FOUND;
+                        free(directive);
+                        free(path);
+                        return;
+                    }
+
+                    // Read lines
+                    char file_line[ASM_MAX_LINE_LENGTH];  // Line buffer
+                    int insert_pos = cline_idx;
+                    struct LL_NODET_NAME(AsmLine) *next_line = NULL;
+
+                    while (true) {
+                        if (!fgets(file_line, sizeof(file_line), fp)) break;
+                        int len = 0, i;
+                        // Calculate string length
+                        for (i = 0; !(file_line[i] == '\0' || file_line[i] == '\n' || file_line[i] == '\r' || file_line[i] == ';'); ++i, ++len)
+                            ;
+                        i = 0;
+                        // Eat leading whitespace
+                        for (; i < len && IS_WHITESPACE(file_line[i]); ++i)
+                            ;
+                        // Create node?
+                        if (i < len) {
+                            char* str = extract_string(file_line, 0, len);
+
+                            struct LL_NODET_NAME(AsmLine)* node = malloc(sizeof(struct LL_NODET_NAME(AsmLine)));
+                            node->data.n = cline->data.n;
+                            node->data.len = len;
+                            node->data.str = str;
+                            node->data.note = NULL;
+                            linked_list_insertnode_AsmLine(node, &(data->lines), insert_pos++);
+
+                            if (next_line == NULL) {
+                                next_line = node;
+                            }
+                        }
+                    }
+
+                    fclose(fp);
+                    free(path);
                 } else {
                     goto unknown_macro_error;
                 }
@@ -433,6 +496,7 @@ void asm_preprocess(struct AsmData* data, struct AsmError* err) {
             struct LL_NODET_NAME(String) *macro_line = (*macro)->lines;
             int macro_line_number = 1;
             int line_insert_idx = cline_idx;
+            struct LL_NODET_NAME(AsmLine) *next_line = NULL; // Populate with first line replacement
 
             while (macro_line != NULL) {
                 // Make a copy of the line for local insertion
@@ -443,6 +507,7 @@ void asm_preprocess(struct AsmData* data, struct AsmError* err) {
 
                 // Replace args
                 struct LL_NODET_NAME(String) *arg_name = (*macro)->args, *arg_data = args;
+
                 while (arg_name != NULL) {
                     int arg_data_length = (int) strlen(arg_data->data);
                     int arg_name_length = (int) strlen(arg_name->data);
@@ -491,17 +556,18 @@ void asm_preprocess(struct AsmData* data, struct AsmError* err) {
 
                 macro_line = macro_line->next;
 
-                // TODO replacement
+                if (next_line == NULL) {
+                    next_line = node;
+                }
             }
 
             linked_list_destroy_String(&args);
 
             // Remove line from the program
-            struct LL_NODET_NAME(AsmLine) *next = cline->next;
             linked_list_removenode_AsmLine(cline, &(data->lines));
             destroy_asm_line(&cline->data);
             free(cline);
-            cline = next;
+            cline = next_line;
 
             continue;
         }
