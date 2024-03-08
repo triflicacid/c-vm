@@ -4,8 +4,8 @@
 #include <fstream>
 
 #include "src/pre-process/pre-processor.h"
+#include "src/messages/message-list.h"
 #include "util.h"
-#include "assembler/src/messages/message-list.h"
 
 /** Handles message list actions. Return if contains an error. */
 bool handle_messages(assembler::MessageList& list, bool print) {
@@ -104,7 +104,7 @@ int main(int argc, char **argv) {
         std::cout << "--- Constants ---\n";
 
         for (const auto& pair : data.constants) {
-            std::cout << pair.first << " = '" << pair.second << "'\n";
+            std::cout << pair.first << " = '" << pair.second.value << "'\n";
         }
     }
 

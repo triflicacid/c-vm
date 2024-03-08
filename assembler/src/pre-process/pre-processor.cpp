@@ -77,20 +77,6 @@ namespace assembler {
                 }
             }
 
-            // Replace constants in line with their value
-            for (const auto& pair : data.constants) {
-                size_t index = 0;
-
-                while ((index = line.data.find(pair.first, index)) != std::string::npos) {
-                    if (data.debug) {
-                        std::cout << "[" << line.n << ":" << index << "] CONSTANT: substitute symbol " << pair.first << "\n";
-                    }
-
-                    line.data.replace(index, pair.first.size(), pair.second);
-                    index += pair.second.size();
-                }
-            }
-
             // Have we found a directive?
             if (line.data[0] == '%') {
                 int i = 1;
@@ -98,20 +84,56 @@ namespace assembler {
                 // Extract directive name
                 int j = i;
                 skip_alphanum(line.data, i);
-                std::string directive = line.data.substr(j, i - 1);
+                std::string directive = line.data.substr(j, i - j);
                 to_lowercase(directive);
 
                 if (data.debug) {
                     std::cout << "[" << line.n << ":" << j << "] DIRECTIVE: '" << directive << "'\n";
                 }
 
-                if (directive == "rm") {
+                if (directive == "define") {
+                    // %define [SYMBOL] [VALUE] - creates a new constant
+                    skip_alpha(line.data, i);
+                    skip_whitespace(line.data, i);
+
+                    // Extract constant name
+                    j = i;
+                    skip_non_whitespace(line.data, i);
+                    std::string constant = line.data.substr(j, i - j);
+
+                    if (data.debug) {
+                        std::cout << "\tConstant: " << constant;
+                    }
+
+                    // Get value
+                    skip_whitespace(line.data, i);
+                    std::string value = line.data.substr(i);
+
+                    if (data.debug) {
+                        std::cout << "; Value = \"" << value << "\"\n";
+                    }
+
+                    // Check if constant already exists
+                    auto exists = data.constants.find(constant);
+
+                    if (exists != data.constants.end()) {
+                        // Warn user of potential mishap
+                        auto *msg = new Message(MessageLevel::Warning, line.n, j);
+                        msg->m_msg = "Re-definition of constant " + constant + " (previously defined at "
+                                + std::to_string(exists->second.line) + ':' + std::to_string(exists->second.col) + ')';
+                        msgs.add(msg);
+
+                        // Update value.
+                        exists->second.value = value;
+                    } else {
+                        // Add to constant dictionary
+                        data.constants.insert({ constant, { line.n, j, value } });
+                    }
+                } else if (directive == "rm") {
                     // %rm: act as a comment
                     if (data.debug) {
                         std::cout << "\tIgnoring this line.\n";
                     }
-
-                    continue;
                 } else if (directive == "stop") {
                     // %stop: halt the pre-processor, remove all lines after this one
                     if (data.debug) {
@@ -128,6 +150,26 @@ namespace assembler {
                     error->m_msg = "Unknown/invalid directive in this context: %" + directive;
                     msgs.add(error);
                     return;
+                }
+
+                // Directive has been handles - now remove current line
+                data.lines.erase(data.lines.begin() + lines_idx);
+                lines_idx--;
+
+                continue;
+            }
+
+            // Replace constants in line with their value
+            for (const auto& pair : data.constants) {
+                size_t index = 0;
+
+                while ((index = line.data.find(pair.first, index)) != std::string::npos) {
+                    if (data.debug) {
+                        std::cout << "[" << line.n << ":" << index << "] CONSTANT: substitute symbol " << pair.first << "\n";
+                    }
+
+                    line.data.replace(index, pair.first.size(), pair.second.value);
+                    index += pair.second.value.size();
                 }
             }
         }
