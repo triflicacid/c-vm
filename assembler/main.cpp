@@ -5,6 +5,21 @@
 
 #include "src/pre-process/pre-processor.h"
 #include "util.h"
+#include "assembler/src/messages/message-list.h"
+
+/** Handles message list actions. Return if contains an error. */
+bool handle_messages(assembler::MessageList& list, bool print) {
+    if (print)
+        list.for_each_message([] (assembler::Message &msg) {
+            msg.print();
+        });
+
+    bool is_error = list.has_message_of(assembler::MessageLevel::Error);
+
+    list.clear();
+
+    return is_error;
+}
 
 int main(int argc, char **argv) {
     char *file_in = nullptr, *file_out = nullptr, *file_postproc = nullptr;
@@ -60,32 +75,28 @@ int main(int argc, char **argv) {
 
     // Set-up pre-processing data
     assembler::pre_processor::Data data(debug);
-    assembler::Error *err = nullptr;
+    assembler::MessageList messages;
 
     // Read source file into lines
     if (do_detail)
         printf("Reading source file '%s'\n", file_in);
 
-    assembler::read_source_file(file_in, &data, &err);
+    assembler::read_source_file(file_in, data, messages);
 
-    if (err) {
-        if (do_detail)
-            err->print();
-
-        goto end;
+    // Check if error
+    if (handle_messages(messages, do_detail)) {
+        return EXIT_FAILURE;
     }
 
     // Pre-process file
     if (debug)
         printf(CONSOLE_GREEN "=== PRE-PROCESSING ===\n" CONSOLE_RESET);
 
-    assembler::pre_process(&data, &err);
+    assembler::pre_process(data, messages);
 
-    if (err) {
-        if (do_detail)
-            err->print();
-
-        goto end;
+    // Check if error
+    if (handle_messages(messages, do_detail)) {
+        return EXIT_FAILURE;
     }
 
     if (debug) {
@@ -106,7 +117,7 @@ int main(int argc, char **argv) {
                 std::cout << "Failed to open file " << file_postproc << "\n";
             }
 
-            goto end;
+            return EXIT_FAILURE;
         }
 
         // Write post-processed content to the output stream
@@ -148,21 +159,5 @@ int main(int argc, char **argv) {
 //                   is_file_out ? file_out : "source.bin");
 //        free(buf);
 //    }
-
-end:
-    int code = 0;
-
-    if (err) {
-        code = err->get_type();
-        delete err;
-    }
-
-    if (do_detail) {
-        printf("Terminated with code %i\n", code);
-    }
-    else {
-        printf("%i", code);
-    }
-
-    return code;
+    return EXIT_SUCCESS;
 }

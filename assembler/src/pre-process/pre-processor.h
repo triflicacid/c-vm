@@ -5,7 +5,7 @@
 #include <map>
 
 #include "line.h"
-#include "err.h"
+#include "assembler/src/messages/message-list.h"
 
 namespace assembler {
     namespace pre_processor {
@@ -24,9 +24,9 @@ namespace assembler {
         };
     }
 
-    /** Read source file into lines. Mutate `data`, or populate `err`. */
-    void read_source_file(const std::string& filename, pre_processor::Data *data, Error **err);
+    /** Read source file into lines. Mutate `data`, or add error. */
+    void read_source_file(const std::string& filename, pre_processor::Data &data, MessageList &msgs);
 
-    /** Run pre-processing on the given data, mutating it, or populate `err`. */
-    void pre_process(pre_processor::Data *data, Error **err);
+    /** Run pre-processing on the given data, mutating it, or add error. */
+    void pre_process(pre_processor::Data &data, MessageList &msgs);
 }

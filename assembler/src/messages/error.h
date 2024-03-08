@@ -2,6 +2,7 @@
 
 #include <string>
 #include <vector>
+#include "message.h"
 
 namespace assembler {
     enum ErrorType {
@@ -16,23 +17,13 @@ namespace assembler {
         Opcode,
     };
 
-    class Error {
+    class Error : public Message {
     private:
-        int m_line;
-        int m_col;
         ErrorType m_type;
-        std::vector<std::string> m_notes;
-
 
     public:
-        std::string m_msg;
+        Error(int line, int col, assembler::ErrorType err);
 
-        Error(int line, int col, ErrorType type);
-
-        void add_note(const std::string& note);
-
-        ErrorType get_type() { return m_type; }
-
-        void print() const;
+        ErrorType get_error() { return m_type; }
     };
 }
