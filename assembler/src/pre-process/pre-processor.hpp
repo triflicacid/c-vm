@@ -4,10 +4,10 @@
 #include <vector>
 #include <map>
 
-#include "line.h"
-#include "../messages/message-list.h"
-#include "constant.h"
-#include "macro.h"
+#include "line.hpp"
+#include "../messages/message-list.hpp"
+#include "constant.pph"
+#include "macro.hpp"
 
 namespace assembler {
     namespace pre_processor {

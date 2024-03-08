@@ -3,7 +3,7 @@
 #include <string>
 #include <functional>
 
-#include "message.h"
+#include "message.hpp"
 
 namespace assembler {
     class MessageList {

@@ -1,5 +1,5 @@
 #include <iostream>
-#include "instruction.h"
+#include "instruction.hpp"
 
 
 namespace assembler {

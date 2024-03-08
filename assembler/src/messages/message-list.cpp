@@ -1,4 +1,4 @@
-#include "message-list.h"
+#include "message-list.hpp"
 
 namespace assembler {
     void MessageList::clear() {

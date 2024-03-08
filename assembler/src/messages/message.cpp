@@ -1,6 +1,6 @@
 #include <iostream>
 
-#include "message.h"
+#include "message.hpp"
 #include "util.h"
 
 namespace assembler {

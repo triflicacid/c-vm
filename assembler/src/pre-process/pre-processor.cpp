@@ -1,9 +1,9 @@
-#include "pre-processor.h"
+#include "pre-processor.hpp"
 extern "C" {
 #include "util.h"
 }
 #include "util.hpp"
-#include "messages/error.h"
+#include "messages/error.hpp"
 
 #include <string>
 #include <vector>

@@ -1,8 +1,8 @@
-#include "chunk.h"
+#include "chunk.hpp"
 extern "C" {
 #include "util.h"
 }
-#include "instruction.h"
+#include "instruction.hpp"
 
 #include <iostream>
 #include <vector>

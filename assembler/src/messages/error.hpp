@@ -2,7 +2,7 @@
 
 #include <string>
 #include <vector>
-#include "message.h"
+#include "message.hpp"
 
 namespace assembler {
     enum ErrorType {

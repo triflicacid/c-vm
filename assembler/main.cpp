@@ -3,8 +3,8 @@
 #include <iostream>
 #include <fstream>
 
-#include "src/pre-process/pre-processor.h"
-#include "src/messages/message-list.h"
+#include "src/pre-process/pre-processor.hpp"
+#include "src/messages/message-list.hpp"
 #include "util.h"
 
 /** Handles message list actions. Return if contains an error. */
@@ -138,7 +138,7 @@ int main(int argc, char **argv) {
         file << content;
         file.close();
 
-        if (data.debug) {
+        if (do_detail) {
             std::cout << "Written " << content.size() << " bytes of post-processed source to " << file_postproc << "\n";
         }
     }

@@ -1,7 +1,7 @@
 #pragma once
 
 #include "processor/src/opcodes.h"
-#include "args.h"
+#include "args.hpp"
 
 #include <string>
 #include <vector>
