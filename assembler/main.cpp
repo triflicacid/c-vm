@@ -75,11 +75,6 @@ int main(int argc, char **argv) {
         goto end;
     }
 
-    // Recite lines
-    for (auto line : data.lines) {
-        line.print();
-    }
-
     // Pre-process file
     if (debug)
         printf(CONSOLE_GREEN "=== PRE-PROCESSING ===\n" CONSOLE_RESET);
@@ -94,7 +89,12 @@ int main(int argc, char **argv) {
     }
 
     if (debug) {
-        // TODO
+        // Print constants
+        std::cout << "--- Constants ---\n";
+
+        for (const auto& pair : data.constants) {
+            std::cout << pair.first << " = '" << pair.second << "'\n";
+        }
     }
 
     // Write post-processed content to file?

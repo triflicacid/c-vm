@@ -119,14 +119,7 @@ These are instructions to the pre-processor, and are handled before compilation.
 mov NUMBER, r0
 -->
 mov 123, r0
-```
-- `%ignore` - ignore this line. Like a comment.
-```
-%ignore hlt
-mov 1, r1
--->
-mov 1, r1
-```                                                                                                                                                                    
+``` 
 - `%macro [NAME] <params, ...>` - defines a macro, which is an expandable block of instructions, with the following name. You may provide a list of arguments. All source lines after `%macro` are considered part of the macro's body and **cannot** be more directives -- only `%end` is permitted, which will terminate the macro body.
 After definition, when `NAME` is encountered in the `mnemonic` position, supplied arguments are passed to the parameters `<params, ...>`. Any instances of a parameter is replaced by its respective argument in the macro's body. The original line is removed and the modified macro's body is "pasted" in.
 ```
@@ -142,7 +135,14 @@ mov 42, r0
 mov r0, r1
 mov 0, r0
 syscall
-```        
+```
+- `%rm` - remove this line. Like a comment.
+```
+%rm hlt
+mov 1, r1
+-->
+mov 1, r1
+```      
 - `%stop` - ignore anything after this point. "Stops" the assembler.
 ```
 mov 1, r1

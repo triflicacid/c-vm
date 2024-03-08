@@ -13,3 +13,39 @@ std::string& rtrim(std::string& s, const char* t) {
 std::string& trim(std::string& s, const char* t) {
     return ltrim(rtrim(s, t), t);
 }
+
+void skip_whitespace(const std::string &s, int &i) {
+    size_t len = s.length();
+    while (i < len && s[i] == ' ')
+        i++;
+}
+
+void skip_non_whitespace(const std::string &s, int &i) {
+    size_t len = s.length();
+    while (i < len && s[i] != ' ')
+        i++;
+}
+
+void skip_alpha(const std::string &s, int &i) {
+    size_t len = s.length();
+    while (i < len && std::isalpha(s[i]))
+        i++;
+}
+
+void skip_alphanum(const std::string &s, int &i) {
+    size_t len = s.length();
+    while (i < len && std::isalnum(s[i]))
+        i++;
+}
+
+bool starts_with(const std::string &a, std::string &b) {
+    return starts_with(a, 0, b);
+}
+
+bool starts_with(const std::string &a, int pos, std::string& b) {
+    if (a.length() < b.length()) {
+        return false;
+    }
+
+    return a.substr(pos, b.length()) == b;
+}

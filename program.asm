@@ -1,5 +1,5 @@
-%include assembler/lib/print_registers.asm
+%define MAGIC 42
 
-mov 42, r0
+mov MAGIC, r0
 print_int r0
 hlt
