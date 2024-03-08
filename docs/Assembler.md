@@ -61,16 +61,16 @@ Labels come in the form `label:`
 
 Code execution starts at the special label `main`.
 
-If `mnemonic` is one of `u8, u16, u32, u64, f32, f64`, this is a data constant.
+If `mnemonic` is one of `u8, u16, u32, u64, f32, f64`, this is a m_data constant.
   - `args` is a comma- or space-seperated list of constants. If no `args` are provided, insert a `0`.
     - `...[r]` - Numeric constants. These may be followed by a radix suffix `r`.  
     - `'...'` - Character constants
     - `"..."` - String constants
-  - The mnemonic specifies the type of each item. Each item is written to the output with this type. In the case of strings, each character in said string has this type.
+  - The mnemonic specifies the m_type of each item. Each item is written to the output with this m_type. In the case of strings, each character in said string has this m_type.
 
 Instructions come in the form `mnemonic [...args]` where the arguments consist of a comma-seperated list of:
   - `nnn`, where `nnn` is a number, represents a **literal**
-    - Data type defaults to `i64`. If a decimal point is present, the data type defaults to `f64`.
+    - Data m_type defaults to `i64`. If a decimal point is present, the m_data m_type defaults to `f64`.
   - `[nnn]`, where `nnn` is a number, represents an **address**
   - `abc`, where `abc` is a string of characters, represents a **register**. The string is translated to its corresponsing register offset or, if it is not recognised, will result in an error.
   - `[abc]`, where `abc` is a string of characters, represents a **register pointer**. The string is translated to its corresponsing register offset or, if it is not recognised, will result in an error.

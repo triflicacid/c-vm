@@ -1,5 +1,7 @@
 ; Macro definitions to easily print register's contents
 
+%include syscalls.asm
+
 %macro _syscall_1 reg op
     mov reg, r1
     mov op, r0
@@ -7,11 +9,11 @@
 %end
 
 %macro print_int reg
-    _syscall_1 reg, 0
+    _syscall_1 reg, SYSCALL_PRINT_INT
 %end
 
 %macro print_uint reg
-    _syscall_1 reg, 1
+    _syscall_1 reg, SYSCALL_PRINT_UINT
 %end
 
 %macro print_hex reg

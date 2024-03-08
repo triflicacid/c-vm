@@ -1,6 +1,6 @@
 mov 3, r0
-mov [data], r1
+mov [m_data], r1
 syscall
 hlt
 
-data: f32 3.141
+m_data: f32 3.141

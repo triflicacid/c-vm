@@ -37,4 +37,4 @@ To execute, run `./<bin> [<file>] [-p] [-m <size>] [-s <size>]`
 
 Compiled binary files have the following structure:
 - `start_offset: WORD` - address offset of program start.
-- `program: BYTES` - program instructions/data.
+- `program: BYTES` - program instructions/m_data.

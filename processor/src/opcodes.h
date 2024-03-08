@@ -1,10 +1,8 @@
 #ifndef CPU_OPCODES_H_
 #define CPU_OPCODES_H_
 
-#define OPCODE_T T_u16
+#define OPCODE_T unsigned short
 #define OPCODE_T_FLAG "%u"
-
-#include "cpu.h"
 
 // No-operation, skip
 #define OP_NOP 0x0000

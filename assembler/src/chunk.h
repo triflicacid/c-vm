@@ -1,39 +1,21 @@
-#ifndef ASM_CHUNK_H_
-#define ASM_CHUNK_H_
+#pragma once
 
-#include "linked-list.h"
-#include "line.h"
+#include <vector>
 
-#define ASM_CHUNKT_UNKNOWN 0
-#define ASM_CHUNKT_INSTRUCTION 1
-#define ASM_CHUNKT_DATA 2
+namespace assembler {
+    class Chunk {
+    public:
+        bool is_data; // Is data or an instruction?
+        int offset;  // Byte offset
+        int bytes;   // Byte length
+        void *data;  // Internal data
+        int source_line; // Index of source line
 
-struct AsmChunk {
-    unsigned long long offset;  // Byte offset
-    int bytes;                  // Byte length
-    int type;                   // Type of thing in chunk
-    void *data;                 // Data stored in chunk.
-    struct AsmLine *line;       // Source line
-};
+        ~Chunk();
 
-LL_CREATE_NODET(AsmChunk, struct AsmChunk);
+        void print() const;
 
-LL_DECL_FPRINT(AsmChunk, struct AsmChunk)
-
-void asm_print_chunk(struct AsmChunk *chunk);
-
-void asm_destroy_chunk(struct AsmChunk *chunk);
-
-// Insert chunk node into the linked list
-void linked_list_insertnode_AsmChunk(struct LL_NODET_NAME(AsmChunk) * *chunks,
-                                     struct LL_NODET_NAME(AsmChunk) * chunk);
-
-// Is there a chunk infringing on this range? If so, return pointer to chunk
-// that is in this range. Else, NULL
-struct AsmChunk *asm_chunk_in_range(struct LL_NODET_NAME(AsmChunk) * chunks,
-                                    unsigned long long start,
-                                    unsigned long long end);
-
-LL_DECL_FDESTROY(AsmChunk)
-
-#endif
+        /** Return index of chunk in the given range, or -1. */
+        static int get_in_range(const std::vector<Chunk>& chunks, int lower, int upper);
+    };
+}

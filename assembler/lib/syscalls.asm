@@ -1,0 +1,2 @@
+%define SYSCALL_PRINT_INT 0
+%define SYSCALL_PRINT_UINT 1

@@ -1,49 +1,38 @@
-#ifndef ASM_ERR_H_
-#define ASM_ERR_H_
+#pragma once
 
-// No error
-#define ASM_OK 0
+#include <string>
+#include <vector>
 
-// Generic syntax error
-#define ASM_ERR_SYNTAX 1
+namespace assembler {
+    enum ErrorType {
+        Syntax = 1,
+        UnknownMnemonic,
+        BadArguments,
+        UnknownDirective,
+        UnknownLabel,
+        InvalidLabel,
+        FileNotFound,
+        Internal = 10,
+        Opcode,
+    };
 
-// Assembler: unknown mnemonic
-#define ASM_ERR_MNEMONIC 2
-
-// Assembler: invalid argument combination
-#define ASM_ERR_BAD_ARGS 3
-
-// Assembler: unknown directive
-#define ASM_ERR_DIRECTIVE 4
-
-// Assembler: unknown label encountered
-#define ASM_ERR_UNKNOWN_LABEL 5
-
-// Assembler: invalid label name
-#define ASM_ERR_INVALID_LABEL 6
-
-// Assembler: file does not exist
-#define ASM_FILE_NOT_FOUND 9
-
-// Assembler: generic internal error, should not happen when not in development.
-#define ASM_ERR_INTERNAL 10
-
-// Assembler: cannot decode opcode
-#define ASM_ERR_OPCODE 11
-
-// Assembler: chunk collision error
-#define ASM_ERR_CHUNK 12
+    class Error {
+    private:
+        int m_line;
+        int m_col;
+        ErrorType m_type;
+        std::vector<std::string> m_notes;
 
 
-// Assembler - contain error info
-struct AsmError {
-    unsigned int line;  // Assembly source line reached
-    unsigned int col;   // Column reached
-    int errc;           // Error code (if any)
-    int print;          // Print errors
-    int debug;          // Debug?
-};
+    public:
+        std::string m_msg;
 
-struct AsmError asm_error_create();
+        Error(int line, int col, ErrorType type);
 
-#endif
+        void add_note(const std::string& note);
+
+        ErrorType get_type() { return m_type; }
+
+        void print() const;
+    };
+}

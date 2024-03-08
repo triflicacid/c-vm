@@ -1,42 +1,37 @@
-#ifndef ASM_INSTRUCTION_ARG_H_
-#define ASM_INSTRUCTION_ARG_H_
+#pragma once
 
-#include "linked-list.h"
+namespace assembler {
+    enum ArgumentType {
+        Literal,
+        Address,
+        Register,
+        RegisterPointer,
+        LabelLiteral,
+        LabelAddress
+    };
 
-#define ASM_ARG_LIT 0
-#define ASM_ARG_ADDR 1
-#define ASM_ARG_REG 2
-#define ASM_ARG_REGPTR 3
-#define ASM_ARG_LABEL_LIT 4
-#define ASM_ARG_LABEL_ADDR 5
+    class Argument {
+    private:
+        ArgumentType m_type;
+        unsigned long long m_data;
 
-// Check if an argument's data can be used as a literal
-#define ASM_ARG_IS_LIT(x) (x == ASM_ARG_LIT || x == ASM_ARG_LABEL_LIT)
+    public:
+        Argument(ArgumentType type, unsigned long long data);
 
-// Check if an argument's data can be used as an address
-#define ASM_ARG_IS_ADDR(x) (x == ASM_ARG_ADDR || x == ASM_ARG_LABEL_ADDR)
+        ArgumentType get_type() { return m_type; }
 
-// Check if an argument is a label
-#define ASM_ARG_IS_LABEL(x) (x == ASM_ARG_LABEL_ADDR || x == ASM_ARG_LABEL_LIT)
+        unsigned long long get_data() { return m_data; }
 
-// Given label, return representing type e.g., [label] -> [n]
-#define ASM_ARG_DEREF_LABEL(x) (x == ASM_ARG_LABEL_LIT ? ASM_ARG_LIT : ASM_ARG_ADDR)
+        /** Can this argument be used as a literal? */
+        bool is_literal();
 
-/** Structure representing an argument */
-struct AsmArgument {
-    unsigned char type;       // Argument type. Constant: `ASM_ARG_...`
-    unsigned long long data;  // Argument data
-};
+        /** Can this argument be used as an address? */
+        bool is_address();
 
-LL_CREATE_NODET(AsmArgument, struct AsmArgument);
+        /** Is this argument a label? */
+        bool is_label();
 
-LL_DECL_FINSERT(AsmArgument, struct AsmArgument)
-
-LL_DECL_FINSERTNODE(AsmArgument)
-
-LL_DECL_FSIZE(AsmArgument)
-
-// Given an argument, print details (same line). Return error.
-int print_asm_arg(struct AsmArgument *arg);
-
-#endif
+        /** Print the label. */
+        void print();
+    };
+}

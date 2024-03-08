@@ -4,7 +4,7 @@ Errors are thrown when something irreparably goes wrong.
 
 ## Machine Code Execution
 
-These are errors which are thrown during machine code execution. The error code is stored in `REG_ERR` and associated error data is stored in `REG_FLAG`.
+These are errors which are thrown during machine code execution. The error code is stored in `REG_ERR` and associated error m_data is stored in `REG_FLAG`.
 
 | error | REG_FLAG | Description |
 |-|-|-|
