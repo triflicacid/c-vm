@@ -26,6 +26,12 @@ void skip_non_whitespace(const std::string &s, int &i) {
         i++;
 }
 
+void skip_to_break(const std::string &s, int &i) {
+    size_t len = s.length();
+    while (i < len && s[i] != ',' && s[i] != ' ')
+        i++;
+}
+
 void skip_alpha(const std::string &s, int &i) {
     size_t len = s.length();
     while (i < len && std::isalpha(s[i]))

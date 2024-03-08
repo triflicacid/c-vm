@@ -20,7 +20,7 @@ namespace assembler {
 
         ArgumentType get_type() { return m_type; }
 
-        unsigned long long get_data() { return m_data; }
+        [[nodiscard]] unsigned long long get_data() const { return m_data; }
 
         /** Can this argument be used as a literal? */
         bool is_literal();

@@ -5,8 +5,9 @@
 #include <map>
 
 #include "line.h"
-#include "assembler/src/messages/message-list.h"
+#include "../messages/message-list.h"
 #include "constant.h"
+#include "macro.h"
 
 namespace assembler {
     namespace pre_processor {
@@ -15,6 +16,7 @@ namespace assembler {
             bool debug;               // Print debug comments?
             std::vector<Line> lines;  // List of source file lines
             std::map<std::string, Constant> constants; // Map of constant values (%define)
+            std::map<std::string, Macro> macros; // Map of macros
 
             explicit Data(bool debug) {
                 this->debug = debug;

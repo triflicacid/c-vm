@@ -24,6 +24,9 @@ void skip_whitespace(const std::string &s, int &i);
 /** Advance past non-whitespace characters, increment index */
 void skip_non_whitespace(const std::string &s, int &i);
 
+/** Advance past non-break characters: whitespace or comma. */
+void skip_to_break(const std::string &s, int &i);
+
 /** Advance past alpha characters, increment index */
 void skip_alpha(const std::string &s, int &i);
 

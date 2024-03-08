@@ -7,6 +7,6 @@ namespace assembler {
         int n;
         std::string data;
 
-        void print();
+        void print() const;
     };
 }

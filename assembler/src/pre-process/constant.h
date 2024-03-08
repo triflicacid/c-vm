@@ -2,7 +2,7 @@
 
 #include <string>
 
-namespace assembler {
+namespace assembler::pre_processor {
     struct Constant {
         int line;
         int col;

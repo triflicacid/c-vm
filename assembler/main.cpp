@@ -104,7 +104,20 @@ int main(int argc, char **argv) {
         std::cout << "--- Constants ---\n";
 
         for (const auto& pair : data.constants) {
-            std::cout << pair.first << " = '" << pair.second.value << "'\n";
+            std::cout << "%define " << pair.first << " " << pair.second.value << "\n";
+        }
+
+        // Print macros
+        std::cout << "--- Macros ---\n";
+
+        for (const auto& pair : data.macros) {
+            std::cout << "%macro " << pair.first << " ";
+
+            for (const auto& param : pair.second.params) {
+                std::cout << param << " ";
+            }
+
+            std::cout << "(" << pair.second.lines.size() << " lines)\n";
         }
     }
 
