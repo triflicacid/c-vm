@@ -1,7 +1,10 @@
 #include <cstdlib>
 #include <string>
+#include <iostream>
+#include <fstream>
 
-#include "pre-processor.h"
+#include "src/pre-process/pre-processor.h"
+#include "util.h"
 
 int main(int argc, char **argv) {
     char *file_in = nullptr, *file_out = nullptr, *file_postproc = nullptr;
@@ -77,55 +80,45 @@ int main(int argc, char **argv) {
         line.print();
     }
 
+    // Pre-process file
+    if (debug)
+        printf(CONSOLE_GREEN "=== PRE-PROCESSING ===\n" CONSOLE_RESET);
 
-//    // OPEN FILE & SPLIT INTO LINES
-//    if (do_detail) {
-//        printf("Reading source file '%s'\n", file_in);
-//    }
-//    FILE *fp = fopen(file_in, "r");
-//
-//    if (fp == NULL) {
-//        if (debug) {
-//            printf("Cannot open file \"%s\"\n", file_in);
-//        }
-//
-//        err.errc = ASM_FILE_NOT_FOUND;
-//        goto end;
-//    }
-//
-//    if (debug) printf(CONSOLE_GREEN "=== GET LINES ===\n" CONSOLE_RESET);
-//    asm_read_lines(fp, &data, &err);
-//    if (err.errc) goto end;
-//    if (debug) {
-//        printf("--- Source ---\n");
-//        linked_list_print_AsmLine(data.lines);
-//    }
-//
-//    fclose(fp);
-//
-//    // PRE-PROCESS FILE
-//    if (debug) printf(CONSOLE_GREEN "=== PRE-PROCESSING ===\n" CONSOLE_RESET);
-//    asm_preprocess(&data, &err);
-//    if (err.errc) goto end;
-//    if (debug) {
-//        printf("--- Symbols ---\n");
-//        linked_list_print_AsmSymbol(data.symbols);
-//        printf("--- Source ---\n");
-//        linked_list_print_AsmLine(data.lines);
-//    }
-//    if (preproc) {
-//        char *buf;
-//        unsigned long long bytes = asm_write_lines(data.lines, &buf);
-//        --bytes;  // Do not copy null character
-//        fp = fopen(is_file_postproc ? file_postproc : "preproc.asm", "w");
-//        fwrite(buf, bytes, 1, fp);
-//        fclose(fp);
-//        if (do_detail)
-//            printf("Written %llu bytes of post-processed source to %s\n", bytes,
-//                   is_file_postproc ? file_postproc : "preproc.asm");
-//        free(buf);
-//    }
-//
+    assembler::pre_process(&data, &err);
+
+    if (err) {
+        if (do_detail)
+            err->print();
+
+        goto end;
+    }
+
+    if (debug) {
+        // TODO
+    }
+
+    // Write post-processed content to file?
+    if (file_postproc) {
+        std::ofstream file(file_postproc);
+
+        if (!file.good()) {
+            if (data.debug) {
+                std::cout << "Failed to open file " << file_postproc << "\n";
+            }
+
+            goto end;
+        }
+
+        // Write post-processed content to the output stream
+        std::string content = data.write_lines();
+        file << content;
+        file.close();
+
+        if (data.debug) {
+            std::cout << "Written " << content.size() << " bytes of post-processed source to " << file_postproc << "\n";
+        }
+    }
+
 //    // PARSE LINES
 //    if (debug) printf(CONSOLE_GREEN "=== PARSING ===\n" CONSOLE_RESET);
 //    asm_parse(&data, &err);

@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.6)
 project(assembler LANGUAGES C CXX)
 
-file(GLOB_RECURSE src "../util/*.c" "src/*.cpp")
+file(GLOB_RECURSE src "../util/*.c" "../util/*.cpp" "src/*.cpp")
 
 include_directories("src")
 
