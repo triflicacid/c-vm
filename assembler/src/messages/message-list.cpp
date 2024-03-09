@@ -40,4 +40,8 @@ namespace assembler {
     void MessageList::add(Message *message) {
         messages.push_back(message);
     }
+
+    void MessageList::append(MessageList &other) {
+        messages.insert(messages.end(), other.messages.begin(), other.messages.end());
+    }
 }

@@ -2,6 +2,7 @@
 
 #include <string>
 #include <vector>
+#include <filesystem>
 
 namespace assembler {
     enum MessageLevel {
@@ -14,6 +15,7 @@ namespace assembler {
     private:
         int m_line;
         int m_col;
+        std::filesystem::path m_file;
         MessageLevel m_type;
 
         /** Print varying type line e.g., 'ERROR!' */
@@ -22,7 +24,7 @@ namespace assembler {
     public:
         std::string m_msg;
 
-        Message(MessageLevel level, int line, int col);
+        Message(MessageLevel level, std::filesystem::path filename, int line, int col);
 
         MessageLevel get_level() { return m_type; }
 

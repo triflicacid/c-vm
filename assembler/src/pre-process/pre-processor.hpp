@@ -3,16 +3,18 @@
 #include <string>
 #include <vector>
 #include <map>
+#include <filesystem>
 
 #include "line.hpp"
 #include "../messages/message-list.hpp"
 #include "constant.pph"
 #include "macro.hpp"
 
+
 namespace assembler {
     namespace pre_processor {
         struct Data {
-            std::string file_name;    // Name of source file
+            std::filesystem::path file_path;  // Name of source file
             bool debug;               // Print debug comments?
             std::vector<Line> lines;  // List of source file lines
             std::map<std::string, Constant> constants; // Map of constant values (%define)
@@ -24,6 +26,9 @@ namespace assembler {
 
             /** Writes `lines` to buffer. */
             std::string write_lines();
+
+            /** Merge given data with this. Insert lines starting at `index`. */
+            void merge(struct Data &other, int line_index = -1);
         };
     }
 

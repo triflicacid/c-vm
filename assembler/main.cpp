@@ -7,7 +7,6 @@
 #include "src/messages/message-list.hpp"
 #include "util.h"
 
-/** Handles message list actions. Return if contains an error. */
 bool handle_messages(assembler::MessageList& list, bool print) {
     if (print)
         list.for_each_message([] (assembler::Message &msg) {

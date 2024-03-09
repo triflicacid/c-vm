@@ -22,7 +22,7 @@ namespace assembler {
         ErrorType m_type;
 
     public:
-        Error(int line, int col, assembler::ErrorType err);
+        Error(std::filesystem::path file, int line, int col, assembler::ErrorType err);
 
         ErrorType get_error() { return m_type; }
     };

@@ -31,5 +31,8 @@ namespace assembler {
 
         /** Go through each message, calling the given function on it. Only include messages which meet the minimum level. **/
         void for_each_message(const std::function<void(Message&)>& func, MessageLevel min_level) const;
+
+        /** Merge given list into this (append). */
+        void append(MessageList &other);
     };
 }
