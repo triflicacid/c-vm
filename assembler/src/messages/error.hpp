@@ -13,6 +13,7 @@ namespace assembler {
         UnknownLabel,
         InvalidLabel,
         FileNotFound,
+        CircularInclude,
         Internal = 10,
         Opcode,
     };

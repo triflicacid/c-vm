@@ -4,6 +4,8 @@
 #include <vector>
 #include <filesystem>
 
+#include "../pre-process/location-info.hpp"
+
 namespace assembler {
     enum MessageLevel {
         Note,
@@ -25,6 +27,8 @@ namespace assembler {
         std::string m_msg;
 
         Message(MessageLevel level, std::filesystem::path filename, int line, int col);
+
+        Message(MessageLevel level, const pre_processor::LocationInformation &loc);
 
         MessageLevel get_level() { return m_type; }
 

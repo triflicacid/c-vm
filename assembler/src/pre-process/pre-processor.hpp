@@ -3,12 +3,14 @@
 #include <string>
 #include <vector>
 #include <map>
+#include <set>
 #include <filesystem>
 
 #include "line.hpp"
 #include "../messages/message-list.hpp"
 #include "constant.pph"
 #include "macro.hpp"
+#include "location-info.hpp"
 
 
 namespace assembler {
@@ -19,6 +21,7 @@ namespace assembler {
             std::vector<Line> lines;  // List of source file lines
             std::map<std::string, Constant> constants; // Map of constant values (%define)
             std::map<std::string, Macro> macros; // Map of macros
+            std::map<std::filesystem::path, LocationInformation> included_files; // Maps included files to where they were included
 
             explicit Data(bool debug) {
                 this->debug = debug;

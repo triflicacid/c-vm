@@ -186,8 +186,26 @@ namespace assembler {
                             std::cout << "\tNew base directory '" + full_path.parent_path().string() + "'\n";
                         }
 
+                        // Check if the file has already been included
+                        auto canonical_path = std::filesystem::canonical(full_path);
+                        auto circular_include = data.included_files.find(canonical_path);
+
+                        if (circular_include != data.included_files.end()) {
+                            Message *msg = new class Error(data.file_path, line.n, i, ErrorType::CircularInclude);
+                            msg->m_msg = "Circular %include: " + full_path.string();
+                            msgs.add(msg);
+
+                            msg = new Message(MessageLevel::Note, circular_include->second);
+                            msg->m_msg = "File " + canonical_path.string() + " previously included here";
+                            msgs.add(msg);
+
+                            return;
+                        }
+
                         // Set-up pre-processing data
                         pre_processor::Data include_data(data.debug);
+                        include_data.included_files.insert(data.included_files.begin(), data.included_files.end());
+                        include_data.included_files.insert({ canonical_path, { data.file_path, line.n, i } });
                         MessageList include_messages;
 
                         // Read included file

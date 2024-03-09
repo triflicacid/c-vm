@@ -13,6 +13,13 @@ namespace assembler {
         m_file = std::move(filename);
     }
 
+    Message::Message(MessageLevel level, const pre_processor::LocationInformation& loc) {
+        m_type = level;
+        m_line = loc.line;
+        m_col = loc.col;
+        m_file = loc.file;
+    }
+
     void Message::print_type_suffix() {
         switch (m_type) {
             case MessageLevel::Note:
