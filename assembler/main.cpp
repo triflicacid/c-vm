@@ -4,16 +4,18 @@
 #include <fstream>
 
 #include "src/pre-process/pre-processor.hpp"
-#include "src/messages/message-list.hpp"
+#include "src/messages/list.hpp"
 #include "util.h"
+#include "data.hpp"
+#include "parser.hpp"
 
-bool handle_messages(assembler::MessageList& list, bool print) {
+bool handle_messages(assembler::message::List& list, bool print) {
     if (print)
-        list.for_each_message([] (assembler::Message &msg) {
+        list.for_each_message([] (assembler::message::Message &msg) {
             msg.print();
         });
 
-    bool is_error = list.has_message_of(assembler::MessageLevel::Error);
+    bool is_error = list.has_message_of(assembler::message::Level::Error);
 
     list.clear();
 
@@ -73,14 +75,14 @@ int main(int argc, char **argv) {
     }
 
     // Set-up pre-processing data
-    assembler::pre_processor::Data data(debug);
-    assembler::MessageList messages;
+    assembler::pre_processor::Data pre_data(debug);
+    assembler::message::List messages;
 
     // Read source file into lines
     if (do_detail)
         printf("Reading source file '%s'\n", file_in);
 
-    assembler::read_source_file(file_in, data, messages);
+    assembler::read_source_file(file_in, pre_data, messages);
 
     // Check if error
     if (handle_messages(messages, do_detail)) {
@@ -91,7 +93,7 @@ int main(int argc, char **argv) {
     if (debug)
         printf(CONSOLE_GREEN "=== PRE-PROCESSING ===\n" CONSOLE_RESET);
 
-    assembler::pre_process(data, messages);
+    assembler::pre_process(pre_data, messages);
 
     // Check if error
     if (handle_messages(messages, do_detail)) {
@@ -102,14 +104,14 @@ int main(int argc, char **argv) {
         // Print constants
         std::cout << "--- Constants ---\n";
 
-        for (const auto& pair : data.constants) {
+        for (const auto& pair : pre_data.constants) {
             std::cout << "%define " << pair.first << " " << pair.second.value << "\n";
         }
 
         // Print macros
         std::cout << "--- Macros ---\n";
 
-        for (const auto& pair : data.macros) {
+        for (const auto& pair : pre_data.macros) {
             std::cout << "%macro " << pair.first << " ";
 
             for (const auto& param : pair.second.params) {
@@ -125,7 +127,7 @@ int main(int argc, char **argv) {
         std::ofstream file(file_postproc);
 
         if (!file.good()) {
-            if (data.debug) {
+            if (pre_data.debug) {
                 std::cout << "Failed to open file " << file_postproc << "\n";
             }
 
@@ -133,7 +135,7 @@ int main(int argc, char **argv) {
         }
 
         // Write post-processed content to the output stream
-        std::string content = data.write_lines();
+        std::string content = pre_data.write_lines();
         file << content;
         file.close();
 
@@ -142,8 +144,29 @@ int main(int argc, char **argv) {
         }
     }
 
-//    // PARSE LINES
-//    if (debug) printf(CONSOLE_GREEN "=== PARSING ===\n" CONSOLE_RESET);
+    // Construct data structure for parsing
+    assembler::Data data(pre_data);
+
+    // Parse pre-processed lines
+    if (debug)
+        printf(CONSOLE_GREEN "=== PARSING ===\n" CONSOLE_RESET);
+
+    assembler::parser::parse(data, messages);
+
+    // Check if error
+    if (handle_messages(messages, do_detail)) {
+        return EXIT_FAILURE;
+    }
+
+    if (debug) {
+        // Print chunks
+        std::cout << "--- Chunks ---\n";
+
+        for (const auto& chunk : data.chunks) {
+            chunk->print();
+        }
+    }
+
 //    asm_parse(&data, &err);
 //    if (err.errc) goto end;
 //    if (debug) {

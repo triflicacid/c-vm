@@ -96,33 +96,10 @@ void print_bytes(const void *data, unsigned int length);
  * print `BBBBBBBB BBBBBBBB BBBBBBBB BBBBBBBB` */
 void print_bin(const void *data, unsigned int length);
 
-/** Print seqence of characters */
+/** Print sequence of characters */
 void print_chars(const char *data, unsigned int chars);
 
-/** Given a radix suffix, return integer radix. Return -1 if invalid radix. */
-int get_radix(char suffix);
-
-/** Given a string input containing a number of base "radix", return index where
- * number ends. */
-int scan_number(const char *string, int radix);
-
-/** Integer Base to double */
-unsigned long long base_to_10(const char *string, int radix);
-
-/** Float Base to double */
-double fbase_to_10(const char *string, int radix);
-
-/** Decode escape sequence '\...'. Pass in pointer. Return character extracted
- * (or -1), and adjust pointer. */
-long long decode_escape_seq(char **ptr);
-
 /** Byte array to integer (little-endian) */
-T_u64 bytes_to_int(char *ptr, int len);
-
-/** Get substring. REMEMBER to free() the returned pointer. */
-char *extract_string(const char *string, unsigned int start, unsigned int len);
-
-/** Return is valid label name: [A-Za-z][0-9A-Za-z]* */
-int is_valid_label_name(int len, const char *label);
+T_u64 bytes_to_int(const char *ptr, int len);
 
 #endif

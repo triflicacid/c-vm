@@ -5,8 +5,8 @@
 
 #include "message.hpp"
 
-namespace assembler {
-    class MessageList {
+namespace assembler::message {
+    class List {
     private:
         std::vector<Message *> messages;
 
@@ -21,18 +21,18 @@ namespace assembler {
         void add(Message *message);
 
         /** Return whether we contain a message of the given type. */
-        bool has_message_of(MessageLevel level);
+        bool has_message_of(Level level);
 
         /** Get first message with the given level. */
-        Message *get_message(MessageLevel level);
+        Message *get_message(Level level);
 
         /** Go through each message, calling the given function on it **/
         void for_each_message(const std::function<void(Message&)>& func) const;
 
         /** Go through each message, calling the given function on it. Only include messages which meet the minimum level. **/
-        void for_each_message(const std::function<void(Message&)>& func, MessageLevel min_level) const;
+        void for_each_message(const std::function<void(Message&)>& func, Level min_level) const;
 
         /** Merge given list into this (append). */
-        void append(MessageList &other);
+        void append(List &other);
     };
 }

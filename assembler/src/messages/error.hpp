@@ -4,7 +4,7 @@
 #include <vector>
 #include "message.hpp"
 
-namespace assembler {
+namespace assembler::message {
     enum ErrorType {
         Syntax = 1,
         UnknownMnemonic,
@@ -23,7 +23,7 @@ namespace assembler {
         ErrorType m_type;
 
     public:
-        Error(std::filesystem::path file, int line, int col, assembler::ErrorType err);
+        Error(std::filesystem::path file, int line, int col, ErrorType err);
 
         ErrorType get_error() { return m_type; }
     };

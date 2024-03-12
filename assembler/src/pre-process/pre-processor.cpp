@@ -1,46 +1,21 @@
 #include "pre-processor.hpp"
-extern "C" {
-#include "util.h"
-}
 #include "util.hpp"
 #include "messages/error.hpp"
 
 #include <string>
 #include <vector>
 #include <fstream>
-#include <sstream>
 #include <iostream>
 #include <filesystem>
+#include "data.hpp"
 
 namespace assembler {
-    std::string pre_processor::Data::write_lines() {
-        std::stringstream stream;
-
-        for (const auto& line : lines) {
-            stream << line.data << '\n';
-        }
-
-        return stream.str();
-    }
-
-    void pre_processor::Data::merge(pre_processor::Data &other, int line_index) {
-        // Merge lines
-        auto lines_ptr = line_index < 0 ? (lines.end() - 1 + line_index) : (lines.begin() + line_index);
-        lines.insert(lines_ptr, other.lines.begin(), other.lines.end());
-
-        // Merge constants
-        constants.insert(other.constants.begin(), other.constants.end());
-
-        // Merge macros
-        macros.insert(other.macros.begin(), other.macros.end());
-    }
-
-    void read_source_file(const std::string& filename, pre_processor::Data &data, MessageList &msgs) {
+    void read_source_file(const std::string& filename, pre_processor::Data &data, message::List &msgs) {
         std::ifstream file(filename);
 
         // Check if the file exists
         if (!file.good()) {
-            auto *error = new class Error(data.file_path, 0, -1, ErrorType::FileNotFound);
+            auto *error = new class message::Error(data.file_path, 0, -1, message::ErrorType::FileNotFound);
             error->m_msg = "Cannot read file " + filename;
             msgs.add(error);
             return;
@@ -62,7 +37,7 @@ namespace assembler {
         file.close();
     }
 
-    void pre_process(pre_processor::Data &data, MessageList &msgs) {
+    void pre_process(pre_processor::Data &data, message::List &msgs) {
         // Keep track of the current macro (if nullptr we are not in a macro definition)
         std::pair<std::string, pre_processor::Macro> *current_macro = nullptr;
 
@@ -119,7 +94,7 @@ namespace assembler {
 
                         current_macro = nullptr;
                     } else {
-                        auto error = new class Error(data.file_path, line.n, 0, ErrorType::UnknownDirective);
+                        auto error = new class message::Error(data.file_path, line.n, 0, message::ErrorType::UnknownDirective);
                         error->m_msg = "Unknown/invalid directive in %macro body: %" + directive;
                         msgs.add(error);
                         return;
@@ -152,7 +127,7 @@ namespace assembler {
 
                         if (exists != data.constants.end()) {
                             // Warn user of potential mishap
-                            auto *msg = new Message(MessageLevel::Warning, data.file_path, line.n, j);
+                            auto *msg = new message::Message(message::Level::Warning, data.file_path, line.n, j);
                             msg->m_msg = "Re-definition of constant " + constant + " (previously defined at "
                                          + std::to_string(exists->second.line) + ':' + std::to_string(exists->second.col) + ')';
                             msgs.add(msg);
@@ -191,11 +166,11 @@ namespace assembler {
                         auto circular_include = data.included_files.find(canonical_path);
 
                         if (circular_include != data.included_files.end()) {
-                            Message *msg = new class Error(data.file_path, line.n, i, ErrorType::CircularInclude);
+                            message::Message *msg = new class message::Error(data.file_path, line.n, i, message::ErrorType::CircularInclude);
                             msg->m_msg = "Circular %include: " + full_path.string();
                             msgs.add(msg);
 
-                            msg = new Message(MessageLevel::Note, circular_include->second);
+                            msg = new message::Message(message::Level::Note, circular_include->second);
                             msg->m_msg = "File " + canonical_path.string() + " previously included here";
                             msgs.add(msg);
 
@@ -206,12 +181,12 @@ namespace assembler {
                         pre_processor::Data include_data(data.debug);
                         include_data.included_files.insert(data.included_files.begin(), data.included_files.end());
                         include_data.included_files.insert({ canonical_path, { data.file_path, line.n, i } });
-                        MessageList include_messages;
+                        message::List include_messages;
 
                         // Read included file
                         read_source_file(full_path.string(), include_data, include_messages);
 
-                        if (include_messages.has_message_of(MessageLevel::Error)) {
+                        if (include_messages.has_message_of(message::Level::Error)) {
                             msgs.append(include_messages);
                             return;
                         }
@@ -219,7 +194,7 @@ namespace assembler {
                         // Pre-process included file
                         pre_process(include_data, include_messages);
 
-                        if (include_messages.has_message_of(MessageLevel::Error)) {
+                        if (include_messages.has_message_of(message::Level::Error)) {
                             msgs.append(include_messages);
                             return;
                         }
@@ -238,12 +213,12 @@ namespace assembler {
                         std::string macro_name = line.data.substr(j, i - j);
 
                         if (data.debug) {
-                            std::cout << "\tName: " << macro_name << "; Args: ";
+                            std::cout << "\tName: '" << macro_name << "'; Args: ";
                         }
 
                         // Check if name is valid
-                        if (!is_valid_label_name((int) macro_name.size(), macro_name.c_str())) {
-                            auto error = new class Error(data.file_path, line.n, 0, ErrorType::InvalidLabel);
+                        if (!is_valid_label_name(macro_name)) {
+                            auto error = new class message::Error(data.file_path, line.n, 0, message::ErrorType::InvalidLabel);
                             error->m_msg = "Invalid macro name \"" + macro_name + "\"";
                             msgs.add(error);
                             return;
@@ -254,7 +229,7 @@ namespace assembler {
 
                         if (macro_exists != data.macros.end()) {
                             // Warn user of potential mishap
-                            auto *msg = new Message(MessageLevel::Warning, data.file_path, line.n, j);
+                            auto *msg = new message::Message(message::Level::Warning, data.file_path, line.n, j);
                             msg->m_msg = "Re-definition of macro " + macro_name + " (previously defined at "
                                     + std::to_string(macro_exists->second.line) + ':' + std::to_string(macro_exists->second.col) + ')';
                             msgs.add(msg);
@@ -279,12 +254,12 @@ namespace assembler {
                             std::string parameter = line.data.substr(j, i - j);
 
                             // Check if name is valid
-                            if (!is_valid_label_name((int) parameter.size(), parameter.c_str())) {
-                                Message *msg = new class Error(data.file_path, line.n, 0, ErrorType::InvalidLabel);
+                            if (!is_valid_label_name(parameter)) {
+                                message::Message *msg = new class message::Error(data.file_path, line.n, 0, message::ErrorType::InvalidLabel);
                                 msg->m_msg = "Invalid parameter name \"" + parameter + "\"";
                                 msgs.add(msg);
 
-                                msg = new Message(MessageLevel::Note, data.file_path, line.n, macro_name_index);
+                                msg = new message::Message(message::Level::Note, data.file_path, line.n, macro_name_index);
                                 msg->m_msg = "In definition of macro \"" + macro_name + "\"";
                                 msgs.add(msg);
 
@@ -295,11 +270,11 @@ namespace assembler {
                             auto param_exists = std::find(macro_params.begin(), macro_params.end(), parameter);
 
                             if (param_exists != macro_params.end()) {
-                                Message *msg = new class Error(data.file_path, line.n, j, ErrorType::InvalidLabel);
+                                message::Message *msg = new class message::Error(data.file_path, line.n, j, message::ErrorType::InvalidLabel);
                                 msg->m_msg = "Duplicate parameter \"" + parameter + "\"";
                                 msgs.add(msg);
 
-                                msg = new Message(MessageLevel::Note, data.file_path, line.n, macro_name_index);
+                                msg = new message::Message(message::Level::Note, data.file_path, line.n, macro_name_index);
                                 msg->m_msg = "In definition of macro \"" + macro_name + "\"";
                                 msgs.add(msg);
 
@@ -348,7 +323,7 @@ namespace assembler {
 
                         break;
                     } else {
-                        auto error = new class Error(data.file_path, line.n, 0, ErrorType::UnknownDirective);
+                        auto error = new class message::Error(data.file_path, line.n, 0, message::ErrorType::UnknownDirective);
                         error->m_msg = "Unknown directive %" + directive;
                         msgs.add(error);
                         return;
@@ -441,12 +416,12 @@ namespace assembler {
 
                 // Check that argument sizes match
                 if (macro_exists->second.params.size() != arguments.size()) {
-                    Message *msg = new class Error(data.file_path, line.n, (int) mnemonic.size(), ErrorType::BadArguments);
+                    message::Message *msg = new class message::Error(data.file_path, line.n, (int) mnemonic.size(), message::ErrorType::BadArguments);
                     msg->m_msg = "Macro " + mnemonic + " expects " + std::to_string(macro_exists->second.params.size())
                             + " argument(s), received " + std::to_string(arguments.size());
                     msgs.add(msg);
 
-                    msg = new Message(MessageLevel::Note, data.file_path, macro_exists->second.line, macro_exists->second.col);
+                    msg = new message::Message(message::Level::Note, data.file_path, macro_exists->second.line, macro_exists->second.col);
                     msg->m_msg = "Macro \"" + mnemonic + "\" defined here";
                     msgs.add(msg);
 

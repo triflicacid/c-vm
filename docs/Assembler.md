@@ -23,13 +23,13 @@ If one or more instances of `-d`, further detail will be printed to the console.
 |------|---------------------|-------------------------------------------------------------------|
 | 0    | `OK`                | Success; no error.                                                |
 | 1    | `ERR_SYNTAX`        | Generic syntax error. See detailed output.                        | 
-| 2    | `ERR_MNEMONIC`      | Unknown mnemonic.                                                 |
-| 3    | `ERR_BAD_ARGS`      | Unknown argument combination for the mnemonic.                    |
+| 2    | `ERR_MNEMONIC`      | Unknown m_mnemonic.                                                 |
+| 3    | `ERR_BAD_ARGS`      | Unknown argument combination for the m_mnemonic.                    |
 | 4    | `ERR_DIRECTIVE`     | Syntax error: unknown directive.                                  |
 | 5    | `ERR_UNKNOWN_LABEL` | Reference to unknown label (label not defined).                   |
 | 6    | `ERR_INVALID_LABEL` | Invalid label (invalid name or shadows main label/register name). |
 | 10   | `ERR_INTERNAL`      | [*internal*] Generic internal error.                              |
-| 11   | `ERR_OPCODE`        | [*internal*] Unknown opcode when compiling.                       |
+| 11   | `ERR_OPCODE`        | [*internal*] Unknown m_opcode when compiling.                       |
 | 12   | `ERR_CHUNK`         | [*internal*] Chunk collision error.                               |
 
 Note: *internal* errors should not occur and are used for debug purposes only.
@@ -51,7 +51,7 @@ The assembler works in the current way:
 
 Assembly source files are read line-by-line, and have the following general syntax:
 ```
-[label:] [mnemonic [...args]] [; Comment]
+[label:] [m_mnemonic [...args]] [; Comment]
 ```
 
 Trailing whitespace is removed, and blank/empty lines are ignored. Lines may also begin with directives which are handles by the pre-processor.
@@ -61,14 +61,14 @@ Labels come in the form `label:`
 
 Code execution starts at the special label `main`.
 
-If `mnemonic` is one of `u8, u16, u32, u64, f32, f64`, this is a m_data constant.
+If `m_mnemonic` is one of `u8, u16, u32, u64, f32, f64`, this is a m_data constant.
   - `args` is a comma- or space-seperated list of constants. If no `args` are provided, insert a `0`.
     - `...[r]` - Numeric constants. These may be followed by a radix suffix `r`.  
     - `'...'` - Character constants
     - `"..."` - String constants
-  - The mnemonic specifies the m_type of each item. Each item is written to the output with this m_type. In the case of strings, each character in said string has this m_type.
+  - The m_mnemonic specifies the m_type of each item. Each item is written to the output with this m_type. In the case of strings, each character in said string has this m_type.
 
-Instructions come in the form `mnemonic [...args]` where the arguments consist of a comma-seperated list of:
+Instructions come in the form `m_mnemonic [...args]` where the arguments consist of a comma-seperated list of:
   - `nnn`, where `nnn` is a number, represents a **literal**
     - Data m_type defaults to `i64`. If a decimal point is present, the m_data m_type defaults to `f64`.
   - `[nnn]`, where `nnn` is a number, represents an **address**
@@ -120,8 +120,8 @@ mov NUMBER, r0
 -->
 mov 123, r0
 ``` 
-- `%macro [NAME] <params, ...>` - defines a macro, which is an expandable block of instructions, with the following name. You may provide a list of arguments. All source lines after `%macro` are considered part of the macro's body and **cannot** be more directives -- only `%end` is permitted, which will terminate the macro body.
-After definition, when `NAME` is encountered in the `mnemonic` position, supplied arguments are passed to the parameters `<params, ...>`. Any instances of a parameter is replaced by its respective argument in the macro's body. The original line is removed and the modified macro's body is "pasted" in.
+- `%macro [NAME] <m_params, ...>` - defines a macro, which is an expandable block of instructions, with the following name. You may provide a list of arguments. All source lines after `%macro` are considered part of the macro's body and **cannot** be more directives -- only `%end` is permitted, which will terminate the macro body.
+After definition, when `NAME` is encountered in the `m_mnemonic` position, supplied arguments are passed to the parameters `<m_params, ...>`. Any instances of a parameter is replaced by its respective argument in the macro's body. The original line is removed and the modified macro's body is "pasted" in.
 ```
 %macro print_int reg
     mov reg, r1

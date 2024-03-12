@@ -32,7 +32,7 @@ Path: `processor/src/`.
 - `cpu.c`. Functions for creating a CPU, memory and register I/O etc...
 - `err.h`. Defines error-code constants for `cpu.err`
 - `err.c`. Functions for printing errors from `cpu.err`
-- `fetch-exec.h`. Defines MACROs for various opcode-operations
+- `fetch-exec.h`. Defines MACROs for various m_opcode-operations
 - `fetch-exec.c`. Functions for fetching and executing opcodes
 - `opcodes.h`. Defines constants for opcodes
 

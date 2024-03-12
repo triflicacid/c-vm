@@ -2,7 +2,6 @@
 extern "C" {
 #include "util.h"
 }
-#include "instruction.hpp"
 
 #include <iostream>
 #include <vector>
@@ -12,7 +11,7 @@ namespace assembler {
         if (is_data) {
             free(data);
         } else {
-            ((Instruction *) data)->~Instruction();
+            get_instruction()->~Instruction();
         }
     }
 
@@ -26,7 +25,7 @@ namespace assembler {
             std::cout << "\b}\n";
         } else {
             std::cout << " - instruction:\n\t";
-            ((Instruction *) data)->print();
+            get_instruction()->print();
         }
     }
 
@@ -41,5 +40,11 @@ namespace assembler {
         }
 
         return -1;
+    }
+
+    void Chunk::set_instruction(instruction::Instruction *instruction) {
+        is_data = false;
+        bytes = instruction->bytes;
+        data = instruction;
     }
 }

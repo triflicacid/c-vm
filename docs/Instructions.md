@@ -1,7 +1,7 @@
 # Instructions
 
 Below is the full list of instructions supported by the assembler.
-(See `processor/src/opcodes.h` for the list of opcode numerical constants)
+(See `processor/src/opcodes.h` for the list of m_opcode numerical constants)
 
 **IMPORTANT** The CCR has been removed.
 
@@ -132,15 +132,6 @@ Below is the full list of instructions supported by the assembler.
 | pop64    | OP_POP64_REGPTR      | `<regptr: u8>`                                    | Pop 64-bit value from the stack and load into address in register                                             | `pop64 [r1]`            | `----` |
 | pop      | OP_POPN_REGPTR       | `<bytes: u8>`, `<regptr: u8>`                     | Pop n-byte value from the stack and load into address in register                                             | `pop 12, [r1]`          | `----` |
 | pop      | OP_POPN_MEM          | `<bytes: u8>`, `<addr: uword>`                    | Pop n-byte value from the stack and load into address                                                         | `pop 12, [100]`         | `----` |
-| prc      | OP_PRINT_CHARS_MEM   | `<bytes: u8>`, `<addr: uword>`                    | Print n-bytes as ASCII characters to STDOUT from an address                                                   | `prc 12, [100]`         | `----` |
-| prc      | OP_PRINT_CHARS_REG   | `<reg: u8>`                                       | Print bytes as ASCII characters to STDOUT from a register until a NULL byte is encountered                    | `prc r1`                | `----` |
-| prb      | OP_PRINT_BIN_MEM     | `<bytes: u8>`, `<addr: uword>`                    | Print n-bytes as binary to STDOUT from an address                                                             | `prb 12, [100]`         | `----` |
-| prb      | OP_PRINT_BIN_REG     | `<reg: u8>`                                       | Print bytes as binary to STDOUT from a register                                                               | `prb r1`                | `----` |
-| prd      | OP_PRINT_DBL_REG     | `<reg: u8>`                                       | Print contents of register as a double (f64)                                                                  | `prd r1`                | `----` |
-| prh      | OP_PRINT_HEX_MEM     | `<bytes: u8>`, `<addr: uword>`                    | Print n-bytes as hexadecimal to STDOUT from an address                                                        | `prh 12, [100]`         | `----` |
-| prh      | OP_PRINT_HEX_REG     | `<reg: u8>`                                       | Print bytes as hexadecimal to STDOUT from a register until a NULL byte is encountered                         | `prh r1`                | `----` |
-| pri      | OP_PRINT_INT_REG     | `<reg: u8>`                                       | Print contents of register as an integer (i64)                                                                | `pri r1`                | `----` |
-| pru      | OP_PRINT_UINT_REG    | `<reg: u8>`                                       | Print contents of register as an unsigned integer (u64)                                                       | `pru r1`                | `----` |
 | psh      | OP_PUSH_LIT          | `<lit: word>`                                     | Push a literal onto the stack                                                                                 | `psh 101`               | `----` |
 | psh8     | OP_PUSH8_LIT         | `<lit: u8>`                                       | Push an 8-bit literal onto the stack                                                                          | `psh8 101`              | `----` |
 | psh16    | OP_PUSH16_LIT        | `<lit: u16>`                                      | Push a 16-bit literal onto the stack                                                                          | `psh16 101`             | `----` |

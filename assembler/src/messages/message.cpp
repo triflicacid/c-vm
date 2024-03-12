@@ -5,15 +5,15 @@
 #include "message.hpp"
 #include "util.h"
 
-namespace assembler {
-    Message::Message(MessageLevel level, std::filesystem::path filename, int line, int col) {
+namespace assembler::message {
+    Message::Message(Level level, std::filesystem::path filename, int line, int col) {
         m_type = level;
         m_line = line;
         m_col = col;
         m_file = std::move(filename);
     }
 
-    Message::Message(MessageLevel level, const pre_processor::LocationInformation& loc) {
+    Message::Message(Level level, const pre_processor::LocationInformation& loc) {
         m_type = level;
         m_line = loc.line;
         m_col = loc.col;
@@ -22,13 +22,13 @@ namespace assembler {
 
     void Message::print_type_suffix() {
         switch (m_type) {
-            case MessageLevel::Note:
+            case Level::Note:
                 std::cout << CONSOLE_BLUE "NOTE" CONSOLE_RESET;
                 break;
-            case MessageLevel::Warning:
+            case Level::Warning:
                 std::cout << CONSOLE_YELLOW "WARN" CONSOLE_RESET;
                 break;
-            case MessageLevel::Error:
+            case Level::Error:
                 std::cout << CONSOLE_RED "ERROR!" CONSOLE_RESET;
                 break;
         }

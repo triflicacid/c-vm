@@ -6,8 +6,8 @@
 
 #include "../pre-process/location-info.hpp"
 
-namespace assembler {
-    enum MessageLevel {
+namespace assembler::message {
+    enum Level {
         Note,
         Warning,
         Error
@@ -18,7 +18,7 @@ namespace assembler {
         int m_line;
         int m_col;
         std::filesystem::path m_file;
-        MessageLevel m_type;
+        Level m_type;
 
         /** Print varying type line e.g., 'ERROR!' */
         void print_type_suffix();
@@ -26,11 +26,11 @@ namespace assembler {
     public:
         std::string m_msg;
 
-        Message(MessageLevel level, std::filesystem::path filename, int line, int col);
+        Message(Level level, std::filesystem::path filename, int line, int col);
 
-        Message(MessageLevel level, const pre_processor::LocationInformation &loc);
+        Message(Level level, const pre_processor::LocationInformation &loc);
 
-        MessageLevel get_level() { return m_type; }
+        Level get_level() { return m_type; }
 
         void print();
     };
