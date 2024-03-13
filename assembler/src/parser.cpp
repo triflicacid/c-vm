@@ -163,17 +163,17 @@ namespace assembler::parser {
             chunk->set_instruction(instruction);
 
             data.chunks.push_back(chunk);
-            offset += chunk->bytes;
+            offset += chunk->get_bytes();
         }
 
         // Check if any labels left...
         for (auto chunk : data.chunks) {
-            if (!chunk->is_data) {
+            if (!chunk->is_data()) {
                 auto instruction = chunk->get_instruction();
 
                 for (auto & arg : instruction->args) {
                     if (arg.is_label()) {
-                        auto line = data.lines[chunk->source_line];
+                        auto line = data.lines[chunk->get_source_line()];
 
                         auto err = new class message::Error(data.file_path, line.n, 0, message::ErrorType::UnknownLabel);
                         err->set_message("Unresolved label reference '" + *arg.get_label() + "'");

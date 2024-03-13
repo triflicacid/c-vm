@@ -7,21 +7,27 @@ extern "C" {
 #include <vector>
 
 namespace assembler {
-    Chunk::~Chunk() {
-        if (is_data) {
-            free(data);
-        } else {
-            get_instruction()->~Instruction();
+    void Chunk::free_ptr() const {
+        if (m_ptr != nullptr) {
+            if (m_is_data) {
+                delete get_data();
+            } else {
+                delete get_instruction();
+            }
         }
     }
 
-    void Chunk::print() const {
-        std::cout << "Chunk at +" << offset << " of " << bytes << " bytes";
+    Chunk::~Chunk() {
+        free_ptr();
+    }
 
-        if (is_data) {
+    void Chunk::print() const {
+        std::cout << "Chunk at +" << m_offset << " of " << m_bytes << " bytes";
+
+        if (m_is_data) {
             printf(" - data:\n\t{");
             std::cout << " - data:\n\t{";
-            print_bytes(data, bytes);
+            print_bytes(m_ptr, m_bytes);
             std::cout << "\b}\n";
         } else {
             std::cout << " - instruction:\n\t";
@@ -32,7 +38,7 @@ namespace assembler {
     int Chunk::get_in_range(const std::vector<Chunk>& chunks, int lower, int upper) {
         int idx = 0;
         for (const Chunk& chunk : chunks) {
-            if (chunk.offset <= upper && chunk.offset + chunk.bytes > lower) {
+            if (chunk.m_offset <= upper && chunk.m_offset + chunk.m_bytes > lower) {
                 return idx;
             }
 
@@ -43,14 +49,24 @@ namespace assembler {
     }
 
     void Chunk::set_instruction(instruction::Instruction *instruction) {
-        is_data = false;
-        bytes = instruction->get_bytes();
-        data = instruction;
+        free_ptr();
+
+        m_is_data = false;
+        m_bytes = instruction->get_bytes();
+        m_ptr = instruction;
+    }
+
+    void Chunk::set_data(std::vector<unsigned char> *data) {
+        free_ptr();
+
+        m_is_data = true;
+        m_bytes = (int) data->size();
+        m_ptr = data;
     }
 
     void Chunk::write(std::ostream &out) const {
-        if (is_data) {
-            out.write((char *) data, bytes);
+        if (m_is_data) {
+            out.write((char *) m_ptr, m_bytes);
         } else {
             get_instruction()->write(out);
         }
