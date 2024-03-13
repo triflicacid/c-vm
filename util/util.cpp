@@ -229,12 +229,13 @@ double float_base_to_10(const std::string& string, int radix, int &index) {
     int length = 0;
     bool found_dp = false;
 
-    while (i < string.size() && (string[i] == '_' || is_base_char(string[i], radix) || (!found_dp && string[i] == '.'))) {
-        if (string[i] != '_' && i != 0)
-            k *= radix;
-
-        if (string[i] == '.')
-            found_dp = true;
+    while (i < string.size() && (string[i] == '_' || (!found_dp && string[i] == '.') || is_base_char(string[i], radix))) {
+        if (!found_dp) {
+            if (string[i] == '.')
+                found_dp = true;
+            else if (string[i] != '_' && i != start)
+                k *= radix;
+        }
 
         ++i;
         ++length;
