@@ -15,9 +15,14 @@ namespace assembler {
 
         // Check if the file exists
         if (!file.good()) {
-            auto *error = new class message::Error(data.file_path, 0, -1, message::ErrorType::FileNotFound);
-            error->set_message("Cannot read file " + filename);
-            msgs.add(error);
+            message::Message *msg = new class message::Error(data.file_path, -1, -1, message::ErrorType::FileNotFound);
+            msg->set_message("Cannot read file " + filename);
+            msgs.add(msg);
+
+            msg = new message::Message(message::Level::Note, data.file_path, -1, -1);
+            msg->set_message("Attempted to open file from " + std::filesystem::current_path().string());
+            msgs.add(msg);
+
             return;
         }
 
@@ -161,6 +166,27 @@ namespace assembler {
                             std::cout << "\tNew base directory '" + full_path.parent_path().string() + "'\n";
                         }
 
+                        // Set-up pre-processing data
+                        pre_processor::Data include_data(data.debug);
+                        include_data.file_path = data.file_path;
+                        message::List include_messages;
+
+                        // Read included file
+                        read_source_file(full_path.string(), include_data, include_messages);
+
+                        if (include_messages.has_message_of(message::Level::Error)) {
+                            msgs.append(include_messages);
+
+                            auto *msg = new message::Message(message::Level::Note, data.file_path, line.n, i);
+                            msg->set_message("Attempted to %include file here");
+                            msgs.add(msg);
+
+                            return;
+                        }
+
+                        // Now we know the file exists update data path
+                        include_data.file_path = full_path.string();
+
                         // Check if the file has already been included
                         auto canonical_path = std::filesystem::canonical(full_path);
                         auto circular_include = data.included_files.find(canonical_path);
@@ -177,19 +203,9 @@ namespace assembler {
                             return;
                         }
 
-                        // Set-up pre-processing data
-                        pre_processor::Data include_data(data.debug);
+                        // Add to circular references map
                         include_data.included_files.insert(data.included_files.begin(), data.included_files.end());
                         include_data.included_files.insert({ canonical_path, { data.file_path, line.n, i } });
-                        message::List include_messages;
-
-                        // Read included file
-                        read_source_file(full_path.string(), include_data, include_messages);
-
-                        if (include_messages.has_message_of(message::Level::Error)) {
-                            msgs.append(include_messages);
-                            return;
-                        }
 
                         // Pre-process included file
                         pre_process(include_data, include_messages);
