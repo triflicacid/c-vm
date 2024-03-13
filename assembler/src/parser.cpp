@@ -82,6 +82,28 @@ namespace assembler::parser {
             if (data.debug)
                 std::cout << "[" << line_idx << ":" << start << "] Mnemonic " << mnemonic << "\n";
 
+            // Is constant specifier?
+            std::vector<unsigned char> *bytes = nullptr;
+
+            if (parse_data(data, line_idx, start, msgs, &bytes)) {
+                if (data.debug)
+                    std::cout << "\tData (" << bytes->size() << " bytes)\n";
+
+                // Check for errors
+                if (msgs.has_message_of(message::Level::Error)) {
+                    delete bytes;
+                    return;
+                }
+
+                // Insert into a Chunk
+                auto chunk = new Chunk(line_idx, offset);
+                chunk->set_data(bytes);
+                offset += chunk->get_bytes();
+                data.chunks.push_back(chunk);
+
+                continue;
+            }
+
             // Before anything, check if mnemonic exists
             if (!instruction::Signature::exists(mnemonic)) {
                 auto err = new class message::Error(data.file_path, line.n, start, message::ErrorType::UnknownMnemonic);
@@ -185,37 +207,132 @@ namespace assembler::parser {
         }
     }
 
+    /** Add byte sequence to new vector, cast all to integers (type #1). */
+    template<typename T>
+    std::vector<unsigned char>* add_byte_sequence(const Data &data, int line_idx, int &col, message::List &msgs) {
+        auto bytes = new std::vector<unsigned char>();
+
+        parse_byte_sequence(data, line_idx, col, msgs, [bytes](long long v_int, double v_dbl, bool is_dbl) {
+            T value = static_cast<T>(v_int);
+
+            for (int i = 0; i < sizeof(T); i++) {
+                bytes->push_back((value >> (i * 8)) & 0xFF);
+            }
+        });
+
+        // If empty, add 0
+        if (bytes->empty()) {
+            for (int i = 0; i < sizeof(T); i++) {
+                bytes->push_back(0);
+            }
+        }
+
+        return bytes;
+    }
+
+    /** Add byte sequence to new vector, cast all to floats (type #1), store an type #2 (int type of same size). */
+    template<typename T, typename S>
+    std::vector<unsigned char>* add_byte_sequence_float(const Data &data, int line_idx, int &col, message::List &msgs) {
+        auto bytes = new std::vector<unsigned char>();
+
+        parse_byte_sequence(data, line_idx, col, msgs, [bytes](long long v_int, double v_dbl, bool is_dbl) {
+            T intermediate = static_cast<T>(is_dbl ? v_dbl : v_int);
+            S value = *(S *) &intermediate;
+
+            for (int i = 0; i < sizeof(S); i++) {
+                bytes->push_back((value >> (i * 8)) & 0xFF);
+            }
+        });
+
+        // If empty, add 0
+        if (bytes->empty()) {
+            for (int i = 0; i < sizeof(S); i++) {
+                bytes->push_back(0);
+            }
+        }
+
+        return bytes;
+    }
+
+    bool parse_data(const Data &data, int line_idx, int &col, message::List &msgs, std::vector<unsigned char> **bytes) {
+        auto& line = data.lines[line_idx];
+
+        // Extract datatype
+        int start = col;
+        skip_non_whitespace(line.data, col);
+        std::string datatype = line.data.substr(start, col - start);
+
+        std::function<void(unsigned char)> add_byte = [bytes](unsigned char byte) {
+            (*bytes)->push_back(byte);
+        };
+
+        if (datatype == "u8") {
+            *bytes = add_byte_sequence<uint8_t>(data, line_idx, col, msgs);
+            return true;
+        }
+
+        if (datatype == "i8") {
+            *bytes = add_byte_sequence<int8_t>(data, line_idx, col, msgs);
+            return true;
+        }
+
+        if (datatype == "u16") {
+            *bytes = add_byte_sequence<uint16_t>(data, line_idx, col, msgs);
+            return true;
+        }
+
+        if (datatype == "i16") {
+            *bytes = add_byte_sequence<int16_t>(data, line_idx, col, msgs);
+            return true;
+        }
+
+        if (datatype == "u32") {
+            *bytes = add_byte_sequence<uint32_t>(data, line_idx, col, msgs);
+            return true;
+        }
+
+        if (datatype == "i32") {
+            *bytes = add_byte_sequence<int32_t>(data, line_idx, col, msgs);
+            return true;
+        }
+
+        if (datatype == "u64") {
+            *bytes = add_byte_sequence<uint64_t>(data, line_idx, col, msgs);
+            return true;
+        }
+
+        if (datatype == "i64") {
+            *bytes = add_byte_sequence<int64_t>(data, line_idx, col, msgs);
+            return true;
+        }
+
+        if (datatype == "f32") {
+            *bytes = add_byte_sequence_float<float, uint32_t>(data, line_idx, col, msgs);
+            return true;
+        }
+
+        if (datatype == "f64") {
+            *bytes = add_byte_sequence_float<double, uint64_t>(data, line_idx, col, msgs);
+            return true;
+        }
+
+        col = start;
+        return false;
+    }
+
     void parse_arg(const Data &data, int line_idx, int &col, message::List &msgs, instruction::Argument &argument) {
         auto line = data.lines[line_idx];
 
         if (line.data[col] == '\'') { // Character Literal
-            col++;
+            unsigned long long value;
+            parse_character_literal(data, line_idx, ++col, msgs, value);
 
-            long long value;
-
-            // Escape character
-            if (line.data[col] == '\\') {
-                value = decode_escape_seq(line.data, ++col);
-
-                if (value == -1) {
-                    auto err = new class message::Error(data.file_path, line.n, col, message::ErrorType::Syntax);
-                    err->set_message("Invalid escape sequence");
-                    msgs.add(err);
-                    return;
-                }
-            } else {
-                value = (unsigned char) line.data[col++];
-            }
-
-            // Check for ending apostrophe
-            if (line.data[col] != '\'') {
-                auto err = new class message::Error(data.file_path, line.n, col, message::ErrorType::Syntax);
-                err->set_message("Expected apostrophe to terminate character literal");
-                msgs.add(err);
+            // Any errors?
+            if (msgs.has_message_of(message::Level::Error)) {
                 return;
             }
 
-            // Update argument data
+            // Update argument
             argument.update(instruction::ArgumentType::Literal, value);
             return;
         }
@@ -293,29 +410,12 @@ namespace assembler::parser {
         }
 
         // Parse as number
-        j = start;
-        int radix = get_radix(sub.back());
-        bool is_decimal = scan_number(line.data, radix, j);
+        unsigned long long number;
+        double _1;
+        bool _2;
 
-        // So, do we have a literal?
-        if (j > start) {
-            col = j;
-
-            // Default to base-10
-            if (radix == -1) radix = 10;
-
-            unsigned long long literal;
-            j = start;
-
-            // Set argument value
-            if (is_decimal) {
-                auto value = float_base_to_10(line.data, radix, j);
-                literal = *(unsigned long long *) &value;
-            } else {
-                literal = int_base_to_10(line.data, radix, j);
-            }
-
-            argument.update(instruction::ArgumentType::Literal, literal);
+        if (parse_number(sub, _2, number, _1)) {
+            argument.update(instruction::ArgumentType::Literal, number);
             return;
         }
 
@@ -387,5 +487,188 @@ namespace assembler::parser {
         }
 
         return -1;
+    }
+
+    bool parse_number(const std::string& string, bool& is_decimal, unsigned long long& v_int, double &v_dbl) {
+        int i = 0;
+        int radix = get_radix(string.back());
+        is_decimal = scan_number(string, radix, i);
+
+        // So, do we have a literal?
+        if (i > 0) {
+            i = 0;
+
+            // Default to base-10
+            if (radix == -1) radix = 10;
+
+            // Set argument value
+            if (is_decimal) {
+                v_dbl = float_base_to_10(string, radix, i);
+                v_int = *(unsigned long long *) &v_dbl;
+            } else {
+                v_int = int_base_to_10(string, radix, i);
+                v_dbl = *(double *) &v_int;
+            }
+
+            return true;
+        } else {
+            return false;
+        }
+    }
+
+    void parse_character_literal(const Data &data, int line_idx, int &col, message::List &msgs, unsigned long long& value) {
+        auto& line = data.lines[line_idx];
+
+        // Escape character
+        if (line.data[col] == '\\') {
+            auto raw_value = decode_escape_seq(line.data, ++col);
+
+            if (value == -1) {
+                auto err = new class message::Error(data.file_path, line.n, col, message::ErrorType::Syntax);
+                err->set_message("Invalid escape sequence");
+                msgs.add(err);
+                return;
+            } else {
+                value = raw_value;
+            }
+        } else {
+            value = (unsigned char) line.data[col++];
+        }
+
+        // Check for ending apostrophe
+        if (line.data[col] != '\'') {
+            auto err = new class message::Error(data.file_path, line.n, col, message::ErrorType::Syntax);
+            err->set_message("Expected apostrophe to terminate character literal");
+            msgs.add(err);
+            return;
+        }
+
+        col++;
+    }
+
+    void parse_byte_item(const Data &data, int line_idx, int &col, message::List &msgs, AddBytesFunction add_bytes) {
+        auto& line = data.lines[line_idx];
+
+        // Have we a character?
+        if (line.data[col] == '\'') {
+            unsigned long long value;
+            parse_character_literal(data, line_idx, ++col, msgs, value);
+
+            if (msgs.has_message_of(message::Level::Error)) {
+                return;
+            }
+
+            add_bytes(value, 0.0, false);
+            return;
+        }
+
+        // Have we a string?
+        if (line.data[col] == '"') {
+            col++;
+
+            while (col < line.data.size() && line.data[col] != '"') {
+                // Escape character
+                if (line.data[col] == '\\') {
+                    auto value = decode_escape_seq(line.data, ++col);
+
+                    if (value == -1) {
+                        auto err = new class message::Error(data.file_path, line.n, col, message::ErrorType::Syntax);
+                        err->set_message("Invalid escape sequence");
+                        msgs.add(err);
+                        return;
+                    } else {
+                        add_bytes(value, 0.0, false);
+                    }
+                } else {
+                    add_bytes(line.data[col++], 0.0, false);
+                }
+            }
+
+            // Must terminate string
+            if (line.data[col] != '"') {
+                auto err = new class message::Error(data.file_path, line.n, col, message::ErrorType::Syntax);
+                err->set_message("Unterminated string literal");
+                msgs.add(err);
+                return;
+            }
+
+            col++;
+            return;
+        }
+
+        // Extract characters
+        int start = col;
+        skip_to_break(line.data,col);
+        std::string sub = line.data.substr(start, col - start);
+
+        // Is register? Not allowed here.
+        int j = start;
+        int reg_offset = parse_register(line.data, j);
+
+        if (reg_offset != -1) {
+            auto err = new class message::Error(data.file_path, line.n, start, message::ErrorType::Syntax);
+            err->set_message("Register symbol disallowed here '" + sub + "'");
+            msgs.add(err);
+            return;
+        }
+
+        // Parse as number
+        unsigned long long number_int;
+        double number_dbl;
+        bool is_dbl;
+
+        if (parse_number(sub, is_dbl, number_int, number_dbl)) {
+            add_bytes(number_int, number_dbl, is_dbl);
+            return;
+        }
+
+        // Must be a label, then
+        auto label = data.labels.find(sub);
+
+        // New label?
+        if (label == data.labels.end()) {
+            // TODO allow forward-referenced labels in data?
+
+            message::Message *msg = new class message::Error(data.file_path, line.n, col, message::ErrorType::UnknownLabel);
+            msg->set_message("Reference to undefined label '" + sub + "'");
+            msgs.add(msg);
+
+            msg = new message::Message(message::Level::Note, data.file_path, line.n, col);
+            msg->set_message("Labels in data cannot be forward-referenced");
+            msgs.add(msg);
+
+            return;
+        } else {
+            add_bytes(label->second.addr, 0.0, false);
+            return;
+        }
+    }
+
+    void parse_byte_sequence(const Data &data, int line_idx, int &col, message::List &msgs, AddBytesFunction add_bytes) {
+        auto& line = data.lines[line_idx];
+        int start = col;
+
+        while (true) {
+            skip_whitespace(line.data, col);
+
+            if (col == line.data.size())
+                break;
+
+            // Parse item
+            parse_byte_item(data, line_idx, col, msgs, add_bytes);
+
+            // Any errors?
+            if (msgs.has_message_of(message::Level::Error)) {
+                auto msg = new message::Message(message::Level::Note, data.file_path, line.n, start);
+                msg->set_message("Data sequence starts here");
+                msgs.add(msg);
+
+                return;
+            }
+
+            // Skip comma
+            if (line.data[col] == ',')
+                col++;
+        }
     }
 }

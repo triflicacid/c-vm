@@ -5,6 +5,7 @@ extern "C" {
 
 #include <iostream>
 #include <vector>
+#include <iomanip>
 
 namespace assembler {
     void Chunk::free_ptr() const {
@@ -25,10 +26,18 @@ namespace assembler {
         std::cout << "Chunk at +" << m_offset << " of " << m_bytes << " bytes";
 
         if (m_is_data) {
-            printf(" - data:\n\t{");
-            std::cout << " - data:\n\t{";
-            print_bytes(m_ptr, m_bytes);
-            std::cout << "\b}\n";
+            std::cout << " - data:\n\t" << std::uppercase << std::hex;
+
+            auto bytes = *get_data();
+
+            for (int i = 0; i < bytes.size(); i++) {
+                std::cout << std::setw(2) << std::setfill('0') << (int) bytes[i];
+
+                if (i + 1 < bytes.size())
+                    std::cout << " ";
+            }
+
+            std::cout << std::dec << "\n";
         } else {
             std::cout << " - instruction:\n\t";
             get_instruction()->print();
@@ -66,7 +75,9 @@ namespace assembler {
 
     void Chunk::write(std::ostream &out) const {
         if (m_is_data) {
-            out.write((char *) m_ptr, m_bytes);
+            for (auto& byte : *get_data()) {
+                out.write((char *) &byte, sizeof(byte));
+            }
         } else {
             get_instruction()->write(out);
         }
