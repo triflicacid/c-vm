@@ -1,6 +1,6 @@
 # CPU
 
-The CPU is the core machinary of the virtual machine. Its role is handle the fetching and execution of instructions.
+The CPU is the core machinery of the virtual machine. Its role is handle the fetching and execution of instructions.
 In this project, we have `struct CPU` with contains a pointer to the VMs memory, its size, as well as its register bank and error status.
 
 A `CPU` struct may be created by calling `cpu_create`. As the CPUs memory is `malloc`d, a CPU must be disposed of via `cpu_destroy`.
@@ -16,7 +16,7 @@ See `Register.md`.
 The amount (in bytes) of memory is passed as an argument to `cpu_create` and is stored as `cpu.mem_size`.
 A pointer to the beginning of the memory block is `cpu.mem`.
 
-A `word` is the maximum amount of bytes that may be transferred by one instruction (excluding memory-based n-byte operations), and is `WORD_T`. Its unsigned counterpart is `UWORD_T`. Most instructions come in a word varient, and explicit variants. For example, `OP_MOV_...` for moving words, and `OP_MOVn_...` for moving `n` bytes (one of `8`, `16`, `32` or `64`).
+A `word` is the maximum amount of bytes that may be transferred by one instruction (excluding memory-based n-byte operations), and is `WORD_T`. Its unsigned counterpart is `UWORD_T`. Most instructions come in a word variant, and explicit variants. For example, `OP_MOV_...` for moving words, and `OP_MOVn_...` for moving `n` bytes (one of `8`, `16`, `32` or `64`).
 
 ## Building
 To build the processor, run CMake using `processor/CMakeLists.txt`.
@@ -37,4 +37,4 @@ To execute, run `./<bin> [<file>] [-p] [-m <size>] [-s <size>]`
 
 Compiled binary files have the following structure:
 - `start_offset: WORD` - address offset of program start.
-- `program: BYTES` - program instructions/m_data.
+- `program: BYTES` - program instructions/data.

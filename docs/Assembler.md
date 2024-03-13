@@ -19,17 +19,17 @@ To execute, run `./<bin> [src] [options]` where
 Errors will be printed alongside their status code. See below for a list of possible codes and their meanings.
 These may be used in conjunction with error messages to glean insight into the error's nature.
 
-| Code | Name               | Description                                                           |
-|------|--------------------|-----------------------------------------------------------------------|
-| 0    | `None`             | Success; no error.                                                    |
-| 1    | `Syntax`           | Generic syntax error. See detailed output.                            | 
-| 2    | `UnknownMnemonic`  | Unknown mnemonic.                                                     |
-| 3    | `BadArguments`     | Unknown argument combination for the mnemonic.                        |
-| 4    | `UnknownDirective` | Unknown directive.                                                    |
-| 5    | `UnknownLabel`     | Reference to unknown label (label not defined).                       |
-| 6    | `InvalidLabel`     | Invalid label (invalid name or shadows main label/register name).     |
-| 7    | `FileNotFound`     | Provided filespec could not be found/opened with the given operation. |
-| 8    | `CircularInclude`  | Circular `%include` detected.                                         |
+| Code | Name               | Description                                                       |
+|------|--------------------|-------------------------------------------------------------------|
+| 0    | `None`             | Success; no error.                                                |
+| 1    | `Syntax`           | Generic syntax error. See detailed output.                        | 
+| 2    | `UnknownMnemonic`  | Unknown mnemonic.                                                 |
+| 3    | `BadArguments`     | Unknown argument combination for the mnemonic.                    |
+| 4    | `UnknownDirective` | Unknown directive.                                                |
+| 5    | `UnknownLabel`     | Reference to unknown label (label not defined).                   |
+| 6    | `InvalidLabel`     | Invalid label (invalid name or shadows main label/register name). |
+| 7    | `FileNotFound`     | Provided file could not be found/opened with the given operation. |
+| 8    | `CircularInclude`  | Circular `%include` detected.                                     |
 
 Note: *internal* errors should not occur and are used for debug purposes only.
 
@@ -50,7 +50,7 @@ The assembler works in the current way:
 
 Assembly source files are read line-by-line, and have the following general syntax:
 ```
-[label:] [m_mnemonic [...args]] [; Comment]
+[label:] [mnemonic [...args]] [; Comment]
 ```
 
 Trailing whitespace is removed, and blank/empty lines are ignored. Lines may also begin with directives which are handles by the pre-processor.
@@ -60,20 +60,20 @@ Labels come in the form `label:`
 
 Code execution starts at the special label `main`.
 
-If `m_mnemonic` is one of `u8, u16, u32, u64, f32, f64`, this is a m_data constant.
+If `mnemonic` is one of `u8, u16, u32, u64, f32, f64`, this is a data constant.
   - `args` is a comma- or space-seperated list of constants. If no `args` are provided, insert a `0`.
     - `...[r]` - Numeric constants. These may be followed by a radix suffix `r`.  
     - `'...'` - Character constants
     - `"..."` - String constants
-  - The m_mnemonic specifies the m_type of each item. Each item is written to the output with this m_type. In the case of strings, each character in said string has this m_type.
+  - The mnemonic specifies the type of each item. Each item is written to the output with this type. In the case of strings, each character in said string has this type.
 
-Instructions come in the form `m_mnemonic [...args]` where the arguments consist of a comma-seperated list of:
+Instructions come in the form `mnemonic [...args]` where the arguments consist of a comma-seperated list of:
   - `nnn`, where `nnn` is a number, represents a **literal**
-    - Data m_type defaults to `i64`. If a decimal point is present, the m_data m_type defaults to `f64`.
+    - Data type defaults to `i64`. If a decimal point is present, the data type defaults to `f64`.
   - `[nnn]`, where `nnn` is a number, represents an **address**
-  - `abc`, where `abc` is a string of characters, represents a **register**. The string is translated to its corresponsing register offset or, if it is not recognised, will result in an error.
-  - `[abc]`, where `abc` is a string of characters, represents a **register pointer**. The string is translated to its corresponsing register offset or, if it is not recognised, will result in an error.
-  - `'c'`, where `c` is a character (or escape sequence), represents a **literal**. If multiple character literals follow eachother, they will be concatenated to an integer. Maximum is 8 characters.
+  - `abc`, where `abc` is a string of characters, represents a **register**. The string is translated to its corresponding register offset or, if it is not recognised, will result in an error.
+  - `[abc]`, where `abc` is a string of characters, represents a **register pointer**. The string is translated to its corresponding register offset or, if it is not recognised, will result in an error.
+  - `'c'`, where `c` is a character (or escape sequence), represents a **literal**. If multiple character literals follow each other, they will be concatenated to an integer. Maximum is 8 characters.
   - `"..."`, where `...` is a string, represents a **literal**. Maximum length is 8 characters.
 
 See `Instructions.md` for a list of all implemented instructions.
@@ -119,8 +119,8 @@ mov NUMBER, r0
 -->
 mov 123, r0
 ``` 
-- `%macro [NAME] <m_params, ...>` - defines a macro, which is an expandable block of instructions, with the following name. You may provide a list of arguments. All source lines after `%macro` are considered part of the macro's body and **cannot** be more directives -- only `%end` is permitted, which will terminate the macro body.
-After definition, when `NAME` is encountered in the `m_mnemonic` position, supplied arguments are passed to the parameters `<m_params, ...>`. Any instances of a parameter is replaced by its respective argument in the macro's body. The original line is removed and the modified macro's body is "pasted" in.
+- `%macro [NAME] <params, ...>` - defines a macro, which is an expandable block of instructions, with the following name. You may provide a list of arguments. All source lines after `%macro` are considered part of the macro's body and **cannot** be more directives -- only `%end` is permitted, which will terminate the macro body.
+After definition, when `NAME` is encountered in the `mnemonic` position, supplied arguments are passed to the parameters `<params, ...>`. Any instances of a parameter is replaced by its respective argument in the macro's body. The original line is removed and the modified macro's body is "pasted" in.
 ```
 %macro print_int reg
     mov reg, r1
