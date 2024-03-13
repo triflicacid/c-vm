@@ -66,11 +66,18 @@ namespace assembler::parser {
                 // Replace all past references with its address
                 data.replace_label(label_name, offset);
 
-                continue;
+                // End of input?
+                if (i == line.data.size()) {
+                    continue;
+                } else {
+                    skip_whitespace(line.data, i);
+                    start = i;
+                    skip_to_break(line.data, i);
+                }
             }
 
             // Interpret as an instruction mnemonic
-            std::string mnemonic = line.data.substr(start, i);
+            std::string mnemonic = line.data.substr(start, i - start);
 
             if (data.debug)
                 std::cout << "[" << line_idx << ":0] Mnemonic " << mnemonic << "\n";
