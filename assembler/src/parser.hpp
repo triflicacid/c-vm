@@ -29,8 +29,8 @@ namespace assembler::parser {
     void parse_character_literal(const Data &data, int line_idx, int &col, message::List &msgs, unsigned long long& value);
 
     /** Given a string, add bytes to data that it represents. Parse only a single data item e.g. '42'. */
-    void parse_byte_item(const Data &data, int line_idx, int &col, message::List &msgs, AddBytesFunction add_bytes);
+    void parse_byte_item(const Data &data, int line_idx, int &col, message::List &msgs, const AddBytesFunction& add_bytes);
 
     /** Given a string, add bytes to data that it represents. Parse an entire data string e.g., '42 0 '\0'' */
-    void parse_byte_sequence(const Data &data, int line_idx, int &col, message::List &msgs, AddBytesFunction add_bytes);
+    void parse_byte_sequence(const Data &data, int line_idx, int &col, message::List &msgs, const AddBytesFunction& add_bytes);
 }

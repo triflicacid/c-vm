@@ -1,10 +1,5 @@
 #include "chunk.hpp"
-extern "C" {
-#include "util.h"
-}
 
-#include <iostream>
-#include <vector>
 #include <iomanip>
 
 namespace assembler {
@@ -42,19 +37,6 @@ namespace assembler {
             std::cout << " - instruction:\n\t";
             get_instruction()->print();
         }
-    }
-
-    int Chunk::get_in_range(const std::vector<Chunk>& chunks, int lower, int upper) {
-        int idx = 0;
-        for (const Chunk& chunk : chunks) {
-            if (chunk.m_offset <= upper && chunk.m_offset + chunk.m_bytes > lower) {
-                return idx;
-            }
-
-            idx++;
-        }
-
-        return -1;
     }
 
     void Chunk::set_instruction(instruction::Instruction *instruction) {

@@ -1,10 +1,5 @@
 #pragma once
 
-#include <filesystem>
-#include <vector>
-#include <map>
-
-#include "pre-process/line.hpp"
 #include "chunk.hpp"
 #include "pre-process/data.hpp"
 #include "label.hpp"

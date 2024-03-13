@@ -13,14 +13,6 @@ namespace assembler::instruction {
         this->m_data = data;
     }
 
-    bool Argument::is_address() {
-        return m_type == ArgumentType::Address || m_type == ArgumentType::LabelAddress;
-    }
-
-    bool Argument::is_literal() {
-        return m_type == ArgumentType::Literal || m_type == ArgumentType::LabelLiteral;
-    }
-
     bool Argument::is_label() {
         return m_type == ArgumentType::LabelAddress || m_type == ArgumentType::LabelLiteral;
     }

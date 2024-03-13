@@ -1,6 +1,8 @@
 #include <iostream>
 #include <utility>
+
 #include "instruction.hpp"
+#include "argument.hpp"
 
 namespace assembler::instruction {
     void Instruction::print() {

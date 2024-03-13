@@ -938,7 +938,7 @@ int cpu_syscall(CPU cpu, int op) {
             return 1;
 
         default:
-            ERR_SET(ERR_SYSCAL, op);
+            ERR_SET(ERR_SYSCAL, op)
             return 0;
     }
 }

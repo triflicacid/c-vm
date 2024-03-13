@@ -1,9 +1,9 @@
 #include <iostream>
-#include <string>
-#include <utility>
 
 #include "message.hpp"
+extern "C" {
 #include "util.h"
+}
 
 namespace assembler::message {
     Message::Message(Level level, std::filesystem::path filename, int line, int col) {

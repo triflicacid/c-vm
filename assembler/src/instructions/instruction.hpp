@@ -1,12 +1,6 @@
 #pragma once
 
-#include "processor/src/opcodes.h"
-#include "argument.hpp"
 #include "signature.hpp"
-
-#include <string>
-#include <utility>
-#include <vector>
 
 namespace assembler::instruction {
     class Instruction {

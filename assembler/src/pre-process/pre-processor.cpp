@@ -2,11 +2,8 @@
 #include "util.hpp"
 #include "messages/error.hpp"
 
-#include <string>
-#include <vector>
 #include <fstream>
 #include <iostream>
-#include <filesystem>
 #include "data.hpp"
 
 namespace assembler {

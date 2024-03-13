@@ -1,12 +1,8 @@
 #pragma once
 
-#include <string>
-#include <filesystem>
-
 #include "line.hpp"
 #include "../messages/list.hpp"
 #include "data.hpp"
-
 
 namespace assembler {
     /** Read source file into lines. Mutate `data`, or add error. */

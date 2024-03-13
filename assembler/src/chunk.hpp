@@ -1,6 +1,5 @@
 #pragma once
 
-#include <vector>
 #include "instructions/instruction.hpp"
 
 namespace assembler {
@@ -50,7 +49,5 @@ namespace assembler {
 
         void write(std::ostream& out) const;
 
-        /** Return index of chunk in the given range, or -1. */
-        static int get_in_range(const std::vector<Chunk>& chunks, int lower, int upper);
     };
 }

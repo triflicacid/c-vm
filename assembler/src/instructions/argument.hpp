@@ -33,18 +33,10 @@ namespace assembler::instruction {
         /** Interpret `data` as a label. */
         [[nodiscard]] std::string *get_label() const { return (std::string *) m_data; };
 
-        [[nodiscard]] int get_bytes() const { return sizeof(m_data); }
-
         void update(ArgumentType type, unsigned long long data);
 
         /** Transform type: update ton address-equivalent. E.g., '42' -> '[42]' */
         void transform_address_equivalent();
-
-        /** Can this argument be used as a literal? */
-        bool is_literal();
-
-        /** Can this argument be used as an address? */
-        bool is_address();
 
         /** Is this argument a label? */
         bool is_label();

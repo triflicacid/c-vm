@@ -1,11 +1,9 @@
 #include <iostream>
+#include <functional>
 
-#include "data.hpp"
-#include "messages/list.hpp"
+#include "parser.hpp"
 #include "messages/error.hpp"
 #include "util.hpp"
-#include "parser.hpp"
-#include "instructions/signature.hpp"
 extern "C" {
 #include "processor/src/registers.h"
 }
@@ -546,7 +544,7 @@ namespace assembler::parser {
         col++;
     }
 
-    void parse_byte_item(const Data &data, int line_idx, int &col, message::List &msgs, AddBytesFunction add_bytes) {
+    void parse_byte_item(const Data &data, int line_idx, int &col, message::List &msgs, const AddBytesFunction& add_bytes) {
         auto& line = data.lines[line_idx];
 
         // Have we a character?
@@ -644,7 +642,7 @@ namespace assembler::parser {
         }
     }
 
-    void parse_byte_sequence(const Data &data, int line_idx, int &col, message::List &msgs, AddBytesFunction add_bytes) {
+    void parse_byte_sequence(const Data &data, int line_idx, int &col, message::List &msgs, const AddBytesFunction& add_bytes) {
         auto& line = data.lines[line_idx];
         int start = col;
 
