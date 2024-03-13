@@ -29,7 +29,7 @@ namespace assembler::parser {
                 // Check if valid label name
                 if (!is_valid_label_name(label_name)) {
                     auto *err = new class message::Error(data.file_path, line.n, start, message::ErrorType::InvalidLabel);
-                    err->m_msg = "Invalid label: '" + label_name + "'";
+                    err->set_message("Invalid label: '" + label_name + "'");
                     msgs.add(err);
                     return;
                 }
@@ -46,11 +46,11 @@ namespace assembler::parser {
                     // Warn user that the label already exists (error if main)
                     auto level = label_name == data.main_label ? message::Level::Error : message::Level::Warning;
                     auto *msg = new message::Message(level, data.file_path, line.n, start);
-                    msg->m_msg = "Re-declaration of label " + label_name;
+                    msg->set_message("Re-declaration of label " + label_name);
                     msgs.add(msg);
 
                     msg = new message::Message(message::Level::Note, data.file_path, label->second.line, label->second.col);
-                    msg->m_msg = "Previously declared here";
+                    msg->set_message("Previously declared here");
                     msgs.add(msg);
 
                     // Exit if error
@@ -85,7 +85,7 @@ namespace assembler::parser {
             // Before anything, check if mnemonic exists
             if (!instruction::Signature::exists(mnemonic)) {
                 auto err = new class message::Error(data.file_path, line.n, start, message::ErrorType::UnknownMnemonic);
-                err->m_msg = "Unknown mnemonic '" + mnemonic + "'";
+                err->set_message("Unknown mnemonic '" + mnemonic + "'");
                 msgs.add(err);
                 return;
             }
@@ -106,14 +106,14 @@ namespace assembler::parser {
                     std::string ch(1, line.data[i]);
 
                     auto err = new class message::Error(data.file_path, line.n, i, message::ErrorType::Syntax);
-                    err->m_msg = "Expected ' ' or ',', got '" + ch + "'";
+                    err->set_message("Expected ' ' or ',', got '" + ch + "'");
                     msgs.add(err);
                 }
 
                 // Tell user which argument it was
                 if (msgs.has_message_of(message::Level::Error)) {
                     auto msg = new message::Message(message::Level::Note, data.file_path, line.n, 0);
-                    msg->m_msg = "While parsing mnemonic " + mnemonic + " argument #" + std::to_string(arguments.size() + 1);
+                    msg->set_message("While parsing mnemonic " + mnemonic + " argument #" + std::to_string(arguments.size() + 1));
                     msgs.add(msg);
 
                     return;
@@ -150,7 +150,7 @@ namespace assembler::parser {
                 }
 
                 auto err = new class message::Error(data.file_path, line.n, start, message::ErrorType::BadArguments);
-                err->m_msg = stream.str();
+                err->set_message(stream);
                 msgs.add(err);
                 return;
             }
@@ -176,7 +176,7 @@ namespace assembler::parser {
                         auto line = data.lines[chunk->source_line];
 
                         auto err = new class message::Error(data.file_path, line.n, 0, message::ErrorType::UnknownLabel);
-                        err->m_msg = "Unresolved label reference '" + *arg.get_label() + "'";
+                        err->set_message("Unresolved label reference '" + *arg.get_label() + "'");
                         msgs.add(err);
                         return;
                     }
@@ -199,7 +199,7 @@ namespace assembler::parser {
 
                 if (value == -1) {
                     auto err = new class message::Error(data.file_path, line.n, col, message::ErrorType::Syntax);
-                    err->m_msg = "Invalid escape sequence";
+                    err->set_message("Invalid escape sequence");
                     msgs.add(err);
                     return;
                 }
@@ -210,7 +210,7 @@ namespace assembler::parser {
             // Check for ending apostrophe
             if (line.data[col] != '\'') {
                 auto err = new class message::Error(data.file_path, line.n, col, message::ErrorType::Syntax);
-                err->m_msg = "Expected apostrophe to terminate character literal";
+                err->set_message("Expected apostrophe to terminate character literal");
                 msgs.add(err);
                 return;
             }
@@ -234,11 +234,11 @@ namespace assembler::parser {
                     std::string ch(1, line.data[col]);
 
                     message::Message *msg = new class message::Error(data.file_path, line.n, col, message::ErrorType::Syntax);
-                    msg->m_msg = "Expected ']', got '" + ch + "'";
+                    msg->set_message("Expected ']', got '" + ch + "'");
                     msgs.add(msg);
 
                     msg = new message::Message(message::Level::Note, data.file_path, line.n, start - 1);
-                    msg->m_msg = "Group opened here";
+                    msg->set_message("Group opened here");
                     msgs.add(msg);
 
                     return;
@@ -270,7 +270,7 @@ namespace assembler::parser {
         std::string ch(1, line.data[col]);
 
         auto err = new class message::Error(data.file_path, line.n, col, message::ErrorType::Syntax);
-        err->m_msg = "Unexpected character '" + ch + "'";
+        err->set_message("Unexpected character '" + ch + "'");
         msgs.add(err);
     }
 
@@ -327,7 +327,7 @@ namespace assembler::parser {
             // Check if name is valid - if not, report generic syntax error (not label error)
             if (!is_valid_label_name(sub)) {
                 auto err = new class message::Error(data.file_path, line.n, col, message::ErrorType::Syntax);
-                err->m_msg = "Syntax Error: '" + sub + "'";
+                err->set_message("Syntax Error: '" + sub + "'");
                 msgs.add(err);
                 return;
             }

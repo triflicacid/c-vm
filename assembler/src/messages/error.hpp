@@ -6,16 +6,15 @@
 
 namespace assembler::message {
     enum ErrorType {
-        Syntax = 1,
+        None,
+        Syntax,
         UnknownMnemonic,
         BadArguments,
         UnknownDirective,
         UnknownLabel,
         InvalidLabel,
         FileNotFound,
-        CircularInclude,
-        Internal = 10,
-        Opcode,
+        CircularInclude
     };
 
     class Error : public Message {
@@ -25,6 +24,6 @@ namespace assembler::message {
     public:
         Error(std::filesystem::path file, int line, int col, ErrorType err);
 
-        ErrorType get_error() { return m_type; }
+        int get_code() override { return (int) m_type; }
     };
 }

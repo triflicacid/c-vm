@@ -20,6 +20,10 @@ namespace assembler::message {
         m_file = loc.file;
     }
 
+    void Message::_set_message(std::string msg) {
+        m_msg = std::move(msg);
+    }
+
     void Message::print_type_suffix() {
         switch (m_type) {
             case Level::Note:
@@ -32,6 +36,19 @@ namespace assembler::message {
                 std::cout << CONSOLE_RED "ERROR!" CONSOLE_RESET;
                 break;
         }
+
+        int code = get_code();
+        if (code != -1) {
+            std::cout << " [" << code << "]";
+        }
+    }
+
+    void Message::set_message(const std::string &msg) {
+        _set_message(msg);
+    }
+
+    void Message::set_message(const std::stringstream& stream) {
+        _set_message(stream.str());
     }
 
     void Message::print() {
