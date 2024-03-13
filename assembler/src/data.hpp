@@ -40,7 +40,10 @@ namespace assembler {
         /** Get size in bytes. */
         int get_bytes();
 
+        /** Write headers to stream. */
+        void write_headers(std::ostream& stream);
+
         /** Write chunks to output stream. */
-        void write(std::ostream& stream);
+        void write_chunks(std::ostream& stream);
     };
 }

@@ -5,7 +5,9 @@
 
 #include "src/pre-process/pre-processor.hpp"
 #include "src/messages/list.hpp"
+extern "C" {
 #include "util.h"
+}
 #include "data.hpp"
 #include "parser.hpp"
 
@@ -35,7 +37,7 @@ int main(int argc, char **argv) {
                 case 'o':  // Out file
                     i++;
                     if (i >= argc) {
-                        printf("-o: expected file path\n");
+                        std::cout << "-o: expected file path\n";
                         return EXIT_FAILURE;
                     }
                     file_out = argv[i];
@@ -43,31 +45,31 @@ int main(int argc, char **argv) {
                 case 'p':  // Pre-Processed file
                     i++;
                     if (i >= argc) {
-                        printf("-p: expected file path\n");
+                        std::cout << "-p: expected file path\n";
                         return EXIT_FAILURE;
                     }
                     file_postproc = argv[i];
                     break;
                 default:
-                    printf("Unknown option '%s'\n", argv[i]);
+                    std::cout << "Unknown option '" << argv[i] << "'\n";
                     return EXIT_FAILURE;
             }
         } else if (file_in == nullptr) {
             file_in = argv[i];
         } else {
-            printf("Unknown argument '%s'\n", argv[i]);
+            std::cout << "Unknown argument '" << argv[i] << "'\n";
             return EXIT_FAILURE;
         }
     }
 
     // Check if all files are present
     if (file_in == nullptr) {
-        printf("Expected input file to be provided\n");
+        std::cout << "Expected input file to be provided\n";
         return EXIT_FAILURE;
     }
 
     if (file_out == nullptr) {
-        printf("Expected output file to be provided (-o flag)\n");
+        std::cout << "Expected output file to be provided (-o flag)\n";
         return EXIT_FAILURE;
     }
 
@@ -77,25 +79,23 @@ int main(int argc, char **argv) {
 
     // Read source file into lines
     if (debug)
-        printf("Reading source file '%s'\n", file_in);
+        std::cout << "Reading source file '" << file_in << "'\n";
 
     assembler::read_source_file(file_in, pre_data, messages);
 
     // Check if error
-    if (handle_messages(messages)) {
+    if (handle_messages(messages))
         return EXIT_FAILURE;
-    }
 
     // Pre-process file
     if (debug)
-        printf(CONSOLE_GREEN "=== PRE-PROCESSING ===\n" CONSOLE_RESET);
+        std::cout << CONSOLE_GREEN "=== PRE-PROCESSING ===\n" CONSOLE_RESET;
 
     assembler::pre_process(pre_data, messages);
 
     // Check if error
-    if (handle_messages(messages)) {
+    if (handle_messages(messages))
         return EXIT_FAILURE;
-    }
 
     if (debug) {
         // Print constants
@@ -145,7 +145,7 @@ int main(int argc, char **argv) {
 
     // Parse pre-processed lines
     if (debug)
-        printf(CONSOLE_GREEN "=== PARSING ===\n" CONSOLE_RESET);
+        std::cout << CONSOLE_GREEN "=== PARSING ===\n" CONSOLE_RESET;
 
     assembler::parser::parse(data, messages);
 
@@ -164,7 +164,7 @@ int main(int argc, char **argv) {
     }
 
     // Open output file
-    std::ofstream file(file_out);
+    std::ofstream file(file_out, std::ios::binary);
 
     // Check if the file exists
     if (!file.good()) {
@@ -174,12 +174,12 @@ int main(int argc, char **argv) {
 
     // Write compiled chunks to output file
     auto before = file.tellp();
-    data.write(file);
+    data.write_headers(file);
+    data.write_chunks(file);
+    auto after = file.tellp();
 
-    if (data.debug) {
-        auto after = file.tellp();
-        std::cout << "Written " << (after - before) << " bytes to file " << file_out << "\n";
-    }
+    if (debug)
+        std::cout << "Written " << (after - before + 1) << " bytes to file " << file_out << "\n";
 
     file.close();
 

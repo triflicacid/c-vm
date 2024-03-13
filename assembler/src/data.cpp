@@ -24,7 +24,7 @@ namespace assembler {
         return last->get_offset() + last->get_bytes();
     }
 
-    void Data::write(std::ostream& stream) {
+    void Data::write_headers(std::ostream &stream) {
         if (chunks.empty())
             return;
 
@@ -32,8 +32,9 @@ namespace assembler {
         auto start_label = labels.find(main_label);
         WORD_T start_addr = start_label == labels.end() ? 0 : start_label->second.addr;
         stream.write((char *) &start_addr, sizeof(start_addr));
+    }
 
-        // Write chunks
+    void Data::write_chunks(std::ostream& stream) {
         for (auto chunk : chunks) {
             chunk->write(stream);
         }
