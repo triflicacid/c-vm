@@ -24,29 +24,6 @@
       }){.u16 = 1}    \
           .c)
 
-// Is whitespace?
-#define IS_WHITESPACE(c) (c == ' ' || c == '\t' || c == '\n' || c == '\r')
-
-// Consume whitespace
-#define CONSUME_WHITESPACE(string, idx) \
-    while (IS_WHITESPACE(string[idx])) ++(idx);
-
-// Is [A-Za-z]
-#define IS_CHAR(c) ((c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z'))
-
-// Is [0-9]
-#define IS_DIGIT(n) (n >= '0' && n <= '9')
-
-// Is an octal character?
-#define IS_OCTAL(n) (n >= '0' && n <= '8')
-
-// Is symbol permitted in common name
-#define IS_SYMBOL_CHAR(c) (c == '_' || IS_CHAR(c) || IS_DIGIT(c))
-
-// Is a hexadecimal character?
-#define IS_HEX(n) \
-    ((n >= '0' && n <= '9') || (n >= 'A' && n <= 'F') || (n >= 'a' && n <= 'f'))
-
 // Macro - easy buffer write. Requires variable `void *buf`. `offset` is
 // incremented by `sizeof(type)`
 #define BUF_WRITE(offset, type, value)             \
@@ -64,22 +41,6 @@
 // (`void*`)
 #define BUF_WRITE_BYTES(offset, ptr, bytes) \
     for (T_u8 i = 0; i < bytes; ++i) BUF_WRITE(offset, T_u8, *((T_u8 *)ptr + i))
-
-// Set variable = value if value > variable
-#define SET_IF_LARGER(variable, value) \
-    if (variable < value) variable = value;
-
-// Is char "c" a valid character for a number of base "base"
-#define IS_BASE_CHAR(c, base)                              \
-    ((c >= '0' && c <= '0' + (base > 9 ? 9 : base)) ||     \
-     (base > 10 ? ((c >= 'a' && c <= 'a' + (base - 10)) || \
-                   (c >= 'A' && c <= 'A' + (base - 10)))   \
-                : 0))
-
-// Given char "c", return numeric representation. Return 0 otherwise.
-#define GET_BASE_VAL(c, base) \
-    (c >= 'a' ? c - 'a' + 10  \
-              : (c >= 'A' ? c - 'A' + 10 : (c >= '0' ? c - '0' : 0)))
 
 #define CONSOLE_RED "\033[0;91m"
 #define CONSOLE_RED_BG "\033[0;101m"
