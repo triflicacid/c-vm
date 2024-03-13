@@ -80,51 +80,46 @@ long long decode_escape_seq(const std::string &string, int &i) {
             i++;
             return 0x0;
         case 'd': {  // DECIMAL SEQUENCE
-            int len = 0;
+            int len = 0, start = ++i;
             long long k = 1, value = 0;
-            i++;
-            while (i < string.size() && std::isdigit(string[i + len])) {
+
+            while (i < string.size() && string[i] >= '0' && string[i] <= '9') {
+                if (i++ != start) k *= 10;
                 ++len;
-                k *= 10;
             }
-            k /= 10;
-            for (int j = 0; j < len; ++j, ++i, k /= 10)
-                value += (string[i] - '0') * k;
+
+            for (int j = 0; j < len; ++j, k /= 10) {
+                value += (string[start + j] - '0') * k;
+            }
+
             return value;
         }
         case 'o': {  // OCTAL SEQUENCE
-            int len = 0;
+            int len = 0, start = ++i;
             long long k = 1, value = 0;
-            i++;
-            while (string[i] >= '0' && string[i] < '8') {
+
+            while (i < string.size() && string[i] >= '0' && string[i] < '8') {
+                if (i++ != start) k *= 8;
                 ++len;
-                k *= 8;
             }
-            k /= 8;
-            for (int j = 0; j < len; ++i, ++j, k /= 8)
-                value += (string[i] - '0') * k;
+
+            for (int j = 0; j < len; ++j, k /= 8) {
+                value += (string[start + j] - '0') * k;
+            }
+
             return value;
         }
         case 'x': {  // HEXADECIMAL SEQUENCE
-            int len = 0;
+            int len = 0, start = ++i;
             long long k = 1, value = 0;
-            ++i;
-            while (std::isdigit(string[i]) || (string[i] >= 'A' && string[i] <= 'F') || (string[i] >= 'a' && string[i] <= 'f')) {
+
+            while (i < string.size() && is_base_char(string[i], 16)) {
+                if (i++ != start) k *= 16;
                 ++len;
-                k *= 16;
             }
 
-            k /= 16;
-
-            for (int j = 0; j < len; ++i, ++j, k /= 16) {
-                char lb;
-                if (string[i] >= '0' && string[i] <= '9')
-                    lb = '0';
-                else if (string[i] >= 'a' && string[i] <= 'f')
-                    lb = 'a';
-                else
-                    lb = 'A';
-                value += (string[i] - lb) * k;
+            for (int j = 0; j < len; ++j, k /= 16) {
+                value += get_base_value(string[start + j], 16) * k;
             }
 
             return value;
