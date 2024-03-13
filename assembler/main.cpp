@@ -9,11 +9,11 @@
 #include "data.hpp"
 #include "parser.hpp"
 
-bool handle_messages(assembler::message::List& list, bool print) {
-    if (print)
-        list.for_each_message([] (assembler::message::Message &msg) {
-            msg.print();
-        });
+/** Handle message list: print messages and empty the list, return if there was an error. */
+bool handle_messages(assembler::message::List& list) {
+    list.for_each_message([] (assembler::message::Message &msg) {
+        msg.print();
+    });
 
     bool is_error = list.has_message_of(assembler::message::Level::Error);
 
@@ -24,16 +24,13 @@ bool handle_messages(assembler::message::List& list, bool print) {
 
 int main(int argc, char **argv) {
     char *file_in = nullptr, *file_out = nullptr, *file_postproc = nullptr;
-    bool do_detail = false, debug = false;
+    bool debug = false;
 
     for (int i = 1; i < argc; ++i) {
         if (argv[i][0] == '-') {
             switch (argv[i][1]) {
-                case 'd':  // Detail/Debug
-                    if (do_detail)
-                        debug = true;
-                    else
-                        do_detail = true;
+                case 'd':  // Print debug info
+                    debug = true;
                     break;
                 case 'o':  // Out file
                     i++;
@@ -79,13 +76,13 @@ int main(int argc, char **argv) {
     assembler::message::List messages;
 
     // Read source file into lines
-    if (do_detail)
+    if (debug)
         printf("Reading source file '%s'\n", file_in);
 
     assembler::read_source_file(file_in, pre_data, messages);
 
     // Check if error
-    if (handle_messages(messages, do_detail)) {
+    if (handle_messages(messages)) {
         return EXIT_FAILURE;
     }
 
@@ -96,7 +93,7 @@ int main(int argc, char **argv) {
     assembler::pre_process(pre_data, messages);
 
     // Check if error
-    if (handle_messages(messages, do_detail)) {
+    if (handle_messages(messages)) {
         return EXIT_FAILURE;
     }
 
@@ -139,9 +136,8 @@ int main(int argc, char **argv) {
         file << content;
         file.close();
 
-        if (do_detail) {
+        if (debug)
             std::cout << "Written " << content.size() << " bytes of post-processed source to " << file_postproc << "\n";
-        }
     }
 
     // Construct data structure for parsing
@@ -154,7 +150,7 @@ int main(int argc, char **argv) {
     assembler::parser::parse(data, messages);
 
     // Check if error
-    if (handle_messages(messages, do_detail)) {
+    if (handle_messages(messages)) {
         return EXIT_FAILURE;
     }
 

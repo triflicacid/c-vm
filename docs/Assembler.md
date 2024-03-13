@@ -12,25 +12,24 @@ By default, the output is `assembler/bin/`.
 
 To execute, run `./<bin> [src] [options]` where
   - `src` is the path to the assembly source file to assemble.
-  - `-d` switches on detail. Detail about the source file, line/col reached, error messages etc... are printed. If disabled, only the error number is printed. If it appears twice, detailed messages will be displayed.
+  - `-d` switches on debug, where assembly progress will be logged.
   - `-o <file>` specifies an output file for machine code. If none is provided, defaults to `source.bin`.
   - `-p <file>` specifies an output file for post-processed assembly. This will output the assembly after the pre-processor has dealt with the source. If the flag is stated, but no input file is provided, `preproc.asm` is used.
 
-Upon execution, the command line arguments will be parsed. If successful, the file will be read and a status code returned (described below).
-If one or more instances of `-d`, further detail will be printed to the console.
+Errors will be printed alongside their status code. See below for a list of possible codes and their meanings.
+These may be used in conjunction with error messages to glean insight into the error's nature.
 
-| Code | Name                | Description                                                       |
-|------|---------------------|-------------------------------------------------------------------|
-| 0    | `OK`                | Success; no error.                                                |
-| 1    | `ERR_SYNTAX`        | Generic syntax error. See detailed output.                        | 
-| 2    | `ERR_MNEMONIC`      | Unknown m_mnemonic.                                                 |
-| 3    | `ERR_BAD_ARGS`      | Unknown argument combination for the m_mnemonic.                    |
-| 4    | `ERR_DIRECTIVE`     | Syntax error: unknown directive.                                  |
-| 5    | `ERR_UNKNOWN_LABEL` | Reference to unknown label (label not defined).                   |
-| 6    | `ERR_INVALID_LABEL` | Invalid label (invalid name or shadows main label/register name). |
-| 10   | `ERR_INTERNAL`      | [*internal*] Generic internal error.                              |
-| 11   | `ERR_OPCODE`        | [*internal*] Unknown m_opcode when compiling.                       |
-| 12   | `ERR_CHUNK`         | [*internal*] Chunk collision error.                               |
+| Code | Name               | Description                                                           |
+|------|--------------------|-----------------------------------------------------------------------|
+| 0    | `None`             | Success; no error.                                                    |
+| 1    | `Syntax`           | Generic syntax error. See detailed output.                            | 
+| 2    | `UnknownMnemonic`  | Unknown mnemonic.                                                     |
+| 3    | `BadArguments`     | Unknown argument combination for the mnemonic.                        |
+| 4    | `UnknownDirective` | Unknown directive.                                                    |
+| 5    | `UnknownLabel`     | Reference to unknown label (label not defined).                       |
+| 6    | `InvalidLabel`     | Invalid label (invalid name or shadows main label/register name).     |
+| 7    | `FileNotFound`     | Provided filespec could not be found/opened with the given operation. |
+| 8    | `CircularInclude`  | Circular `%include` detected.                                         |
 
 Note: *internal* errors should not occur and are used for debug purposes only.
 
