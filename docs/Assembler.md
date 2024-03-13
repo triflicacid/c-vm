@@ -10,11 +10,13 @@ By default, the output is `assembler/bin/`.
 
 ## Execution
 
-To execute, run `./<bin> [src] [options]` where
+To execute, run `./assembler.exe <src> [options]` where
   - `src` is the path to the assembly source file to assemble.
   - `-d` switches on debug, where assembly progress will be logged.
   - `-o <file>` specifies an output file for machine code. If none is provided, defaults to `source.bin`.
   - `-p <file>` specifies an output file for post-processed assembly. This will output the assembly after the pre-processor has dealt with the source. If the flag is stated, but no input file is provided, `preproc.asm` is used.
+  - `--no-pre-process` skips the pre-processing step.
+  - `--no-compile` skips compilation - the file will still be parsed.s
 
 Errors will be printed alongside their status code. See below for a list of possible codes and their meanings.
 These may be used in conjunction with error messages to glean insight into the error's nature.

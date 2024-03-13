@@ -2,6 +2,7 @@
 #include <string>
 #include <iostream>
 #include <fstream>
+#include <cstring>
 
 #include "src/pre-process/pre-processor.hpp"
 #include "src/messages/list.hpp"
@@ -10,6 +11,24 @@ extern "C" {
 }
 #include "data.hpp"
 #include "parser.hpp"
+
+struct Options {
+    char *input_file;
+    char *output_file;
+    char *post_processing_file;
+    bool debug;
+    bool do_compilation;
+    bool do_pre_processing;
+
+    Options() {
+        input_file = nullptr;
+        output_file = nullptr;
+        post_processing_file = nullptr;
+        debug = false;
+        do_compilation = true;
+        do_pre_processing = true;
+    }
+};
 
 /** Handle message list: print messages and empty the list, return if there was an error. */
 bool handle_messages(assembler::message::List& list) {
@@ -24,91 +43,83 @@ bool handle_messages(assembler::message::List& list) {
     return is_error;
 }
 
-int main(int argc, char **argv) {
-    char *file_in = nullptr, *file_out = nullptr, *file_postproc = nullptr;
-    bool debug = false;
-
+/** Parse command-line arguments. */
+int parse_arguments(int argc, char **argv, Options &opts) {
     for (int i = 1; i < argc; ++i) {
         if (argv[i][0] == '-') {
-            switch (argv[i][1]) {
-                case 'd':  // Print debug info
-                    debug = true;
-                    break;
-                case 'o':  // Out file
-                    i++;
-                    if (i >= argc) {
-                        std::cout << "-o: expected file path\n";
-                        return EXIT_FAILURE;
-                    }
-                    file_out = argv[i];
-                    break;
-                case 'p':  // Pre-Processed file
-                    i++;
-                    if (i >= argc) {
-                        std::cout << "-p: expected file path\n";
-                        return EXIT_FAILURE;
-                    }
-                    file_postproc = argv[i];
-                    break;
-                default:
-                    std::cout << "Unknown option '" << argv[i] << "'\n";
+            if (argv[i][1] == 'd' && !opts.debug) { // Enable debug mode
+                opts.debug = true;
+            } else if (argv[i][1] == 'o' && !opts.output_file) { // Provide output file
+                i++;
+
+                if (i == argc) {
+                    std::cout << "-o: expected file path\n";
                     return EXIT_FAILURE;
+                }
+
+                opts.output_file = argv[i];
+            } else if (argv[i][1] == 'p' && !opts.post_processing_file) { // Provide post-process output file
+                i++;
+
+                if (i >= argc) {
+                    std::cout << "-p: expected file path\n";
+                    return EXIT_FAILURE;
+                }
+
+                opts.post_processing_file = argv[i];
+            } else if (opts.do_pre_processing && strcmp(argv[i] + 1, "-no-pre-process") == 0) { // Skip pre-processing
+                opts.do_pre_processing = false;
+            } else if (opts.do_compilation && strcmp(argv[i] + 1, "-no-compile") == 0) { // Skip compilation
+                opts.do_compilation = false;
+            } else {
+                std::cout << "Unknown/repeated flag " << argv[i] << "\n";
+                return EXIT_FAILURE;
             }
-        } else if (file_in == nullptr) {
-            file_in = argv[i];
+        } else if (!opts.input_file) {
+            opts.input_file = argv[i];
         } else {
-            std::cout << "Unknown argument '" << argv[i] << "'\n";
+            std::cout << "Unexpected argument '" << argv[i] << "'\n";
             return EXIT_FAILURE;
         }
     }
 
     // Check if all files are present
-    if (file_in == nullptr) {
+    if (opts.input_file == nullptr) {
         std::cout << "Expected input file to be provided\n";
         return EXIT_FAILURE;
     }
 
-    if (file_out == nullptr) {
-        std::cout << "Expected output file to be provided (-o flag)\n";
+    if (opts.output_file == nullptr && opts.do_compilation) {
+        std::cout << "Expected output file to be provided (-o <file>)\n";
         return EXIT_FAILURE;
     }
 
-    // Set-up pre-processing data
-    assembler::pre_processor::Data pre_data(debug);
-    assembler::message::List messages;
+    return EXIT_SUCCESS;
+}
 
-    // Read source file into lines
-    if (debug)
-        std::cout << "Reading source file '" << file_in << "'\n";
-
-    assembler::read_source_file(file_in, pre_data, messages);
-
-    // Check if error
-    if (handle_messages(messages))
-        return EXIT_FAILURE;
-
-    // Pre-process file
-    if (debug)
+/** Pre-process the given data, write to file if not NULL. */
+int pre_process_data(assembler::pre_processor::Data& data, assembler::message::List& messages, char *output_file) {
+    if (data.debug)
         std::cout << CONSOLE_GREEN "=== PRE-PROCESSING ===\n" CONSOLE_RESET;
 
-    assembler::pre_process(pre_data, messages);
+    assembler::pre_process(data, messages);
 
     // Check if error
     if (handle_messages(messages))
         return EXIT_FAILURE;
 
-    if (debug) {
+    if (data.debug) {
         // Print constants
         std::cout << "--- Constants ---\n";
 
-        for (const auto& pair : pre_data.constants) {
+        for (const auto& pair : data.constants) {
             std::cout << "%define " << pair.first << " " << pair.second.value << "\n";
         }
 
         // Print macros
         std::cout << "--- Macros ---\n";
 
-        for (const auto& pair : pre_data.macros) {
+        for (const auto& pair : data.macros) {
             std::cout << "%macro " << pair.first << " ";
 
             for (const auto& param : pair.second.params) {
@@ -120,31 +131,31 @@ int main(int argc, char **argv) {
     }
 
     // Write post-processed content to file?
-    if (file_postproc) {
-        std::ofstream file(file_postproc);
+    if (output_file) {
+        std::ofstream file(output_file);
 
+        // If file failed to open, this is bad but NOT fatal
         if (!file.good()) {
-            if (pre_data.debug) {
-                std::cout << "Failed to open file " << file_postproc << "\n";
-            }
-
-            return EXIT_FAILURE;
+            std::cout << "Failed to open file " << output_file << "\n";
+            return EXIT_SUCCESS;
         }
 
         // Write post-processed content to the output stream
-        std::string content = pre_data.write_lines();
+        std::string content = data.write_lines();
         file << content;
         file.close();
 
-        if (debug)
-            std::cout << "Written " << content.size() << " bytes of post-processed source to " << file_postproc << "\n";
+        if (data.debug)
+            std::cout << "Written " << content.size() << " bytes of post-processed source to " << output_file << "\n";
     }
 
-    // Construct data structure for parsing
-    assembler::Data data(pre_data);
+    return EXIT_SUCCESS;
+}
 
+/** Parse the given data. */
+int parse_data(assembler::Data &data, assembler::message::List& messages) {
     // Parse pre-processed lines
-    if (debug)
+    if (data.debug)
         std::cout << CONSOLE_GREEN "=== PARSING ===\n" CONSOLE_RESET;
 
     assembler::parser::parse(data, messages);
@@ -154,7 +165,7 @@ int main(int argc, char **argv) {
         return EXIT_FAILURE;
     }
 
-    if (debug) {
+    if (data.debug) {
         // Print chunks
         std::cout << "--- Chunks ---\n";
 
@@ -163,12 +174,17 @@ int main(int argc, char **argv) {
         }
     }
 
+    return EXIT_SUCCESS;
+}
+
+/** Compile data to given file. */
+int compile_result(assembler::Data& data, char *output_file) {
     // Open output file
-    std::ofstream file(file_out, std::ios::binary);
+    std::ofstream file(output_file, std::ios::binary);
 
     // Check if the file exists
     if (!file.good()) {
-        std::cout << "Failed to open output file " << file_out << "\n";
+        std::cout << "Failed to open output file " << output_file << "\n";
         return EXIT_FAILURE;
     }
 
@@ -178,10 +194,52 @@ int main(int argc, char **argv) {
     data.write_chunks(file);
     auto after = file.tellp();
 
-    if (debug)
-        std::cout << "Written " << (after - before + 1) << " bytes to file " << file_out << "\n";
+    if (data.debug)
+        std::cout << "Written " << (after - before + 1) << " bytes to file " << output_file << "\n";
 
     file.close();
+
+    return EXIT_SUCCESS;
+}
+
+int main(int argc, char **argv) {
+    // Parse CLI
+    Options opts;
+
+    if (parse_arguments(argc, argv, opts) == EXIT_FAILURE) {
+        return EXIT_FAILURE;
+    }
+
+    // Set-up pre-processing data
+    assembler::pre_processor::Data pre_data(opts.debug);
+    assembler::message::List messages;
+
+    // Read source file into lines
+    if (opts.debug)
+        std::cout << "Reading source file '" << opts.input_file << "'\n";
+
+    assembler::read_source_file(opts.input_file, pre_data, messages);
+
+    // Check if error
+    if (handle_messages(messages))
+        return EXIT_FAILURE;
+
+    // Pre-process file
+    if (opts.do_pre_processing && pre_process_data(pre_data, messages, opts.post_processing_file) == EXIT_FAILURE) {
+        return EXIT_FAILURE;
+    }
+
+    // Construct data structure for parsing
+    assembler::Data data(pre_data);
+
+    if (parse_data(data, messages) == EXIT_FAILURE) {
+        return EXIT_FAILURE;
+    }
+
+    // Compile data
+    if (opts.do_compilation && compile_result(data, opts.output_file) == EXIT_FAILURE) {
+        return EXIT_FAILURE;
+    }
 
     return EXIT_SUCCESS;
 }
