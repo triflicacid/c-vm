@@ -80,7 +80,15 @@ namespace assembler::parser {
             std::string mnemonic = line.data.substr(start, i - start);
 
             if (data.debug)
-                std::cout << "[" << line_idx << ":0] Mnemonic " << mnemonic << "\n";
+                std::cout << "[" << line_idx << ":" << start << "] Mnemonic " << mnemonic << "\n";
+
+            // Before anything, check if mnemonic exists
+            if (!instruction::Signature::exists(mnemonic)) {
+                auto err = new class message::Error(data.file_path, line.n, start, message::ErrorType::UnknownMnemonic);
+                err->m_msg = "Unknown mnemonic '" + mnemonic + "'";
+                msgs.add(err);
+                return;
+            }
 
             // Parse arguments
             std::vector<instruction::Argument> arguments;
@@ -130,31 +138,19 @@ namespace assembler::parser {
             auto signature = instruction::Signature::find(mnemonic, argument_types);
 
             if (signature == nullptr) {
-                std::string error_message;
-                message::ErrorType error_type;
+                // Build argument string
+                std::stringstream stream;
+                stream << "Unknown arguments for mnemonic " << mnemonic << ": ";
 
-                // Determine if the mnemonic exists
-                if (instruction::Signature::exists(mnemonic)) {
-                    error_type = message::ErrorType::BadArguments;
+                for (int j = 0; j < arguments.size(); j++) {
+                    arguments[j].print(stream);
 
-                    std::stringstream stream;
-                    stream << "Unknown arguments for mnemonic " << mnemonic << ": ";
-
-                    for (int j = 0; j < arguments.size(); j++) {
-                        arguments[j].print(stream);
-
-                        if (j < arguments.size() - 1)
-                            stream << ", ";
-                    }
-
-                    error_message = stream.str();
-                } else {
-                    error_type = message::ErrorType::UnknownMnemonic;
-                    error_message = "Unknown mnemonic '" + mnemonic  + "'";
+                    if (j < arguments.size() - 1)
+                        stream << ", ";
                 }
 
-                auto err = new class message::Error(data.file_path, line.n, 0, error_type);
-                err->m_msg = error_message;
+                auto err = new class message::Error(data.file_path, line.n, start, message::ErrorType::BadArguments);
+                err->m_msg = stream.str();
                 msgs.add(err);
                 return;
             }
