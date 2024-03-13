@@ -44,7 +44,15 @@ namespace assembler {
 
     void Chunk::set_instruction(instruction::Instruction *instruction) {
         is_data = false;
-        bytes = instruction->bytes;
+        bytes = instruction->get_bytes();
         data = instruction;
+    }
+
+    void Chunk::write(std::ostream &out) const {
+        if (is_data) {
+            out.write((char *) data, bytes);
+        } else {
+            get_instruction()->write(out);
+        }
     }
 }

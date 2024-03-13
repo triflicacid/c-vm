@@ -36,5 +36,11 @@ namespace assembler {
 
         /** Replace all instances of <label> with the given <address>. */
         void replace_label(const std::string &label, int address);
+
+        /** Get size in bytes. */
+        int get_bytes();
+
+        /** Write chunks to output stream. */
+        void write(std::ostream& stream);
     };
 }

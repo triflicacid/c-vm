@@ -14,22 +14,31 @@ namespace assembler::instruction {
         RegisterPointer
     };
 
+    struct Param {
+        ParamType type;
+        int size;
+    };
+
     class Signature {
     private:
         std::string m_mnemonic;
-        std::vector<ParamType> m_params;
+        std::vector<Param> m_params;
+        std::vector<int> m_sizes;
         OPCODE_T m_opcode;
 
     public:
-        Signature(std::string mnemonic, std::vector<ParamType> params, OPCODE_T opcode);
+        Signature(std::string mnemonic, std::vector<Param> params, OPCODE_T opcode);
 
         [[nodiscard]] std::string get_mnemonic() const { return m_mnemonic; }
 
         size_t param_count() { return m_params.size(); }
 
-        ParamType get_param(int i) { return m_params[i]; }
+        Param *get_param(int i) { return &m_params[i]; }
 
         [[nodiscard]] OPCODE_T get_opcode() const { return m_opcode; }
+
+        /** Get byte-size of entire instruction. */
+        int get_bytes();
 
         /** Return whether the given opcode exists. */
         static bool exists(const std::string& mnemonic);

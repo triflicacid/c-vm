@@ -431,6 +431,8 @@ namespace assembler {
                 // Remove this line from the program - it will be replaced soon
                 data.lines.erase(data.lines.begin() + lines_idx);
 
+                int insert_idx = lines_idx;
+
                 // Insert macro's lines
                 for (auto macro_line : macro_exists->second.lines) {
                     int arg_index = 0;
@@ -453,7 +455,7 @@ namespace assembler {
                     }
 
                     // Add modified macro line to program body
-                    data.lines.insert(data.lines.begin() + lines_idx, {line.n, macro_line});
+                    data.lines.insert(data.lines.begin() + insert_idx++, {line.n, macro_line});
                 }
 
                 // We have inserted the macro's body now, so we continue

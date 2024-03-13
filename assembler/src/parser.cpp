@@ -108,6 +108,12 @@ namespace assembler::parser {
                 arguments.push_back(argument);
                 argument_types.push_back(argument.get_type());
 
+                if (data.debug) {
+                    std::cout << "\tArg: ";
+                    argument.print();
+                    std::cout << "\n";
+                }
+
                 // Skip next
                 if (line.data[i] == ',')
                     i++;
@@ -155,6 +161,24 @@ namespace assembler::parser {
 
             data.chunks.push_back(chunk);
             offset += chunk->bytes;
+        }
+
+        // Check if any labels left...
+        for (auto chunk : data.chunks) {
+            if (!chunk->is_data) {
+                auto instruction = chunk->get_instruction();
+
+                for (auto & arg : instruction->args) {
+                    if (arg.is_label()) {
+                        auto line = data.lines[chunk->source_line];
+
+                        auto err = new class message::Error(data.file_path, line.n, 0, message::ErrorType::UnknownLabel);
+                        err->m_msg = "Unresolved label reference '" + *arg.get_label() + "'";
+                        msgs.add(err);
+                        return;
+                    }
+                }
+            }
         }
     }
 
@@ -307,10 +331,10 @@ namespace assembler::parser {
 
             argument.update(instruction::ArgumentType::LabelLiteral, 0);
             argument.set_label(sub);
+        } else {
+            // Substitute label value
+            argument.transform_label(label->second.addr);
         }
-
-        // Substitute label value
-        argument.transform_label(label->second.addr);
     }
 
     int parse_register(const std::string& s, int &i) {

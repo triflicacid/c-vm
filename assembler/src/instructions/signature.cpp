@@ -6,7 +6,7 @@
 #include <algorithm>
 
 namespace assembler::instruction {
-    Signature::Signature(std::string mnemonic, std::vector<ParamType> params, OPCODE_T opcode) {
+    Signature::Signature(std::string mnemonic, std::vector<Param> params, OPCODE_T opcode) {
         m_mnemonic = std::move(mnemonic);
         m_params = std::move(params);
         m_opcode = opcode;
@@ -24,7 +24,7 @@ namespace assembler::instruction {
                 bool match = true;
 
                 for (int i = 0; i < args.size(); ++i) {
-                    if (!is_match(args[i], signature.m_params[i])) {
+                    if (!is_match(args[i], signature.get_param(i)->type)) {
                         match = false;
                         break;
                     }
@@ -36,6 +36,16 @@ namespace assembler::instruction {
         }
 
         return nullptr;
+    }
+
+    int Signature::get_bytes() {
+        int size = (int) sizeof(m_opcode);
+
+        for (const Param& param : m_params) {
+            size += param.size;
+        }
+
+        return size;
     }
 
     bool is_match(ArgumentType arg, ParamType param) {
