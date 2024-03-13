@@ -1,10 +1,10 @@
-mov [string], r1
-mov [br], r2
-prh r1
-prc r2
-prc r1
-prc r2
+%include lib:macros
+
+mov '\n', r5
+print_memory string, 4
+print_char r5
+print_string string, 0
+print_char r5
 hlt
 
-string: u8 "Hi!"
-br: u8 '\n'
+string: u8 "Hi!", 0

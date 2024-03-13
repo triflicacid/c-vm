@@ -148,15 +148,22 @@ namespace assembler {
                         skip_whitespace(line.data, i);
 
                         // Extract file path
-                        std::filesystem::path file_path = line.data.substr(i);
+                        std::string file_path = line.data.substr(i);
 
                         if (data.debug) {
-                            std::cout << "\tFile path '" + file_path.string() + "'\n";
+                            std::cout << "\tFile path '" + file_path + "'\n";
                             std::cout << "\tBase directory '" + data.file_path.parent_path().string() + "'\n";
                         }
 
                         // Append current base directory
-                        auto full_path = data.file_path.parent_path() / file_path;
+                        std::filesystem::path full_path = data.file_path.parent_path();
+
+                        // Library path?
+                        if (starts_with(file_path, "lib:")) {
+                            full_path = data.executable.parent_path().parent_path() / "lib" / std::filesystem::path(file_path.substr(4) + ".asm");
+                        } else {
+                            full_path = data.file_path.parent_path() / std::filesystem::path(file_path);
+                        }
 
                         if (data.debug) {
                             std::cout << "\tFull path '" + full_path.string() + "'\n";
@@ -164,12 +171,18 @@ namespace assembler {
                         }
 
                         // Set-up pre-processing data
-                        pre_processor::Data include_data(data.debug);
-                        include_data.file_path = data.file_path;
+                        pre_processor::Data include_data(data);
                         message::List include_messages;
 
                         // Read included file
                         read_source_file(full_path.string(), include_data, include_messages);
+
+                        if (include_messages.has_message_of(message::Level::Error)) {
+                            // Try appending ".asm"
+                            full_path += ".asm";
+                            include_messages.clear();
+                            read_source_file(full_path.string(), include_data, include_messages);
+                        }
 
                         if (include_messages.has_message_of(message::Level::Error)) {
                             msgs.append(include_messages);

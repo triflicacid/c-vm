@@ -34,10 +34,10 @@ void skip_alpha(const std::string &s, int &i);
 void skip_alphanum(const std::string &s, int &i);
 
 /** Return whether string a starts with string b */
-bool starts_with(const std::string &a, std::string &b);
+bool starts_with(const std::string &a, std::string b);
 
 /** Return whether string a[idx:] starts with string b */
-bool starts_with(const std::string &a, int pos, std::string &b);
+bool starts_with(const std::string &a, int pos, std::string b);
 
 /** Decode escape sequence '\...'.  */
 long long decode_escape_seq(const std::string &string, int &i);

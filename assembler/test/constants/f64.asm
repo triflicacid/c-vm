@@ -1,10 +1,11 @@
-mov [pi], r1
-mov [br], r2
-prh r1
-prc r2
-prd r1
-prc r2
+%include lib:macros
+
+mov [pi], r5
+print_hex r5
+print_newline
+print_uint r5
+print_newline
+print_double r5
 hlt
 
-pi: f64 3.142
-br: u8 '\n'
+pi: f64 3.14159

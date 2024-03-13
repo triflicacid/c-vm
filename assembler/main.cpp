@@ -212,6 +212,7 @@ int main(int argc, char **argv) {
 
     // Set-up pre-processing data
     assembler::pre_processor::Data pre_data(opts.debug);
+    pre_data.set_executable(argv[0]);
     assembler::message::List messages;
 
     // Read source file into lines

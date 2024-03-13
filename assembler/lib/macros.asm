@@ -73,3 +73,17 @@
 %macro input_string str_addr max_len
     _syscall_2 str_addr, max_len, SYSCALL_INPUT_STRING
 %end
+
+%macro print_registers
+    _syscall_0 SYSCALL_PRINT_REGISTERS
+%end
+
+%macro print_memory addr len
+    _syscall_2 addr, len, SYSCALL_PRINT_MEMORY
+%end
+
+%macro print_newline
+    mov SYSCALL_PRINT_CHAR, r0
+    mov '\n', r1
+    syscall
+%end

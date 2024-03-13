@@ -121,6 +121,21 @@ mov NUMBER, r0
 -->
 mov 123, r0
 ``` 
+- `%include [lib:]<path>` - paste contents of the given file into the assembly source. The file will be opened from the location of the current file (this changes with each nested `%include`).
+  - If the file cannot be found, the pre-processor will try again with the file type `.asm`.
+  - If the path begins with `lib:`, the library directory `assembler/lib` will be searched. Note, that the `.asm` file extensions is **not** required here.
+```
+%include lib:syscall_macros
+mov 42, r0
+print_int r0
+hlt
+-->
+mov 42, r0
+mov r0, r1
+mov 0, r0
+syscall
+hlt
+```
 - `%macro [NAME] <params, ...>` - defines a macro, which is an expandable block of instructions, with the following name. You may provide a list of arguments. All source lines after `%macro` are considered part of the macro's body and **cannot** be more directives -- only `%end` is permitted, which will terminate the macro body.
 After definition, when `NAME` is encountered in the `mnemonic` position, supplied arguments are passed to the parameters `<params, ...>`. Any instances of a parameter is replaced by its respective argument in the macro's body. The original line is removed and the modified macro's body is "pasted" in.
 ```

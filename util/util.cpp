@@ -1,5 +1,7 @@
 #include "util.hpp"
 
+#include <utility>
+
 std::string& ltrim(std::string& s, const char* t) {
     s.erase(0, s.find_first_not_of(t));
     return s;
@@ -44,11 +46,11 @@ void skip_alphanum(const std::string &s, int &i) {
         i++;
 }
 
-bool starts_with(const std::string &a, std::string &b) {
-    return starts_with(a, 0, b);
+bool starts_with(const std::string &a, std::string b) {
+    return starts_with(a, 0, std::move(b));
 }
 
-bool starts_with(const std::string &a, int pos, std::string& b) {
+bool starts_with(const std::string &a, int pos, std::string b) {
     if (a.length() < b.length()) {
         return false;
     }

@@ -9,6 +9,7 @@
 
 namespace assembler::pre_processor {
     struct Data {
+        std::filesystem::path executable; // Path to executable
         std::filesystem::path file_path;  // Name of source file
         bool debug;               // Print debug comments?
         std::vector<Line> lines;  // List of source file lines
@@ -19,6 +20,15 @@ namespace assembler::pre_processor {
         explicit Data(bool debug) {
             this->debug = debug;
         }
+
+        Data(const Data& data) {
+            debug = data.debug;
+            file_path = data.file_path;
+            executable = data.executable;
+        }
+
+        /** Set executable path. */
+        void set_executable(const std::string& path);
 
         /** Writes `lines` to buffer. */
         std::string write_lines();
