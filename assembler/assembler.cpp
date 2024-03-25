@@ -9,7 +9,7 @@
 extern "C" {
 #include "util.h"
 }
-#include "data.hpp"
+#include "assembler_data.hpp"
 #include "parser.hpp"
 
 struct Options {
