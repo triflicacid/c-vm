@@ -1,7 +1,8 @@
-mov 6, r0
-mov [data], r1
-xor r2, r2
+mov [data], r5
+psh r5
+pop r1
+mov 0, r0
 syscall
 hlt
 
-data: u8 "Hello World", 0
+data: u8 42

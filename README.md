@@ -12,7 +12,6 @@ For more information, see `docs/`, `tests/`.
 ### TODO
 - CPU
     - Add Breakpoint instruction
-    - Implement instructions OP_PUSH_REGPTR, OP_POP_REGPTR
 - Assembler
     - Support for expressions - RPN. Include dollar `$` variable for last address.
 - Print to STDOUT (using memory mapping to map characters?)

@@ -497,24 +497,24 @@
 // Push first 64-bits of a register to the stack
 // Syntax: `psh64 <reg: u8>`
 #define OP_PUSH64_REG 0x0110
-// Push value at memory address stored in register to the stack
-// Syntax: `psh <regptr: u8>`
-#define OP_PUSH_REGPTR 0x0111
-// Push 8-bit value at memory address stored in register to the stack
-// Syntax: `psh8 <regptr: u8>`
-#define OP_PUSH8_REGPTR 0x0112
-// Push 16-bit value at memory address stored in register to the stack
-// Syntax: `psh16 <regptr: u8>`
-#define OP_PUSH16_REGPTR 0x0113
-// Push 32-bit value at memory address stored in register to the stack
-// Syntax: `psh32 <regptr: u8>`
-#define OP_PUSH32_REGPTR 0x0114
-// Push 64-bit value at memory address stored in register to the stack
-// Syntax: `psh64 <regptr: u8>`
-#define OP_PUSH64_REGPTR 0x0115
-// Push (n*8)-bit value at memory address stored in register to the stack
-// Syntax: `psh <bytes: u8> <regptr: ...>`
-#define OP_PUSHN_REGPTR 0x0116
+//// Push value at memory address stored in register to the stack
+//// Syntax: `psh <regptr: u8>`
+//#define OP_PUSH_REGPTR 0x0111
+//// Push 8-bit value at memory address stored in register to the stack
+//// Syntax: `psh8 <regptr: u8>`
+//#define OP_PUSH8_REGPTR 0x0112
+//// Push 16-bit value at memory address stored in register to the stack
+//// Syntax: `psh16 <regptr: u8>`
+//#define OP_PUSH16_REGPTR 0x0113
+//// Push 32-bit value at memory address stored in register to the stack
+//// Syntax: `psh32 <regptr: u8>`
+//#define OP_PUSH32_REGPTR 0x0114
+//// Push 64-bit value at memory address stored in register to the stack
+//// Syntax: `psh64 <regptr: u8>`
+//#define OP_PUSH64_REGPTR 0x0115
+//// Push (n*8)-bit value at memory address stored in register to the stack
+//// Syntax: `psh <bytes: u8> <regptr: ...>`
+//#define OP_PUSHN_REGPTR 0x0116
 
 // Pop word from stack and place in register
 // Syntax: `pop <reg: u8>`
@@ -534,24 +534,24 @@
 // Pop (n*8)-bits from stack and write to memory address
 // Syntax: `pop <bytes: u8> <addr: uword>`
 #define OP_POPN_MEM 0x0125
-// Pop word from the stack and place in address in register
-// Syntax: `pop <regptr: u8>`
-#define OP_POP_REGPTR 0x0126
-// Pop 8-bit value from the stack and place in address in register
-// Syntax: `pop8 <regptr: u8>`
-#define OP_POP8_REGPTR 0x0127
-// Pop 16-bit value from the stack and place in address in register
-// Syntax: `pop16 <regptr: u8>`
-#define OP_POP16_REGPTR 0x0128
-// Pop 32-bit value from the stack and place in address in register
-// Syntax: `pop32 <regptr: u8>`
-#define OP_POP32_REGPTR 0x0129
-// Pop 64-bit value from the stack and place in address in register
-// Syntax: `pop64 <regptr: u8>`
-#define OP_POP64_REGPTR 0x012A
-// Pop (n*8)-bit value from the stack and place in address in register
-// Syntax: `pop <bytes: u8> <regptr: u8>`
-#define OP_POPN_REGPTR 0x012B
+//// Pop word from the stack and place in address in register
+//// Syntax: `pop <regptr: u8>`
+//#define OP_POP_REGPTR 0x0126
+//// Pop 8-bit value from the stack and place in address in register
+//// Syntax: `pop8 <regptr: u8>`
+//#define OP_POP8_REGPTR 0x0127
+//// Pop 16-bit value from the stack and place in address in register
+//// Syntax: `pop16 <regptr: u8>`
+//#define OP_POP16_REGPTR 0x0128
+//// Pop 32-bit value from the stack and place in address in register
+//// Syntax: `pop32 <regptr: u8>`
+//#define OP_POP32_REGPTR 0x0129
+//// Pop 64-bit value from the stack and place in address in register
+//// Syntax: `pop64 <regptr: u8>`
+//#define OP_POP64_REGPTR 0x012A
+//// Pop (n*8)-bit value from the stack and place in address in register
+//// Syntax: `pop <bytes: u8> <regptr: u8>`
+//#define OP_POPN_REGPTR 0x012B
 
 // Call literal
 // Syntax: `cal <lit: uword>`
