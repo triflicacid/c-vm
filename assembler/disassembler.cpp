@@ -71,6 +71,30 @@ int parse_arguments(int argc, char **argv, Options &opts) {
     return EXIT_SUCCESS;
 }
 
+/** Write assembly to file. */
+int write_result(disassembler::Data& data, char *output_file) {
+    // Open output file
+    std::ofstream file(output_file, std::ios::binary);
+
+    // Check if the file exists
+    if (!file.good()) {
+        std::cout << "Failed to open output file " << output_file << "\n";
+        return EXIT_FAILURE;
+    }
+
+    // Write compiled chunks to output file
+    auto before = file.tellp();
+    file << data.assembly.str();
+    auto after = file.tellp();
+
+    if (data.debug)
+        std::cout << "Written " << (after - before + 1) << " bytes to file " << output_file << "\n";
+
+    file.close();
+
+    return EXIT_SUCCESS;
+}
+
 int main(int argc, char **argv) {
     // Parse arguments
     Options opts;
@@ -103,6 +127,11 @@ int main(int argc, char **argv) {
     disassembler::disassemble(data, messages);
 
     if (handle_messages(messages)) {
+        return EXIT_FAILURE;
+    }
+
+    // Write to output file
+    if (write_result(data, opts.output_file) == EXIT_FAILURE) {
         return EXIT_FAILURE;
     }
 

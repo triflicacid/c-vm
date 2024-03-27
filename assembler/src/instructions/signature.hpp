@@ -45,6 +45,9 @@ namespace assembler::instruction {
 
         /** Find the signature given mnemonic and arguments. */
         static Signature *find(const std::string& mnemonic, const std::vector<ArgumentType>& args);
+
+        /** Find the signature given opcode. */
+        static Signature *find(OPCODE_T opcode);
     };
 
     /** Return whether the argument matches against the parameter. */

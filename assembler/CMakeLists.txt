@@ -14,4 +14,5 @@ project(disassembler LANGUAGES CXX)
 
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${PROJECT_SOURCE_DIR}/bin)
 add_executable(disassembler "../util/util.cpp" src/messages/message.cpp src/messages/error.cpp src/messages/list.cpp
-        src/disassembler_data.cpp src/disassembler.cpp disassembler.cpp)
+        src/disassembler_data.cpp src/disassembler.cpp src/instructions/signature.cpp src/instructions/signatures.cpp
+        disassembler.cpp)

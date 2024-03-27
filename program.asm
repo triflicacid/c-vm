@@ -5,5 +5,5 @@ mov 0, r0
 syscall
 hlt
 
-;.section data
+.section data
 data: u8 42

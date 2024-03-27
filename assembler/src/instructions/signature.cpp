@@ -37,6 +37,16 @@ namespace assembler::instruction {
         return nullptr;
     }
 
+    Signature *Signature::find(OPCODE_T opcode) {
+        for (auto &signature : signature_list) {
+            if (signature.m_opcode == opcode) {
+                return &signature;
+            }
+        }
+
+        return nullptr;
+    }
+
     int Signature::get_bytes() {
         int size = (int) sizeof(m_opcode);
 
