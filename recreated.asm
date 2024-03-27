@@ -1,1 +1,6 @@
-u8 10h 0 6 0 0 0 0 0 0 0 0 10h 0 25h 0 0 0 0 0 0 0 1 10h 0 0 0 0 0 0 0 0 0 2 '2' 1 FFh FFh "Hello\0" F7h 
+mov 6 r0 
+mov 37 r1 
+mov 0 r2 
+syscall 
+hlt 
+u8 "Hello\0"
