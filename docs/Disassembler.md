@@ -15,6 +15,8 @@ To execute, run `./disassembler.exe <src> [options]` where
   - `-d` switches on debug, where assembly progress will be logged.
   - `-o <file>` specifies an output file for machine code. If none is provided, defaults to `source.bin`.
   - `--format-data` formats data (`u8 ...`) nicely (e.g., strings, hex).
+  - `--no-labels` disabled insertion of labels (except `main`).
+  - `--commas` inserts commas between arguments and data constants.
 
 ## Disassembling
 

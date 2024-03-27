@@ -11,6 +11,7 @@ namespace disassembler {
         bool debug; // Print debug comments?
         bool format_data; // Format data constants
         bool insert_labels; // Insert labels
+        bool insert_commas; // Insert commas between arguments/data items
         int start_addr;
         std::string main_label; // Contain "main" label name
         size_t raw_buffer_size; // Size of binary
@@ -30,6 +31,7 @@ namespace disassembler {
             start_addr = 0;
             format_data = false;
             insert_labels = true;
+            insert_commas = false;
             raw_buffer_size = 0;
             raw_buffer = nullptr;
             buffer_size = 0;

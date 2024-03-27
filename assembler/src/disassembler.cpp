@@ -130,18 +130,20 @@ namespace disassembler {
         }
 
         // Write data segment
-        write_data_to_stream(data.assembly, segment->second, data.format_data);
+        write_data_to_stream(data.assembly, segment->second, data.format_data, data.insert_commas);
         offset += (int) segment->second.size();
     }
 
-    void write_data_to_stream(std::stringstream &stream, const std::vector<unsigned char> &bytes, bool format) {
+    void write_data_to_stream(std::stringstream &stream, const std::vector<unsigned char> &bytes, bool format, bool commas) {
         if (!bytes.empty()) {
             stream << "u8 ";
 
             if (format) {
                 std::vector<unsigned char> printable_chars;
 
-                for (int byte : bytes) {
+                for (int i = 0; i < bytes.size(); i++) {
+                    auto byte = bytes[i];
+
                     // Printable character?
                     if (std::isalnum(byte) || (byte == 0 && !printable_chars.empty())) {
                         printable_chars.push_back(byte);
@@ -152,16 +154,19 @@ namespace disassembler {
                     if (!printable_chars.empty()) {
                         write_chars_to_stream(stream, printable_chars);
                         printable_chars.clear();
-                        stream << " ";
+                        stream << (commas ? ", " : " ");
                     }
 
                     if (byte < 10) {
                         // Print as decimal
-                        stream << std::dec << byte << " ";
+                        stream << std::dec << byte;
                     } else {
                         // Print as hex
-                        stream << std::hex << std::uppercase << byte << "h ";
+                        stream << std::hex << std::uppercase << byte << "h";
                     }
+
+                    if (i < bytes.size() - 1)
+                        stream << (commas ? ", " : " ");
                 }
 
                 // Write left-over printable characters?
@@ -169,8 +174,11 @@ namespace disassembler {
             } else {
                 stream << std::dec;
 
-                for (int byte : bytes) {
-                    stream << (int) byte << " ";
+                for (int i = 0; i < bytes.size(); i++) {
+                    stream << (int) bytes[i];
+
+                    if (i < bytes.size() - 1)
+                        stream << (commas ? ", " : " ");
                 }
             }
 
@@ -210,9 +218,11 @@ namespace disassembler {
 
         if (data.debug)
             std::cout << "[+" << ptr << "] Mnemonic " << signature.get_opcode() << ", " << signature.get_mnemonic()
-                << ". Size: " << signature.get_bytes() << " bytes\n";
+                << ". Size: " << signature.get_bytes() << " bytes.\n";
 
-        for (int i = 0; i < signature.param_count(); i++) {
+        // Iterate over parameters
+        int count = (int) signature.param_count();
+        for (int i = 0; i < count; i++) {
             const auto param = signature.get_param(i);
 
             // Extract value
@@ -226,14 +236,14 @@ namespace disassembler {
                         if (data.debug)
                             std::cout << "\tArg: literal " << value << "\n";
 
-                        data.assembly << value << " ";
+                        data.assembly << value;
                     } else {
                         auto label = get_data_label(label_num->second);
 
                         if (data.debug)
                             std::cout << "\tArg: label (lit.) " << label << "\n";
 
-                        data.assembly << label << " ";
+                        data.assembly << label;
                     }
 
                     break;
@@ -244,7 +254,7 @@ namespace disassembler {
                     if (data.debug)
                         std::cout << "\tArg: register " << value << " (" << reg << ")\n";
 
-                    data.assembly << reg << " ";
+                    data.assembly << reg;
                     break;
                 }
                 case assembler::instruction::ParamType::Address: {
@@ -254,14 +264,14 @@ namespace disassembler {
                         if (data.debug)
                             std::cout << "\tArg: address [" << value << "]\n";
 
-                        data.assembly << value << " ";
+                        data.assembly << value;
                     } else {
                         auto label = get_data_label(label_num->second);
 
                         if (data.debug)
                             std::cout << "\tArg: label (addr.) [" << label << "]\n";
 
-                        data.assembly << "[" << label << "] ";
+                        data.assembly << "[" << label << "]";
                     }
 
                     break;
@@ -272,9 +282,12 @@ namespace disassembler {
                     if (data.debug)
                         std::cout << "\tArg: register pointer " << value << " ([" << reg << "])\n";
 
-                    data.assembly << "[" << reg << "] ";
+                    data.assembly << "[" << reg << "]";
                 }
             }
+
+            if (i != count - 1)
+                data.assembly << (data.insert_commas ? ", " : " ");
 
             ptr += param->size;
         }

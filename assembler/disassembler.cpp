@@ -12,6 +12,7 @@ struct Options {
     bool debug;
     bool format_data;
     bool no_labels;
+    bool commas;
 
     Options() {
         input_file = nullptr;
@@ -19,6 +20,7 @@ struct Options {
         debug = false;
         format_data = false;
         no_labels = false;
+        commas = false;
     }
 };
 
@@ -54,6 +56,8 @@ int parse_arguments(int argc, char **argv, Options &opts) {
                 opts.format_data = true;
             } else if (!opts.no_labels && strcmp(argv[i] + 1, "-no-labels") == 0) {
                 opts.no_labels = true;
+            } else if (!opts.commas && strcmp(argv[i] + 1, "-commas") == 0) {
+                opts.commas = true;
             } else {
                 std::cout << "Unknown/repeated flag " << argv[i] << "\n";
                 return EXIT_FAILURE;
@@ -119,6 +123,7 @@ int main(int argc, char **argv) {
     disassembler::Data data(opts.debug);
     data.format_data = opts.format_data;
     data.insert_labels = !opts.no_labels;
+    data.insert_commas = opts.commas;
 
     if (data.load_binary_file(opts.input_file)) {
         if (opts.debug)
