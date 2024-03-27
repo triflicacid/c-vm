@@ -2,6 +2,8 @@
 #include <fstream>
 
 #include "disassembler_data.hpp"
+#include "disassembler.hpp"
+#include "messages/list.hpp"
 
 struct Options {
     char *input_file;
@@ -14,6 +16,19 @@ struct Options {
         debug = false;
     }
 };
+
+/** Handle message list: print messages and empty the list, return if there was an error. */
+bool handle_messages(message::List& list) {
+    list.for_each_message([] (message::Message &msg) {
+        msg.print();
+    });
+
+    bool is_error = list.has_message_of(message::Level::Error);
+
+    list.clear();
+
+    return is_error;
+}
 
 /** Parse command-line arguments. */
 int parse_arguments(int argc, char **argv, Options &opts) {
@@ -82,7 +97,14 @@ int main(int argc, char **argv) {
         return EXIT_FAILURE;
     }
 
-    // TODO
+    // Disassemble
+    message::List messages;
+
+    disassembler::disassemble(data, messages);
+
+    if (handle_messages(messages)) {
+        return EXIT_FAILURE;
+    }
 
     return EXIT_SUCCESS;
 }

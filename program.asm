@@ -5,4 +5,5 @@ mov 0, r0
 syscall
 hlt
 
+;.section data
 data: u8 42

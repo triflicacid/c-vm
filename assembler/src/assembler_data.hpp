@@ -8,14 +8,18 @@ namespace assembler {
     struct Data {
         std::filesystem::path file_path;  // Name of source file
         bool debug;               // Print debug comments?
+        bool strict_sections; // Mnemonics must line up with section type
         std::vector<Line> lines;  // List of source file lines
         std::map<std::string, Label> labels;
         std::string main_label; // Contain "main" label name
         std::vector<Chunk *> chunks; // List of compiled chunks
+        int section_text;
 
         explicit Data(bool debug) {
             this->debug = debug;
+            strict_sections = false;
             main_label = "main";
+            section_text = -1;
         }
 
         explicit Data(pre_processor::Data &data) : Data(data.debug) {

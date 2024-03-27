@@ -5,7 +5,7 @@
 
 #include "../pre-process/location-info.hpp"
 
-namespace assembler::message {
+namespace message {
     enum Level {
         Note,
         Warning,
@@ -29,7 +29,7 @@ namespace assembler::message {
     public:
         Message(Level level, std::filesystem::path filename, int line, int col);
 
-        Message(Level level, const pre_processor::LocationInformation &loc);
+        Message(Level level, const assembler::pre_processor::LocationInformation &loc);
 
         std::string *get_message() { return &m_msg; }
 

@@ -2,11 +2,15 @@
 
 #include "assembler_data.hpp"
 #include "messages/list.hpp"
+#include <unordered_set>
 
 /** (v_int, v_dbl, is_dbl) */
 using AddBytesFunction = std::function<void(unsigned long long, double, bool)>;
 
 namespace assembler::parser {
+    /** List of valid section names. */
+    extern std::unordered_set<std::string> valid_sections;
+
     /** Parse lines into chunks. */
     void parse(Data &data, message::List &msgs);
 

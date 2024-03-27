@@ -9,9 +9,17 @@ extern "C" {
 }
 
 namespace assembler::parser {
+    std::unordered_set<std::string> valid_sections = { "text", "data" };
+
     void parse(Data &data, message::List &msgs) {
+        // Keep track of encountered sections (section -> line)
+        std::map<std::string, int> encountered_sections;
+
         // Track byte offset
         int offset = 0;
+
+        // Current section
+        std::string current_section = "text";
 
         for (int line_idx = 0; line_idx < data.lines.size(); line_idx++) {
             const auto &line = data.lines[line_idx];
@@ -19,6 +27,67 @@ namespace assembler::parser {
             // Extract first item
             int start = 0, i = 0;
             skip_to_break(line.data, i);
+
+            // Do we have a section declarer
+            if (starts_with(line.data, ".section")) {
+                // Extract section name
+                skip_whitespace(line.data, i);
+                int j = i;
+                skip_alpha(line.data, i);
+                std::string section_name = line.data.substr(j, i - j);
+                to_lowercase(section_name);
+
+                if (data.debug)
+                    std::cout << "[" << line.n << ":" << j << "] .section " << section_name << " at offset +" << offset << "\n";
+
+//                // Have we encountered this section before?
+//                auto encountered_before = encountered_sections.find(section_name);
+//
+//                if (encountered_before != encountered_sections.end()) {
+//                    message::Message *msg = new class message::Error(data.file_path, line.n, j,
+//                                                                     message::ErrorType::SectionSeenBefore);
+//                    msg->set_message(".section " + section_name);
+//                    msgs.add(msg);
+//
+//                    msg = new message::Message(message::Level::Note, data.file_path, encountered_before->second, -1);
+//                    msg->set_message("Section header previously encountered here.");
+//                    msgs.add(msg);
+//
+//                    return;
+//                }
+
+                // Must be EOL
+                skip_whitespace(line.data, i);
+                if (i != line.data.size()) {
+                    std::string ch(1, line.data[i]);
+
+                    auto error = new class message::Error(data.file_path, line.n, j, message::ErrorType::Syntax);
+                    error->set_message("Expected end-of-line after .section header, got '" + ch + "'");
+                    msgs.add(error);
+                    return;
+                }
+
+                // Add to register
+                encountered_sections.insert({ section_name, line.n });
+
+                // IOs this a valid section name?
+                if (valid_sections.find(section_name) == valid_sections.end()) {
+                    auto error = new class message::Error(data.file_path, line.n, j, message::ErrorType::UnknownSection);
+                    error->set_message("Unknown section name: .section " + section_name);
+                    msgs.add(error);
+                    return;
+                }
+
+                // Update current section
+                current_section = section_name;
+
+                if (current_section == "text") {
+                    if (data.section_text == -1)
+                        data.section_text = offset;
+                }
+
+                continue;
+            }
 
             // Do we have a label?
             if (line.data[i - 1] == ':') {
@@ -28,6 +97,14 @@ namespace assembler::parser {
                 if (!is_valid_label_name(label_name)) {
                     auto *err = new class message::Error(data.file_path, line.n, start, message::ErrorType::InvalidLabel);
                     err->set_message("Invalid label: '" + label_name + "'");
+                    msgs.add(err);
+                    return;
+                }
+
+                // If label is "main", must be in .section TEXT
+                if (label_name == data.main_label && current_section != "text") {
+                    auto *err = new class message::Error(data.file_path, line.n, start, message::ErrorType::InvalidLabel);
+                    err->set_message("Label " + label_name + " must be in .section text");
                     msgs.add(err);
                     return;
                 }
@@ -80,32 +157,41 @@ namespace assembler::parser {
             if (data.debug)
                 std::cout << "[" << line_idx << ":" << start << "] Mnemonic " << mnemonic << "\n";
 
-            // Is constant specifier?
-            std::vector<unsigned char> *bytes = nullptr;
+            // .section DATA
+            if (!data.strict_sections || current_section == "data") {
+                // Is constant specifier?
+                std::vector<unsigned char> *bytes = nullptr;
 
-            if (parse_data(data, line_idx, start, msgs, &bytes)) {
-                if (data.debug)
-                    std::cout << "\tData (" << bytes->size() << " bytes)\n";
+                if (parse_data(data, line_idx, start, msgs, &bytes)) {
+                    if (data.debug)
+                        std::cout << "\tData (" << bytes->size() << " bytes)\n";
 
-                // Check for errors
-                if (msgs.has_message_of(message::Level::Error)) {
-                    delete bytes;
+                    // Check for errors
+                    if (msgs.has_message_of(message::Level::Error)) {
+                        delete bytes;
+                        return;
+                    }
+
+                    // Insert into a Chunk
+                    auto chunk = new Chunk(line_idx, offset);
+                    chunk->set_data(bytes);
+                    offset += chunk->get_bytes();
+                    data.chunks.push_back(chunk);
+
+                    continue;
+                } else if (data.strict_sections) {
+                    auto err = new class message::Error(data.file_path, line.n, start, message::ErrorType::UnknownMnemonic);
+                    err->set_message("Unknown data-type '" + mnemonic + "' (.section data)");
+                    msgs.add(err);
                     return;
                 }
-
-                // Insert into a Chunk
-                auto chunk = new Chunk(line_idx, offset);
-                chunk->set_data(bytes);
-                offset += chunk->get_bytes();
-                data.chunks.push_back(chunk);
-
-                continue;
             }
 
+            // .section TEXT
             // Before anything, check if mnemonic exists
             if (!instruction::Signature::exists(mnemonic)) {
                 auto err = new class message::Error(data.file_path, line.n, start, message::ErrorType::UnknownMnemonic);
-                err->set_message("Unknown mnemonic '" + mnemonic + "'");
+                err->set_message("Unknown mnemonic '" + mnemonic + "' (.section text)");
                 msgs.add(err);
                 return;
             }

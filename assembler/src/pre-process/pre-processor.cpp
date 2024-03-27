@@ -73,6 +73,11 @@ namespace assembler {
                 }
             }
 
+            // Section header?
+            if (starts_with(line.data, ".section")) {
+                continue;
+            }
+
             // Have we found a directive?
             if (line.data[0] == '%') {
                 int i = 1;

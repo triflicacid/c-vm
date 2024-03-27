@@ -4,7 +4,7 @@
 
 #include "message.hpp"
 
-namespace assembler::message {
+namespace message {
     class List {
     private:
         std::vector<Message *> messages;

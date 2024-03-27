@@ -13,4 +13,5 @@ add_executable(assembler "../util/util.cpp" "src/chunk.cpp" "src/assembler_data.
 project(disassembler LANGUAGES CXX)
 
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${PROJECT_SOURCE_DIR}/bin)
-add_executable(disassembler "../util/util.cpp" "src/disassembler_data.cpp" "disassembler.cpp")
+add_executable(disassembler "../util/util.cpp" src/messages/message.cpp src/messages/error.cpp src/messages/list.cpp
+        src/disassembler_data.cpp src/disassembler.cpp disassembler.cpp)

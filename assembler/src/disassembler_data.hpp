@@ -8,6 +8,7 @@ namespace disassembler {
         bool debug; // Print debug comments?
         size_t buffer_size; // Size of buffer
         char *buffer; // Pointer to buffer
+        std::stringstream assembly;
 
         explicit Data(bool debug) {
             this->debug = debug;

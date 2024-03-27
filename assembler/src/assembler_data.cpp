@@ -30,7 +30,7 @@ namespace assembler {
 
         // Write start address
         auto start_label = labels.find(main_label);
-        WORD_T start_addr = start_label == labels.end() ? 0 : start_label->second.addr;
+        WORD_T start_addr = start_label == labels.end() ? (section_text == -1 ? 0 : section_text) : start_label->second.addr;
         stream.write((char *) &start_addr, sizeof(start_addr));
     }
 

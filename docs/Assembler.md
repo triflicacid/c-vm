@@ -16,7 +16,8 @@ To execute, run `./assembler.exe <src> [options]` where
   - `-o <file>` specifies an output file for machine code. If none is provided, defaults to `source.bin`.
   - `-p <file>` specifies an output file for post-processed assembly. This will output the assembly after the pre-processor has dealt with the source. If the flag is stated, but no input file is provided, `preproc.asm` is used.
   - `--no-pre-process` skips the pre-processing step.
-  - `--no-compile` skips compilation - the file will still be parsed.s
+  - `--no-compile` skips compilation - the file will still be parsed.
+  - `--strict-sections` forces data and instruction mnemonics to be in their respective sections.
 
 Errors will be printed alongside their status code. See below for a list of possible codes and their meanings.
 These may be used in conjunction with error messages to glean insight into the error's nature.
@@ -49,6 +50,12 @@ The assembler works in the current way:
 - Convert into machine code and insert into a buffer
 
 ## Syntax
+
+Before looking at syntax, we must consider sections. Assembly sources are divided up into sections, introduced via `.section <name>`.
+Sections, currently, are optional and simply help to split up the source.
+- `.section text` - default section, contains assembly code. If `main` label is not present, the first occurrence of `.section text` denotes the entry of the program.
+- `.section data` - contains data mnemonics.
+Unless `--strict-sections` is enabled, any mnemonic is allowed anywhere.
 
 Assembly source files are read line-by-line, and have the following general syntax:
 ```

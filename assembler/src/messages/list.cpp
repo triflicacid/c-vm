@@ -1,6 +1,6 @@
 #include "list.hpp"
 
-namespace assembler::message {
+namespace message {
     void List::clear() {
         for (auto message : messages) {
             delete message;

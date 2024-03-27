@@ -2,7 +2,7 @@
 
 #include "message.hpp"
 
-namespace assembler::message {
+namespace message {
     enum ErrorType {
         None,
         Syntax,
@@ -12,7 +12,9 @@ namespace assembler::message {
         UnknownLabel,
         InvalidLabel,
         FileNotFound,
-        CircularInclude
+        CircularInclude,
+        UnknownSection,
+        SectionSeenBefore,
     };
 
     class Error : public Message {

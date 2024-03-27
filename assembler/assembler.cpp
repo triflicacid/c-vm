@@ -17,6 +17,7 @@ struct Options {
     char *output_file;
     char *post_processing_file;
     bool debug;
+    bool strict_sections;
     bool do_compilation;
     bool do_pre_processing;
 
@@ -25,18 +26,19 @@ struct Options {
         output_file = nullptr;
         post_processing_file = nullptr;
         debug = false;
+        strict_sections = false;
         do_compilation = true;
         do_pre_processing = true;
     }
 };
 
 /** Handle message list: print messages and empty the list, return if there was an error. */
-bool handle_messages(assembler::message::List& list) {
-    list.for_each_message([] (assembler::message::Message &msg) {
+bool handle_messages(message::List& list) {
+    list.for_each_message([] (message::Message &msg) {
         msg.print();
     });
 
-    bool is_error = list.has_message_of(assembler::message::Level::Error);
+    bool is_error = list.has_message_of(message::Level::Error);
 
     list.clear();
 
@@ -71,6 +73,8 @@ int parse_arguments(int argc, char **argv, Options &opts) {
                 opts.do_pre_processing = false;
             } else if (opts.do_compilation && strcmp(argv[i] + 1, "-no-compile") == 0) { // Skip compilation
                 opts.do_compilation = false;
+            } else if (!opts.strict_sections && strcmp(argv[i] + 1, "-strict-sections") == 0) {
+                opts.strict_sections = true;
             } else {
                 std::cout << "Unknown/repeated flag " << argv[i] << "\n";
                 return EXIT_FAILURE;
@@ -98,7 +102,7 @@ int parse_arguments(int argc, char **argv, Options &opts) {
 }
 
 /** Pre-process the given data, write to file if not NULL. */
-int pre_process_data(assembler::pre_processor::Data& data, assembler::message::List& messages, char *output_file) {
+int pre_process_data(assembler::pre_processor::Data& data, message::List& messages, char *output_file) {
     if (data.debug)
         std::cout << CONSOLE_GREEN "=== PRE-PROCESSING ===\n" CONSOLE_RESET;
 
@@ -153,7 +157,7 @@ int pre_process_data(assembler::pre_processor::Data& data, assembler::message::L
 }
 
 /** Parse the given data. */
-int parse_data(assembler::Data &data, assembler::message::List& messages) {
+int parse_data(assembler::Data &data, message::List& messages) {
     // Parse pre-processed lines
     if (data.debug)
         std::cout << CONSOLE_GREEN "=== PARSING ===\n" CONSOLE_RESET;
@@ -213,7 +217,7 @@ int main(int argc, char **argv) {
     // Set-up pre-processing data
     assembler::pre_processor::Data pre_data(opts.debug);
     pre_data.set_executable(argv[0]);
-    assembler::message::List messages;
+    message::List messages;
 
     // Read source file into lines
     if (opts.debug)
@@ -232,6 +236,7 @@ int main(int argc, char **argv) {
 
     // Construct data structure for parsing
     assembler::Data data(pre_data);
+    data.strict_sections = opts.strict_sections;
 
     if (parse_data(data, messages) == EXIT_FAILURE) {
         return EXIT_FAILURE;

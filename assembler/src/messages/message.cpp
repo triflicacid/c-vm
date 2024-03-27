@@ -5,7 +5,7 @@ extern "C" {
 #include "util.h"
 }
 
-namespace assembler::message {
+namespace message {
     Message::Message(Level level, std::filesystem::path filename, int line, int col) {
         m_type = level;
         m_line = line;
@@ -13,7 +13,7 @@ namespace assembler::message {
         m_file = std::move(filename);
     }
 
-    Message::Message(Level level, const pre_processor::LocationInformation& loc) {
+    Message::Message(Level level, const assembler::pre_processor::LocationInformation& loc) {
         m_type = level;
         m_line = loc.line;
         m_col = loc.col;
@@ -61,6 +61,8 @@ namespace assembler::message {
 
             if (m_col > -1)
                 std::cout << ", column " << m_col;
+        } else if (m_col > -1) {
+            std::cout << ", offset +" << m_col;
         }
 
         std::cout << ": " << m_msg << "\n";
