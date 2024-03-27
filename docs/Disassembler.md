@@ -21,5 +21,10 @@ To execute, run `./disassembler.exe <src> [options]` where
 Bytes are read as a potential opcode. If the opcode exists, the instruction is extracted and destructured.
 Otherwise, the opcode is taken to be raw data and added to a `u8 ...` clause.
 
+### Labels
+
+The label `main` will be placed at the program's start address, unless the start address is `+0`.
+
 If a literal or address argument points to an address at which a data segment resides, a label will be inserted.
-This behaviour may be disabled via `--no-labels`.
+
+Label insertion may be disabled via `--no-labels` (the `main` label is an exception).

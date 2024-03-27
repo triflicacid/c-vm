@@ -12,6 +12,7 @@ namespace disassembler {
         bool format_data; // Format data constants
         bool insert_labels; // Insert labels
         int start_addr;
+        std::string main_label; // Contain "main" label name
         size_t raw_buffer_size; // Size of binary
         char *raw_buffer; // Pointer to binary buffer
         size_t buffer_size; // Size of buffer
@@ -25,8 +26,10 @@ namespace disassembler {
 
         explicit Data(bool debug) {
             this->debug = debug;
+            main_label = "main";
             start_addr = 0;
             format_data = false;
+            insert_labels = true;
             raw_buffer_size = 0;
             raw_buffer = nullptr;
             buffer_size = 0;

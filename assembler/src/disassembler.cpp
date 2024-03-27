@@ -90,6 +90,11 @@ namespace disassembler {
         pos = 0;
 
         while (pos <= data.buffer_size) {
+            // Main label?
+            if (pos > 0 && pos == data.start_addr) {
+                data.assembly << data.main_label << ":\n";
+            }
+
             auto found_data = data.data_offsets.find(pos);
 
             // We have a data segment
