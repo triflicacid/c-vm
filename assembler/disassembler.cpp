@@ -138,8 +138,10 @@ int main(int argc, char **argv) {
     }
 
     // Disassemble
-    message::List messages;
+    if (opts.debug)
+        std::cout << "Disassembling binary...\n";
 
+    message::List messages;
     disassembler::disassemble(data, messages);
 
     if (handle_messages(messages)) {

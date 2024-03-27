@@ -25,15 +25,23 @@ namespace disassembler {
             // Look-up opcode
             auto signature = assembler::instruction::Signature::find(opcode);
 
-            // Unknown opcode; treat as data
+            // Unknown opcode
             if (signature == nullptr) {
                 for (int off = 0; off < sizeof(opcode); ++off) {
-                    unsigned char byte = (opcode >> (off * 8)) & 0xFF;
-                    data_bytes.push_back(byte);
+                    data_bytes.push_back((opcode >> (off * 8)) & 0xFF);
                 }
 
                 pos += sizeof(opcode);
                 continue;
+            }
+
+            // Not enough space left for instruction
+            if (pos + signature->get_bytes() >= data.buffer_size) {
+                for (; pos < data.buffer_size; pos++) {
+                    data_bytes.push_back(data.buffer[pos]);
+                }
+
+                break;
             }
 
             // Record data segment if necessary

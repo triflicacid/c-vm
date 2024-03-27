@@ -8,19 +8,22 @@
 namespace disassembler {
     struct Data {
         std::filesystem::path file_path; // Name of source file
+
         bool debug; // Print debug comments?
         bool format_data; // Format data constants
         bool insert_labels; // Insert labels
         bool insert_commas; // Insert commas between arguments/data items
+
         int start_addr;
         std::string main_label; // Contain "main" label name
-        size_t raw_buffer_size; // Size of binary
-        char *raw_buffer; // Pointer to binary buffer
+
+        size_t file_buffer_size; // Size of binary
+        char *file_buffer; // Pointer to binary buffer
+
         size_t buffer_size; // Size of buffer
         char *buffer; // Pointer to buffer
-        std::stringstream assembly;
 
-        // Track offsets and what they point to
+        std::stringstream assembly;
         std::map<int, assembler::instruction::Signature *> instruction_offsets; // +offset -> instruction
         std::map<int, std::vector<unsigned char>> data_offsets; // +offset -> bytes
         std::map<int, int> data_labels; // +offset -> label ordinal ("data" + ordinal)
@@ -32,8 +35,8 @@ namespace disassembler {
             format_data = false;
             insert_labels = true;
             insert_commas = false;
-            raw_buffer_size = 0;
-            raw_buffer = nullptr;
+            file_buffer_size = 0;
+            file_buffer = nullptr;
             buffer_size = 0;
             buffer = nullptr;
         }

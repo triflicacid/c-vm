@@ -6,12 +6,13 @@ extern "C" {
 
 namespace disassembler {
     void Data::delete_buffer() {
-        if (raw_buffer != nullptr) {
-            delete raw_buffer;
-            raw_buffer = nullptr;
-            raw_buffer_size = 0;
+        if (file_buffer != nullptr) {
             buffer = nullptr;
             buffer_size = 0;
+
+            delete file_buffer;
+            file_buffer = nullptr;
+            file_buffer_size = 0;
         }
     }
 
@@ -32,19 +33,19 @@ namespace disassembler {
         file.seekg(0);
 
         // Read into buffer
-        raw_buffer_size = file_size;
-        raw_buffer = new char[buffer_size];
-        file.read(raw_buffer, file_size);
+        file_buffer_size = file_size;
+        file_buffer = new char[file_buffer_size];
+        file.read(file_buffer, file_size);
         file_path = path;
 
         // Set headers and increment
         int pos = 0;
-        start_addr = (int) *(WORD_T *)(raw_buffer + pos);
+        start_addr = (int) *(WORD_T *)(file_buffer + pos);
         pos += sizeof(WORD_T);
 
         // Set program buffer
-        buffer = raw_buffer + pos;
-        buffer_size = raw_buffer_size - pos;
+        buffer = file_buffer + pos;
+        buffer_size = file_buffer_size - pos;
 
         // Close file
         file.close();
