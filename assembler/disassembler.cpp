@@ -1,5 +1,6 @@
 #include <iostream>
 #include <fstream>
+#include <cstring>
 
 #include "disassembler_data.hpp"
 #include "disassembler.hpp"
@@ -9,11 +10,13 @@ struct Options {
     char *input_file;
     char *output_file;
     bool debug;
+    bool format_data;
 
     Options() {
         input_file = nullptr;
         output_file = nullptr;
         debug = false;
+        format_data = false;
     }
 };
 
@@ -45,6 +48,8 @@ int parse_arguments(int argc, char **argv, Options &opts) {
                 }
 
                 opts.output_file = argv[i];
+            } else if (!opts.format_data && strcmp(argv[i] + 1, "-format-data") == 0) {
+                opts.format_data = true;
             } else {
                 std::cout << "Unknown/repeated flag " << argv[i] << "\n";
                 return EXIT_FAILURE;
@@ -108,6 +113,7 @@ int main(int argc, char **argv) {
         std::cout << "Reading source file '" << opts.input_file << "'... ";
 
     disassembler::Data data(opts.debug);
+    data.format_data = opts.format_data;
 
     if (data.load_binary_file(opts.input_file)) {
         if (opts.debug)
