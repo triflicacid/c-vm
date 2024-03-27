@@ -11,12 +11,14 @@ struct Options {
     char *output_file;
     bool debug;
     bool format_data;
+    bool no_labels;
 
     Options() {
         input_file = nullptr;
         output_file = nullptr;
         debug = false;
         format_data = false;
+        no_labels = false;
     }
 };
 
@@ -50,6 +52,8 @@ int parse_arguments(int argc, char **argv, Options &opts) {
                 opts.output_file = argv[i];
             } else if (!opts.format_data && strcmp(argv[i] + 1, "-format-data") == 0) {
                 opts.format_data = true;
+            } else if (!opts.no_labels && strcmp(argv[i] + 1, "-no-labels") == 0) {
+                opts.no_labels = true;
             } else {
                 std::cout << "Unknown/repeated flag " << argv[i] << "\n";
                 return EXIT_FAILURE;
@@ -114,6 +118,7 @@ int main(int argc, char **argv) {
 
     disassembler::Data data(opts.debug);
     data.format_data = opts.format_data;
+    data.insert_labels = !opts.no_labels;
 
     if (data.load_binary_file(opts.input_file)) {
         if (opts.debug)

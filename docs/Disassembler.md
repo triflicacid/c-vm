@@ -22,3 +22,4 @@ Bytes are read as a potential opcode. If the opcode exists, the instruction is e
 Otherwise, the opcode is taken to be raw data and added to a `u8 ...` clause.
 
 If a literal or address argument points to an address at which a data segment resides, a label will be inserted.
+This behaviour may be disabled via `--no-labels`.

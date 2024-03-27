@@ -53,32 +53,36 @@ namespace disassembler {
             data_bytes.clear();
         }
 
-        // Check if any data segments are referenced inside opcodes
-        int data_label_idx = 0;
+        // Check if any data segments are referenced inside opcodes for data labels
+        if (data.insert_labels) {
+            int data_label_idx = 0;
 
-        for (auto &pair : data.instruction_offsets) {
-            pos = pair.first + (int) sizeof(pair.second->get_opcode());
+            for (auto &pair: data.instruction_offsets) {
+                pos = pair.first + (int) sizeof(pair.second->get_opcode());
 
-            // Iterate over instruction arguments
-            for (int i = 0; i < pair.second->param_count(); i++) {
-                auto param = pair.second->get_param(i);
+                // Iterate over instruction arguments
+                for (int i = 0; i < pair.second->param_count(); i++) {
+                    auto param = pair.second->get_param(i);
 
-                if (param->type == assembler::instruction::ParamType::Literal || param->type == assembler::instruction::ParamType::Address) {
-                    // Extract location
-                    auto value = extract_number(data.buffer, param->size, pos);
+                    if (param->type == assembler::instruction::ParamType::Literal ||
+                        param->type == assembler::instruction::ParamType::Address) {
+                        // Extract location
+                        auto value = extract_number(data.buffer, param->size, pos);
 
-                    // Is there a data segment at this location?
-                    auto segment = data.data_offsets.find((int) value);
+                        // Is there a data segment at this location?
+                        auto segment = data.data_offsets.find((int) value);
 
-                    if (segment != data.data_offsets.end()) {
-                        if (data.debug)
-                            std::cout << "[+" << pos << "] Found literal/address pointing to data segment at +" << value << "\n";
+                        if (segment != data.data_offsets.end()) {
+                            if (data.debug)
+                                std::cout << "[+" << pos << "] Found literal/address pointing to data segment at +"
+                                          << value << "\n";
 
-                        data.data_labels.insert({ value, data_label_idx++ });
+                            data.data_labels.insert({value, data_label_idx++});
+                        }
                     }
-                }
 
-                pos += param->size;
+                    pos += param->size;
+                }
             }
         }
 

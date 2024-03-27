@@ -9,7 +9,8 @@ namespace disassembler {
     struct Data {
         std::filesystem::path file_path; // Name of source file
         bool debug; // Print debug comments?
-        bool format_data;
+        bool format_data; // Format data constants
+        bool insert_labels; // Insert labels
         int start_addr;
         size_t raw_buffer_size; // Size of binary
         char *raw_buffer; // Pointer to binary buffer
