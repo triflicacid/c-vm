@@ -18,8 +18,7 @@ To execute, run `./disassembler.exe <src> [options]` where
 
 ## Disassembling
 
-The disassembler is currently pretty simple.
 Bytes are read as a potential opcode. If the opcode exists, the instruction is extracted and destructured.
 Otherwise, the opcode is taken to be raw data and added to a `u8 ...` clause.
 
-Addresses are inserted verbatim into the program without labels.
+If a literal or address argument points to an address at which a data segment resides, a label will be inserted.

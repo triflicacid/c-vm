@@ -1,9 +1,7 @@
 #include <iostream>
 #include "disassembler.hpp"
 #include "messages/error.hpp"
-#include "instructions/signature.hpp"
 extern "C" {
-#include "processor/src/opcodes.h"
 #include "processor/src/registers.h"
 #include "util.h"
 }
@@ -11,17 +9,15 @@ extern "C" {
 namespace disassembler {
     /** Disassembler given data. */
     void disassemble(Data &data, message::List &msgs) {
-        int pos = 0;
-
-        // Skip past starting position
-        WORD_T start_addr = *(WORD_T *)(data.buffer + pos);
-        pos += sizeof(start_addr);
-
         if (data.debug)
-            std::cout << "Start address: +" << start_addr << "\n";
+            std::cout << "Start address: +" << data.start_addr << "\n";
+
+        // Track current position
+        int pos = 0;
 
         std::vector<unsigned char> data_bytes;
 
+        // Initial pass: populate map data structures
         while (pos < data.buffer_size) {
             // Read current byte as opcode
             OPCODE_T opcode = *(OPCODE_T *)(data.buffer + pos);
@@ -40,26 +36,93 @@ namespace disassembler {
                 continue;
             }
 
-            // If we were writing data, end it
+            // Record data segment if necessary
             if (!data_bytes.empty()) {
-                if (data.debug)
-                    std::cout << "[+" << (pos - data_bytes.size()) << "] Writing " << data_bytes.size() << " bytes of data.\n";
-
-                write_data_to_stream(data.assembly, data_bytes, data.format_data);
+                data.data_offsets.insert({ pos - data_bytes.size(), data_bytes });
                 data_bytes.clear();
             }
 
-            // Write instruction
-            write_signature_to_stream(data, *signature, pos);
+            // Record instruction
+            data.instruction_offsets.insert({ pos, signature });
+            pos += signature->get_bytes();
         }
 
-        // Ensure all bytes are written
+        // If more data in buffer, record it
         if (!data_bytes.empty()) {
-            if (data.debug)
-                std::cout << "[+" << (pos - data_bytes.size()) << "] Writing " << data_bytes.size() << " bytes of data.\n";
-
-            write_data_to_stream(data.assembly, data_bytes, data.format_data);
+            data.data_offsets.insert({ pos - data_bytes.size(), data_bytes });
+            data_bytes.clear();
         }
+
+        // Check if any data segments are referenced inside opcodes
+        int data_label_idx = 0;
+
+        for (auto &pair : data.instruction_offsets) {
+            pos = pair.first + (int) sizeof(pair.second->get_opcode());
+
+            // Iterate over instruction arguments
+            for (int i = 0; i < pair.second->param_count(); i++) {
+                auto param = pair.second->get_param(i);
+
+                if (param->type == assembler::instruction::ParamType::Literal || param->type == assembler::instruction::ParamType::Address) {
+                    // Extract location
+                    auto value = extract_number(data.buffer, param->size, pos);
+
+                    // Is there a data segment at this location?
+                    auto segment = data.data_offsets.find((int) value);
+
+                    if (segment != data.data_offsets.end()) {
+                        if (data.debug)
+                            std::cout << "[+" << pos << "] Found literal/address pointing to data segment at +" << value << "\n";
+
+                        data.data_labels.insert({ value, data_label_idx++ });
+                    }
+                }
+
+                pos += param->size;
+            }
+        }
+
+        // Write assembly source
+        pos = 0;
+
+        while (pos <= data.buffer_size) {
+            auto found_data = data.data_offsets.find(pos);
+
+            // We have a data segment
+            if (found_data != data.data_offsets.end()) {
+                write_data_segment(data, pos);
+                continue;
+            }
+
+            auto found_op = data.instruction_offsets.find(pos);
+
+            // We have an instruction segment
+            if (found_op != data.instruction_offsets.end()) {
+                write_signature_to_stream(data, *found_op->second, pos);
+                continue;
+            }
+
+            pos++;
+        }
+    }
+
+    void write_data_segment(Data &data, int &offset) {
+        // Find segment at offset
+        auto segment = data.data_offsets.find(offset);
+
+        if (segment == data.data_offsets.end())
+            return;
+
+        // Predicated by a label?
+        auto label_num = data.data_labels.find(offset);
+
+        if (label_num != data.data_labels.end()) {
+            data.assembly << get_data_label(label_num->second) << ": ";
+        }
+
+        // Write data segment
+        write_data_to_stream(data.assembly, segment->second, data.format_data);
+        offset += (int) segment->second.size();
     }
 
     void write_data_to_stream(std::stringstream &stream, const std::vector<unsigned char> &bytes, bool format) {
@@ -145,15 +208,27 @@ namespace disassembler {
 
             // Extract value
             unsigned long long value = extract_number(data.buffer, param->size, ptr);
-            ptr += param->size;
 
             switch (param->type) {
-                case assembler::instruction::ParamType::Literal:
-                    if (data.debug)
-                        std::cout << "\tArg: literal " << value << "\n";
+                case assembler::instruction::ParamType::Literal: {
+                    auto label_num = data.data_labels.find((int) value);
 
-                    data.assembly << value << " ";
+                    if (label_num == data.data_labels.end()) {
+                        if (data.debug)
+                            std::cout << "\tArg: literal " << value << "\n";
+
+                        data.assembly << value << " ";
+                    } else {
+                        auto label = get_data_label(label_num->second);
+
+                        if (data.debug)
+                            std::cout << "\tArg: label (lit.) " << label << "\n";
+
+                        data.assembly << label << " ";
+                    }
+
                     break;
+                }
                 case assembler::instruction::ParamType::Register: {
                     auto reg = register_to_string((int) value);
 
@@ -163,12 +238,25 @@ namespace disassembler {
                     data.assembly << reg << " ";
                     break;
                 }
-                case assembler::instruction::ParamType::Address:
-                    if (data.debug)
-                        std::cout << "\tArg: address [" << value << "]\n";
+                case assembler::instruction::ParamType::Address: {
+                    auto label_num = data.data_labels.find((int) value);
 
-                    data.assembly << "[" << value << "] ";
+                    if (label_num == data.data_labels.end()) {
+                        if (data.debug)
+                            std::cout << "\tArg: address [" << value << "]\n";
+
+                        data.assembly << value << " ";
+                    } else {
+                        auto label = get_data_label(label_num->second);
+
+                        if (data.debug)
+                            std::cout << "\tArg: label (addr.) [" << label << "]\n";
+
+                        data.assembly << "[" << label << "] ";
+                    }
+
                     break;
+                }
                 case assembler::instruction::ParamType::RegisterPointer: {
                     auto reg = register_to_string((int) value);
 
@@ -179,6 +267,7 @@ namespace disassembler {
                 }
             }
 
+            ptr += param->size;
         }
 
         data.assembly << "\n";

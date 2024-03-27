@@ -8,6 +8,9 @@ namespace disassembler {
     /** Disassembler given data. */
     void disassemble(Data &data, message::List &msgs);
 
+    /** Write data segment starting at an offset to the stream. Offset incremented by segment size. */
+    void write_data_segment(Data &data, int &offset);
+
     /** Write byte vector to stream. */
     void write_data_to_stream(std::stringstream &stream, const std::vector<unsigned char> &bytes, bool format);
 
@@ -22,4 +25,9 @@ namespace disassembler {
 
     /** Extract number of given size in bytes (<= 8). */
     unsigned long long extract_number(const char *buffer, int size, int ptr);
+
+    /** Get data label from ordinal. */
+    inline std::string get_data_label(int ordinal) {
+        return "data" + std::to_string(ordinal);
+    }
 }

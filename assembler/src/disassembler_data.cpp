@@ -1,10 +1,16 @@
 #include <fstream>
 #include "disassembler_data.hpp"
+extern "C" {
+#include "util.h"
+}
 
 namespace disassembler {
     void Data::delete_buffer() {
-        if (buffer != nullptr) {
-            delete buffer;
+        if (raw_buffer != nullptr) {
+            delete raw_buffer;
+            raw_buffer = nullptr;
+            raw_buffer_size = 0;
+            buffer = nullptr;
             buffer_size = 0;
         }
     }
@@ -13,7 +19,7 @@ namespace disassembler {
         delete_buffer();
 
         // Try to open provided handle
-        std::ifstream file(path, std::ios::in | std::ios::binary );
+        std::ifstream file(path, std::ios::in | std::ios::binary);
 
         if (!file.good()) {
             return false;
@@ -26,10 +32,19 @@ namespace disassembler {
         file.seekg(0);
 
         // Read into buffer
-        buffer_size = file_size;
-        buffer = new char[buffer_size];
-        file.read(buffer, file_size);
+        raw_buffer_size = file_size;
+        raw_buffer = new char[buffer_size];
+        file.read(raw_buffer, file_size);
         file_path = path;
+
+        // Set headers and increment
+        int pos = 0;
+        start_addr = (int) *(WORD_T *)(raw_buffer + pos);
+        pos += sizeof(WORD_T);
+
+        // Set program buffer
+        buffer = raw_buffer + pos;
+        buffer_size = raw_buffer_size - pos;
 
         // Close file
         file.close();
