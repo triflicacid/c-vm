@@ -520,7 +520,7 @@ namespace assembler::parser {
             argument.set_label(sub);
         } else {
             // Substitute label value
-            argument.transform_label(label->second.addr);
+            argument.update(instruction::ArgumentType::Literal, label->second.addr);
         }
     }
 
