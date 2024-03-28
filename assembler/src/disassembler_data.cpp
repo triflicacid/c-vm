@@ -16,20 +16,6 @@ namespace disassembler {
         }
     }
 
-    std::string Data::get_label(int offset) {
-        auto data = data_labels.find(offset);
-
-        if (data != data_labels.end())
-            return get_data_label(data->second);
-
-        auto pos = pos_labels.find(offset);
-
-        if (pos != pos_labels.end())
-            return get_pos_label(pos->second);
-
-        return "";
-    }
-
     std::string Data::get_data_label(int ordinal) const {
         return data_labels.size() < 2 ? "data" : "data" + std::to_string(ordinal);
     }

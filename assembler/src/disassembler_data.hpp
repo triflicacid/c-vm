@@ -52,9 +52,6 @@ namespace disassembler {
         /** Get `position` label with ordinal. */
         std::string get_pos_label(int ordinal) const;
 
-        /** Get label given offset or "". */
-        std::string get_label(int offset);
-
         /** Delete buffer contents. */
         void delete_buffer();
 
