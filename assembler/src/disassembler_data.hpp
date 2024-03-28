@@ -27,6 +27,7 @@ namespace disassembler {
         std::map<int, assembler::instruction::Signature *> instruction_offsets; // +offset -> instruction
         std::map<int, std::vector<unsigned char>> data_offsets; // +offset -> bytes
         std::map<int, int> data_labels; // +offset -> label ordinal ("data" + ordinal)
+        std::map<int, int> pos_labels; // +offset -> label ordinal ("pos" + ordinal)
 
         explicit Data(bool debug) {
             this->debug = debug;
@@ -44,6 +45,15 @@ namespace disassembler {
         ~Data() {
             delete_buffer();
         }
+
+        /** Get `data` label with ordinal. */
+        std::string get_data_label(int ordinal) const;
+
+        /** Get `position` label with ordinal. */
+        std::string get_pos_label(int ordinal) const;
+
+        /** Get label given offset or "". */
+        std::string get_label(int offset);
 
         /** Delete buffer contents. */
         void delete_buffer();

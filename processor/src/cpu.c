@@ -123,8 +123,8 @@ int cpu_reg_print(CPU cpu) {
             case REG_ERR:
                 sprintf(str, REG_ERR_SYM);
                 break;
-            case REG_FLAG:
-                sprintf(str, REG_FLAG_SYM);
+            case REG_CMP:
+                sprintf(str, REG_CMP_SYM);
                 break;
             case REG_CCR:
                 sprintf(str, REG_CCR_SYM);

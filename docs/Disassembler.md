@@ -25,8 +25,8 @@ Otherwise, the opcode is taken to be raw data and added to a `u8 ...` clause.
 
 ### Labels
 
-The label `main` will be placed at the program's start address, unless the start address is `+0`.
-
-If a literal or address argument points to an address at which a data segment resides, a label will be inserted.
+- The label `main` will be placed at the program's start address, unless the start address is `+0`.
+- If a literal or address argument points to an address at which a data segment resides, a label will be inserted e.g., `data0`.
+- For a literal/address which appears in a jump instruction, a label will be placed at this address e.g., `pos0`.
 
 Label insertion may be disabled via `--no-labels` (the `main` label is an exception).

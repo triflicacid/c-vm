@@ -25,9 +25,4 @@ namespace disassembler {
 
     /** Extract number of given size in bytes (<= 8). */
     unsigned long long extract_number(const char *buffer, int size, int ptr);
-
-    /** Get data label from ordinal. */
-    inline std::string get_data_label(int ordinal) {
-        return "data" + std::to_string(ordinal);
-    }
 }

@@ -64,6 +64,7 @@ namespace disassembler {
         // Check if any data segments are referenced inside opcodes for data labels
         if (data.insert_labels) {
             int data_label_idx = 0;
+            int pos_label_idx = 0;
 
             for (auto &pair: data.instruction_offsets) {
                 pos = pair.first + (int) sizeof(pair.second->get_opcode());
@@ -71,9 +72,18 @@ namespace disassembler {
                 // Iterate over instruction arguments
                 for (int i = 0; i < pair.second->param_count(); i++) {
                     auto param = pair.second->get_param(i);
+                    bool is_lit_addr = param->type == assembler::instruction::ParamType::Literal ||
+                                       param->type == assembler::instruction::ParamType::Address;
 
-                    if (param->type == assembler::instruction::ParamType::Literal ||
-                        param->type == assembler::instruction::ParamType::Address) {
+                    // Check if we have a JMP instruction
+                    if (assembler::instruction::is_jmp_opcode(pair.second->get_opcode())) {
+                        if (is_lit_addr) {
+                            // Extract location
+                            auto value = extract_number(data.buffer, param->size, pos);
+
+                            data.pos_labels.insert({value, pos_label_idx++});
+                        }
+                    } else if (is_lit_addr) {
                         // Extract location
                         auto value = extract_number(data.buffer, param->size, pos);
 
@@ -101,6 +111,13 @@ namespace disassembler {
             // Main label?
             if (pos > 0 && pos == data.start_addr) {
                 data.assembly << data.main_label << ":\n";
+            }
+
+            // Position label?
+            auto pos_label = data.pos_labels.find(pos);
+
+            if (pos_label != data.pos_labels.end()) {
+                data.assembly << data.get_pos_label(pos_label->second) << ":\n";
             }
 
             auto found_data = data.data_offsets.find(pos);
@@ -134,7 +151,7 @@ namespace disassembler {
         auto label_num = data.data_labels.find(offset);
 
         if (label_num != data.data_labels.end()) {
-            data.assembly << get_data_label(label_num->second) << ": ";
+            data.assembly << data.get_data_label(label_num->second) << ": ";
         }
 
         // Write data segment
@@ -236,61 +253,66 @@ namespace disassembler {
             // Extract value
             unsigned long long value = extract_number(data.buffer, param->size, ptr);
 
-            switch (param->type) {
-                case assembler::instruction::ParamType::Literal: {
-                    auto label_num = data.data_labels.find((int) value);
+            if (param->type == assembler::instruction::ParamType::Literal || param->type == assembler::instruction::ParamType::Address) {
+                std::string label;
 
-                    if (label_num == data.data_labels.end()) {
+                // Is JMP?
+                if (assembler::instruction::is_jmp_opcode(signature.get_opcode())) {
+                    auto pos_label = data.pos_labels.find((int) value);
+
+                    if (pos_label != data.pos_labels.end()) {
+                        label = data.get_pos_label(pos_label->second);
+                    }
+                }
+
+                // Points to data segment?
+                if (label.empty()) {
+                    auto data_label = data.data_labels.find((int) value);
+
+                    if (data_label != data.data_labels.end()) {
+                        label = data.get_data_label(data_label->second);
+                    }
+                }
+
+                if (param->type == assembler::instruction::ParamType::Address) {
+                    if (label.empty()) {
+                        if (data.debug)
+                            std::cout << "\tArg: address " << value << "\n";
+
+                        data.assembly << "[" << value << "]";
+                    } else {
+                        if (data.debug)
+                            std::cout << "\tArg: label (addr.) " << label << " (" << value << ")\n";
+
+                        data.assembly << "[" << label << "]";
+                    }
+                } else {
+                    if (label.empty()) {
                         if (data.debug)
                             std::cout << "\tArg: literal " << value << "\n";
 
                         data.assembly << value;
                     } else {
-                        auto label = get_data_label(label_num->second);
-
                         if (data.debug)
-                            std::cout << "\tArg: label (lit.) " << label << "\n";
+                            std::cout << "\tArg: label (lit.) " << label << " (" << value << ")\n";
 
                         data.assembly << label;
                     }
-
-                    break;
                 }
-                case assembler::instruction::ParamType::Register: {
-                    auto reg = register_to_string((int) value);
+            } else {
+                // Register/Register pointer
+                auto reg = register_to_string((int) value);
 
-                    if (data.debug)
-                        std::cout << "\tArg: register " << value << " (" << reg << ")\n";
-
-                    data.assembly << reg;
-                    break;
-                }
-                case assembler::instruction::ParamType::Address: {
-                    auto label_num = data.data_labels.find((int) value);
-
-                    if (label_num == data.data_labels.end()) {
-                        if (data.debug)
-                            std::cout << "\tArg: address [" << value << "]\n";
-
-                        data.assembly << value;
-                    } else {
-                        auto label = get_data_label(label_num->second);
-
-                        if (data.debug)
-                            std::cout << "\tArg: label (addr.) [" << label << "]\n";
-
-                        data.assembly << "[" << label << "]";
-                    }
-
-                    break;
-                }
-                case assembler::instruction::ParamType::RegisterPointer: {
-                    auto reg = register_to_string((int) value);
-
+                if (param->type == assembler::instruction::ParamType::RegisterPointer) {
                     if (data.debug)
                         std::cout << "\tArg: register pointer " << value << " ([" << reg << "])\n";
 
                     data.assembly << "[" << reg << "]";
+                } else {
+                    if (data.debug)
+                        std::cout << "\tArg: register " << value << " (" << reg << ")\n";
+
+                    data.assembly << reg;
                 }
             }
 

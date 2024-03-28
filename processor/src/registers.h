@@ -2,12 +2,12 @@
 #define CPU_REGISTERS_H_
 
 // Registers: general 0-9, ip
-// Register for flags
-#define REG_FLAG 9
-#define REG_FLAG_SYM "fl"
 // Register for comparison operations
 #define REG_CMP 9
 #define REG_CMP_SYM "cp"
+// Register for flags
+#define REG_FLAG 9
+#define REG_FLAG_SYM "fl"
 // Error code
 #define REG_ERR 10
 #define REG_ERR_SYM "er"

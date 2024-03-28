@@ -52,4 +52,9 @@ namespace assembler::instruction {
 
     /** Return whether the argument matches against the parameter. */
     bool is_match(ArgumentType arg, ParamType param);
+
+    /** Check if opcode is a JMP instruction. */
+    inline bool is_jmp_opcode(OPCODE_T opcode) {
+        return (opcode & 0xFFF0) == 0x00E0;
+    }
 }
