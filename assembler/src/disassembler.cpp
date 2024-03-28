@@ -167,10 +167,10 @@ namespace disassembler {
                 std::vector<unsigned char> printable_chars;
 
                 for (int i = 0; i < bytes.size(); i++) {
-                    auto byte = bytes[i];
+                    int byte = bytes[i];
 
                     // Printable character?
-                    if (std::isalnum(byte) || (byte == 0 && !printable_chars.empty())) {
+                    if (std::isalnum(byte) || std::isspace(byte) || (!printable_chars.empty() && (byte == 0 || (byte > 31 && byte < 127)))) {
                         printable_chars.push_back(byte);
                         continue;
                     }
