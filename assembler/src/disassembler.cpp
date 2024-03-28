@@ -85,17 +85,28 @@ namespace disassembler {
                         }
                     } else if (is_lit_addr) {
                         // Extract location
-                        auto value = extract_number(data.buffer, param->size, pos);
+                        int value = (int) extract_number(data.buffer, param->size, pos);
 
                         // Is there a data segment at this location?
-                        auto segment = data.data_offsets.find((int) value);
+                        auto segment = data.get_segment_in(value);
 
-                        if (segment != data.data_offsets.end()) {
+                        if (segment) {
                             if (data.debug)
                                 std::cout << "[+" << pos << "] Found literal/address pointing to data segment at +"
                                           << value << "\n";
 
                             data.data_labels.insert({value, data_label_idx++});
+
+                            // Do we need to split the segment?
+                            if (value != segment->first) {
+                                // Split segment into two
+                                int split_at = value - segment->first;
+                                std::vector<unsigned char> former_segment(segment->second.begin(), segment->second.begin() + split_at),
+                                    latter_segment(segment->second.begin() + split_at, segment->second.end());
+
+                                data.data_offsets[segment->first] = former_segment;
+                                data.data_offsets.insert({value, latter_segment});
+                            }
                         }
                     }
 

@@ -57,5 +57,8 @@ namespace disassembler {
 
         /** Load data from binary file. Set `file_path`. Return success. */
         bool load_binary_file(const std::filesystem::path& path);
+
+        /** Return data segment the given offset lies inside, or end. */
+        std::pair<const int, std::vector<unsigned char>> *get_segment_in(int offset);
     };
 }

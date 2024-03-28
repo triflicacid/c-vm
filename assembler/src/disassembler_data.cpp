@@ -59,4 +59,14 @@ namespace disassembler {
         file.close();
         return true;
     }
+
+    std::pair<const int, std::vector<unsigned char>> *Data::get_segment_in(int offset) {
+        for (auto &pair : data_offsets) {
+            if (offset >= pair.first && offset < pair.first + pair.second.size()) {
+                return &pair;
+            }
+        }
+
+        return nullptr;
+    }
 }
