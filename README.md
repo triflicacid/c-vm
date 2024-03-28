@@ -6,8 +6,10 @@ For more information, see `docs/`, `tests/`.
 
 ## Components
 - Basic "CPU"
-- Basic assembler (*in progress*)
-    - Source is `assemble.c`. See `docs/Assembler.md` for more.
+- Assembler
+    - Source is `assembler/assembler.cpp`. See `docs/Assembler.md` for more.
+- Disassembler
+  - Source is `assembler/disassembler.cpp`. See `docs/Disassembler.md` for more.
 
 ### TODO
 - CPU
@@ -15,7 +17,6 @@ For more information, see `docs/`, `tests/`.
 - Assembler
     - Support for expressions - RPN. Include dollar `$` variable for last address.
 - Print to STDOUT (using memory mapping to map characters?)
-- Basic de-compiler? Given .bin, produce .asm
 - Compiler to C-like language
 
 ### Bugs
