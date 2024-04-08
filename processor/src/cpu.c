@@ -176,8 +176,21 @@ int cpu_save_memory_to_file(CPU cpu, FILE* fp, WORD_T addr_start, size_t length)
 }
 
 void cpu_stack_print(CPU cpu) {
-    fprintf(cpu->out, "[");
+    fprintf(cpu->out, "(%lli bytes) [", cpu->mem_size - cpu->regs[REG_SP]);
     for (UWORD_T i = 1, addr = cpu->regs[REG_SP]; addr < cpu->mem_size; ++addr, ++i) {
+        fprintf(cpu->out, " %.2X", *((T_u8*)cpu->mem + addr));
+        if (i % 20 == 0) fprintf(cpu->out, "\n ");
+    }
+    fprintf(cpu->out, "]\n");
+}
+
+void cpu_stack_frame_print(CPU cpu) {
+    UWORD_T bound = cpu->regs[REG_FP];
+    UWORD_T frame_size = MEM_READ(bound, UWORD_T);
+    bound += frame_size;
+    fprintf(cpu->out, "(%lli bytes) [", bound - cpu->regs[REG_SP]);
+
+    for (UWORD_T i = 1, addr = cpu->regs[REG_FP]; addr < bound; ++addr, ++i) {
         fprintf(cpu->out, " %.2X", *((T_u8*)cpu->mem + addr));
         if (i % 20 == 0) fprintf(cpu->out, "\n");
     }
@@ -224,13 +237,16 @@ int cpu_handle_breakpoint(CPU cpu) {
     WORD_T address = 0;
 
     while (1) {
-        fprintf(cpu->out, "> Options: (Enter) continue; (h) halt; (r) print registers; (s) print stack.\n");
+        fprintf(cpu->out, "> Options: (Enter) continue; (h) halt; (f) print stack frame; (r) print registers; (s) print stack.\n");
         switch (getch()) {
             case '\r':
             case '\n':
                 return 1;
             case 'h':
                 return 0;
+            case 'f': {
+                cpu_stack_frame_print(cpu);
+            } break;
             case 'r': {
                 cpu_reg_print(cpu);
 

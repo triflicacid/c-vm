@@ -94,6 +94,9 @@ int cpu_syscall(CPU cpu, int op);
 /** Print the contents of a CPUs stack */
 void cpu_stack_print(CPU cpu);
 
+/** Print the contents of the topmost CPU stack frame. */
+void cpu_stack_frame_print(CPU cpu);
+
 /** Print CPU error information */
 void cpu_err_print(CPU cpu);
 
