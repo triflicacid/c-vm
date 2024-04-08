@@ -51,9 +51,10 @@ void cpu_print_details(CPU cpu) {
     WORD_T err = cpu->regs[REG_ERR];
 
     printf("===== CPU =====\n");
-    printf("Memory Size: " WORD_T_FLAG "\n", cpu->mem_size);
-    printf("Registers  : %i\n", REG_COUNT);
-    printf("Stack Size : %lli\n", cpu->regs[REG_STACK_SIZE]);
+    printf("Memory Size: " WORD_T_FLAG " bytes\n", cpu->mem_size);
+    printf("Registers  : %i (%i resv.)\n", REG_COUNT, REG_RESV);
+    printf("Stack Cap. : %lli bytes\n", cpu->regs[REG_STACK_SIZE]);
+    printf("Stack Size : %lli bytes\n", cpu->mem_size - cpu->regs[REG_SP]);
     printf("STDOUT     : %i\n", fileno(cpu->out));
     printf("Errno      : 0x%.8llX\n", err);
     if (err != ERR_NONE)
@@ -237,16 +238,19 @@ int cpu_handle_breakpoint(CPU cpu) {
     WORD_T address = 0;
 
     while (1) {
-        fprintf(cpu->out, "> Options: (Enter) continue; (h) halt; (f) print stack frame; (r) print registers; (s) print stack.\n");
+        fprintf(cpu->out, "> Options: (Enter) continue; (h) halt; (f) print stack frame; (o) CPU overview; (r) print registers; (s) print stack.\n");
         switch (getch()) {
             case '\r':
             case '\n':
                 return 1;
             case 'h':
                 return 0;
-            case 'f': {
+            case 'f':
                 cpu_stack_frame_print(cpu);
-            } break;
+                break;
+            case 'o':
+                cpu_print_details(cpu);
+                break;
             case 'r': {
                 cpu_reg_print(cpu);
 
