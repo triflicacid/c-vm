@@ -145,14 +145,14 @@ int cpu_reg_print(CPU cpu) {
                 sprintf(str, "r%i", i);
                 break;
         }
-        printf("%s | ", str);
+        fprintf(cpu->out, "[%i] %s | ", i, str);
         if (IS_BIG_ENDIAN)
             for (int j = 0; j < sizeof(WORD_T); --j)
-                printf("%.2x", *((T_u8*)cpu->regs + i * sizeof(WORD_T) + j));
+                fprintf(cpu->out, "%.2x", *((T_u8*)cpu->regs + i * sizeof(WORD_T) + j));
         else
             for (int j = sizeof(WORD_T); j > 0; --j)
-                printf("%.2x", *((T_u8*)cpu->regs + i * sizeof(WORD_T) + (j - 1)));
-        printf("\n");
+                fprintf(cpu->out, "%.2x", *((T_u8*)cpu->regs + i * sizeof(WORD_T) + (j - 1)));
+        fprintf(cpu->out, "\n");
     }
     return ERR_NONE;
 }
@@ -221,15 +221,33 @@ void cpu_err_print(CPU cpu) {
 /** Handle breakpoint instruction. Return whether to continue execution (1) or halt (0). */
 int cpu_handle_breakpoint(CPU cpu) {
     fprintf(cpu->out, "** BREAKPOINT at +%llu **\n", cpu->regs[REG_IP]);
+    WORD_T address = 0;
 
     while (1) {
-        fprintf(cpu->out, "> Options: (Enter) continue; (h) halt.");
-        int ch = getch();
+        fprintf(cpu->out, "> Options: (Enter) continue; (h) halt; (r) view registers.\n");
+        switch (getch()) {
+            case '\r':
+            case '\n':
+                return 1;
+            case 'h':
+                return 0;
+            case 'r': {
+                cpu_reg_print(cpu);
 
-        if (ch == '\n' || ch == '\r') {
-            return 1;
-        } else if (ch == 'h') {
-            return 0;
+                fprintf(cpu->out, "> Sub-Options: enter numeric offset of register to edit, or -1: ");
+                int i;
+                scanf("%i", &i);
+
+                if (i == -1) break;
+
+                long long new_value;
+                fprintf(cpu->out, "> Enter new value for register +%i as hexadecimal: ", i);
+                scanf("%x", &new_value);
+
+                cpu->regs[i] = new_value;
+            } break;
+            default:
+                break;
         }
     }
 }
