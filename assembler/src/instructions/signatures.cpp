@@ -151,8 +151,12 @@ namespace assembler::instruction {
             { "jne", { { ParamType::Register, 1 } }, OP_JMP_NEQ_REG },
             { "jgt", { { ParamType::Literal, sizeof(WORD_T) } }, OP_JMP_GT_LIT },
             { "jgt", { { ParamType::Register, 1 } }, OP_JMP_GT_REG },
+            { "jge", { { ParamType::Literal, sizeof(WORD_T) } }, OP_JMP_GE_LIT },
+            { "jge", { { ParamType::Register, 1 } }, OP_JMP_GE_REG },
             { "jlt", { { ParamType::Literal, sizeof(WORD_T) } }, OP_JMP_LT_LIT },
             { "jlt", { { ParamType::Register, 1 } }, OP_JMP_LT_REG },
+            { "jle", { { ParamType::Literal, sizeof(WORD_T) } }, OP_JMP_LE_LIT },
+            { "jle", { { ParamType::Register, 1 } }, OP_JMP_LE_REG },
 
             { "psh", { { ParamType::Literal, sizeof(WORD_T) } }, OP_PUSH_LIT },
             { "psh8", { { ParamType::Literal, 1 } }, OP_PUSH8_LIT },

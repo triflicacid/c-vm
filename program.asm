@@ -1,13 +1,13 @@
-mov 6, r0
-mov string1, r1
-mov 0, r2
+mov 10, r1
+mov 9, r2
+cmp r1, r2
+jle if
+else:
+mov 0, r1
+jmp end
+if:
+mov 1, r1
+end:
+mov 0, r0
 syscall
-
-mov string2, r1
-syscall
-
 hlt
-
-.section data
-string1: u8 "Hello, " 0
-string2: u8 "World!" 0

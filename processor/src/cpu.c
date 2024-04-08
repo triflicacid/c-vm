@@ -600,11 +600,23 @@ int cpu_execute_opcode(CPU cpu, OPCODE_T opcode, WORD_T *ip) {
         case OP_JMP_GT_REG:
         JMP_REG_IF(*ip, ==, CMP_GT)
             return 1;
+        case OP_JMP_GE_LIT:
+        JMP_LIT_IF(*ip, >, CMP_LT)
+            return 1;
+        case OP_JMP_GE_REG:
+        JMP_REG_IF(*ip, >, CMP_LT)
+            return 1;
         case OP_JMP_LT_LIT:
         JMP_LIT_IF(*ip, ==, CMP_LT)
             return 1;
         case OP_JMP_LT_REG:
         JMP_REG_IF(*ip, ==, CMP_LT)
+            return 1;
+        case OP_JMP_LE_LIT:
+        JMP_LIT_IF(*ip, <, CMP_GT)
+            return 1;
+        case OP_JMP_LE_REG:
+        JMP_REG_IF(*ip, <, CMP_GT)
             return 1;
         case OP_JMP_NEQ_LIT:
         JMP_LIT_IF(*ip, !=, CMP_EQ)

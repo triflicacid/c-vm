@@ -433,18 +433,30 @@
 // Jump execution to address in register IF comparison is CMP_GT (set IP)
 // Syntax: `jgt <reg: u8>`
 #define OP_JMP_GT_REG 0x00E5
+// Jump execution to provided memory address IF comparison is CMP_GT or CMP_EQ (set IP)
+// Syntax: `jge <lit: uword>`
+#define OP_JMP_GE_LIT 0x00E6
+// Jump execution to address in register IF comparison is CMP_GT or CMP_EQ (set IP)
+// Syntax: `jge <reg: u8>`
+#define OP_JMP_GE_REG 0x00E7
 // Jump execution to provided memory address IF comparison is CMP_LT (set IP)
 // Syntax: `jlt <lit: uword>`
-#define OP_JMP_LT_LIT 0x00E6
+#define OP_JMP_LT_LIT 0x00E8
 // Jump execution to address in register IF comparison is CMP_LT (set IP)
 // Syntax: `jlt <reg: u8>`
-#define OP_JMP_LT_REG 0x00E7
+#define OP_JMP_LT_REG 0x00E9
+// Jump execution to provided memory address IF comparison is CMP_LT or CMP_EQ (set IP)
+// Syntax: `jle <lit: uword>`
+#define OP_JMP_LE_LIT 0x00EA
+// Jump execution to address in register IF comparison is CMP_LT or CMP_EQ (set IP)
+// Syntax: `jle <reg: u8>`
+#define OP_JMP_LE_REG 0x00EB
 // Jump execution to provided memory address IF comparison is not CMP_EQ (set
 // IP) Syntax: `jne <lit: uword>`
-#define OP_JMP_NEQ_LIT 0x00E8
+#define OP_JMP_NEQ_LIT 0x00EC
 // Jump execution to address in register IF comparison is not CMP_EQ (set IP)
 // Syntax: `jne <reg: u8>`
-#define OP_JMP_NEQ_REG 0x00E9
+#define OP_JMP_NEQ_REG 0x00ED
 
 // Push literal to the stack
 // Syntax: `psh <lit: word>`
