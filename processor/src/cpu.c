@@ -176,12 +176,12 @@ int cpu_save_memory_to_file(CPU cpu, FILE* fp, WORD_T addr_start, size_t length)
 }
 
 void cpu_stack_print(CPU cpu) {
-    printf("[");
+    fprintf(cpu->out, "[");
     for (UWORD_T i = 1, addr = cpu->regs[REG_SP]; addr < cpu->mem_size; ++addr, ++i) {
-        printf(" %.2X", *((T_u8*)cpu->mem + addr));
-        if (i % 20 == 0) printf("\n");
+        fprintf(cpu->out, " %.2X", *((T_u8*)cpu->mem + addr));
+        if (i % 20 == 0) fprintf(cpu->out, "\n");
     }
-    printf("]\n");
+    fprintf(cpu->out, "]\n");
 }
 
 void cpu_err_print(CPU cpu) {
@@ -224,7 +224,7 @@ int cpu_handle_breakpoint(CPU cpu) {
     WORD_T address = 0;
 
     while (1) {
-        fprintf(cpu->out, "> Options: (Enter) continue; (h) halt; (r) view registers.\n");
+        fprintf(cpu->out, "> Options: (Enter) continue; (h) halt; (r) print registers; (s) print stack.\n");
         switch (getch()) {
             case '\r':
             case '\n':
@@ -246,6 +246,9 @@ int cpu_handle_breakpoint(CPU cpu) {
 
                 cpu->regs[i] = new_value;
             } break;
+            case 's':
+                cpu_stack_print(cpu);
+                break;
             default:
                 break;
         }
