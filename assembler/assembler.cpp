@@ -5,7 +5,6 @@
 #include <cstring>
 
 #include "src/pre-process/pre-processor.hpp"
-#include "src/messages/list.hpp"
 extern "C" {
 #include "util.h"
 }
@@ -31,19 +30,6 @@ struct Options {
         do_pre_processing = true;
     }
 };
-
-/** Handle message list: print messages and empty the list, return if there was an error. */
-bool handle_messages(message::List& list) {
-    list.for_each_message([] (message::Message &msg) {
-        msg.print();
-    });
-
-    bool is_error = list.has_message_of(message::Level::Error);
-
-    list.clear();
-
-    return is_error;
-}
 
 /** Parse command-line arguments. */
 int parse_arguments(int argc, char **argv, Options &opts) {
@@ -109,7 +95,7 @@ int pre_process_data(assembler::pre_processor::Data& data, message::List& messag
     assembler::pre_process(data, messages);
 
     // Check if error
-    if (handle_messages(messages))
+    if (message::print_and_check(messages))
         return EXIT_FAILURE;
 
     if (data.debug) {
@@ -165,7 +151,7 @@ int parse_data(assembler::Data &data, message::List& messages) {
     assembler::parser::parse(data, messages);
 
     // Check if error
-    if (handle_messages(messages)) {
+    if (message::print_and_check(messages)) {
         return EXIT_FAILURE;
     }
 
@@ -226,7 +212,7 @@ int main(int argc, char **argv) {
     assembler::read_source_file(opts.input_file, pre_data, messages);
 
     // Check if error
-    if (handle_messages(messages))
+    if (message::print_and_check(messages))
         return EXIT_FAILURE;
 
     // Pre-process file

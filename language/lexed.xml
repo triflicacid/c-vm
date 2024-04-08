@@ -1,0 +1,22 @@
+<Lines>
+  <Line>
+    <Token line="0" col="0" type="1">func</Token>
+    <Token line="0" col="5" type="25">main</Token>
+    <Token line="0" col="9" type="10">(</Token>
+    <Token line="0" col="10" type="11">)</Token>
+    <Token line="0" col="12" type="14">{</Token>
+    <Token line="1" col="4" type="0">decl</Token>
+    <Token line="1" col="9" type="25">a</Token>
+    <Token line="1" col="10" type="16">:</Token>
+    <Token line="1" col="12" type="7">i32</Token>
+  </Line>
+  <Line>
+    <Token line="3" col="4" type="25">return</Token>
+    <Token line="3" col="11" type="24">1</Token>
+    <Token line="3" col="13" type="19">+</Token>
+    <Token line="4" col="4" type="24">2</Token>
+  </Line>
+  <Line>
+    <Token line="5" col="0" type="15">}</Token>
+  </Line>
+</Lines>

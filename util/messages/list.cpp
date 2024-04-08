@@ -44,4 +44,16 @@ namespace message {
     void List::append(List &other) {
         messages.insert(messages.end(), other.messages.begin(), other.messages.end());
     }
+
+    bool print_and_check(List& list) {
+        list.for_each_message([] (Message &msg) {
+            msg.print();
+        });
+
+        bool is_error = list.has_message_of(Level::Error);
+
+        list.clear();
+
+        return is_error;
+    }
 }

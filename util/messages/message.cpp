@@ -7,14 +7,14 @@ extern "C" {
 
 namespace message {
     Message::Message(Level level, std::filesystem::path filename, int line, int col) {
-        m_type = level;
+        m_level = level;
         m_line = line;
         m_col = col;
         m_file = std::move(filename);
     }
 
     Message::Message(Level level, const assembler::pre_processor::LocationInformation& loc) {
-        m_type = level;
+        m_level = level;
         m_line = loc.line;
         m_col = loc.col;
         m_file = loc.file;
@@ -25,7 +25,7 @@ namespace message {
     }
 
     void Message::print_type_suffix() {
-        switch (m_type) {
+        switch (m_level) {
             case Level::Note:
                 std::cout << CONSOLE_BLUE "NOTE" CONSOLE_RESET;
                 break;

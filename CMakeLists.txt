@@ -10,3 +10,4 @@ include_directories(".")
 
 add_subdirectory("assembler" "assembler/out")
 add_subdirectory("processor" "processor/out")
+add_subdirectory("language" "language/out")

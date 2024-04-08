@@ -3,27 +3,26 @@
 #include <string>
 #include <vector>
 
-#include "../pre-process/location-info.hpp"
+#include "assembler/src/pre-process/location-info.hpp"
 
 namespace message {
-    enum Level {
+    enum class Level {
         Note,
         Warning,
         Error
     };
 
     class Message {
-    private:
+    protected:
         int m_line;
         int m_col;
         std::filesystem::path m_file;
-        Level m_type;
+        Level m_level;
         std::string m_msg;
 
         /** Print varying type line e.g., 'ERROR!' */
         void print_type_suffix();
 
-    protected:
         virtual void _set_message(std::string msg);
 
     public:
@@ -40,8 +39,8 @@ namespace message {
 
         void set_message(const std::stringstream& stream);
 
-        Level get_level() { return m_type; }
+        Level get_level() { return m_level; }
 
-        void print();
+        virtual void print();
     };
 }

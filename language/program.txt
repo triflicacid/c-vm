@@ -1,0 +1,6 @@
+func main() {
+    decl a: i32
+
+    return 1
+    2
+}

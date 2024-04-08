@@ -34,4 +34,7 @@ namespace message {
         /** Merge given list into this (append). */
         void append(List &other);
     };
+
+    /** Handle message list: print messages and empty the list, return if there was an error. */
+    bool print_and_check(List& list);
 }
