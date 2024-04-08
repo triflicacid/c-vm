@@ -8,6 +8,8 @@
 #define OP_NOP 0x0000
 // HALT
 #define OP_HALT 0xFFFF
+// BREAKPOINT
+#define OP_BRKPT 0xFFFE
 
 // Print hex `bytes` bytes from memory
 // Syntax: `prh <bytes: u8> <addr: uword>`

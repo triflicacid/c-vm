@@ -8,6 +8,7 @@ namespace assembler::instruction {
     std::vector<Signature> signature_list = {
             { "nop", { }, OP_NOP },
             { "hlt", { }, OP_HALT },
+            { "brk", { }, OP_BRKPT },
 
             { "mov", { { ParamType::Literal, sizeof(WORD_T) }, { ParamType::Register, 1 } }, OP_MOV_LIT_REG },
             { "mov8", { { ParamType::Literal, 1 }, { ParamType::Register, 1 } }, OP_MOV8_LIT_REG },

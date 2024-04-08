@@ -12,8 +12,6 @@ For more information, see `docs/`, `tests/`.
   - Source is `assembler/disassembler.cpp`. See `docs/Disassembler.md` for more.
 
 ### TODO
-- CPU
-    - Add Breakpoint instruction
 - Assembler
     - Support for expressions - RPN. Include dollar `$` variable for last address.
 - Print to STDOUT (using memory mapping to map characters?)

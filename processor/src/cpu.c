@@ -218,13 +218,30 @@ void cpu_err_print(CPU cpu) {
     }
 }
 
+/** Handle breakpoint instruction. Return whether to continue execution (1) or halt (0). */
+int cpu_handle_breakpoint(CPU cpu) {
+    fprintf(cpu->out, "** BREAKPOINT at +%llu **\n", cpu->regs[REG_IP]);
+
+    while (1) {
+        fprintf(cpu->out, "> Options: (Enter) continue; (h) halt.");
+        int ch = getch();
+
+        if (ch == '\n' || ch == '\r') {
+            return 1;
+        } else if (ch == 'h') {
+            return 0;
+        }
+    }
+}
+
 int cpu_execute_opcode(CPU cpu, OPCODE_T opcode, WORD_T *ip) {
-    // printf("<OPCODE=%X>\n", opcode);
     switch (opcode) {
         case OP_NOP:
             return 1;
         case OP_HALT:
             return 0;
+        case OP_BRKPT:
+            return cpu_handle_breakpoint(cpu);
         case OP_MOV_LIT_REG:
         MOV_LIT_REG(*ip, WORD_T)
             return 1;
