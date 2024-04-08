@@ -66,21 +66,23 @@ void cpu_mem_print(const CPU cpu, WORD_T addr_start, unsigned int length, unsign
                    int per_line) {
     const int max_length = (int) fmax(3, ceil(log2((double) addr_start + length - 1) / 4));
 
-    printf("MEM");
+    fprintf(cpu->out, "MEM");
 
     for (int i = 0; i < max_length; ++i) printf(" ");
     for (int i = 0; i < per_line; ++i) printf("%.*X ", 2 * word_size, i);
     for (int off = 0; off < length; ++off) {
         if (off % per_line == 0) {
-            printf("\n%.*llx | ", max_length, addr_start + off);
+            fprintf(cpu->out, "\n%.*llx | ", max_length, addr_start + off);
         }
+
         WORD_T addr = addr_start + off * word_size;
         for (int k = 0; k < word_size; ++k)
-            printf("%.2X", *((unsigned char*)cpu->mem + addr + k));
-        printf(" ");
+            fprintf(cpu->out, "%.2X", *((unsigned char*)cpu->mem + addr + k));
+
+        fprintf(cpu->out, " ");
     }
 
-    printf("\n");
+    fprintf(cpu->out, "\n");
 }
 
 ERRNO_T cpu_mem_read(CPU cpu, WORD_T addr_start, void* data, unsigned int length) {
@@ -234,11 +236,11 @@ void cpu_err_print(CPU cpu) {
 
 /** Handle breakpoint instruction. Return whether to continue execution (1) or halt (0). */
 int cpu_handle_breakpoint(CPU cpu) {
-    fprintf(cpu->out, "** BREAKPOINT at +%llu **\n", cpu->regs[REG_IP]);
-    WORD_T address = 0;
+    WORD_T address = cpu->regs[REG_IP];
+    fprintf(cpu->out, "** BREAKPOINT at +%llX **\n", address);
 
     while (1) {
-        fprintf(cpu->out, "> Options: (Enter) continue; (h) halt; (f) print stack frame; (o) CPU overview; (r) print registers; (s) print stack.\n");
+        fprintf(cpu->out, "> Options: (Enter) continue; (h) halt; (f) print stack frame; (m) print memory; (o) CPU overview; (r) print registers; (s) print stack.\n");
         switch (getch()) {
             case '\r':
             case '\n':
@@ -248,6 +250,31 @@ int cpu_handle_breakpoint(CPU cpu) {
             case 'f':
                 cpu_stack_frame_print(cpu);
                 break;
+            case 'm': {
+                fprintf(cpu->out, "Displaying memory read %llX - %llX\n", address, address + 256);
+                cpu_mem_print(cpu, address, 256, 1, 32);
+
+                fprintf(cpu->out, "> Sub-Options: (+) increment address; (-) decrement address; (=) change address; (Enter) nothing.\n");
+                int ch = getch();
+
+                if (ch == '\r' || ch == '\n') {
+                    break;
+                }
+
+                WORD_T n;
+                fprintf(cpu->out, "> Enter value (lowercase hex): ");
+                scanf("%llx", &n);
+
+                if (ch == '=') {
+                    address = n;
+                } else if (ch == '+') {
+                    address += n;
+                } else if (ch == '-') {
+                    address -= n;
+                }
+
+                fprintf(cpu->out, "New address: %llX\n", address);
+            } break;
             case 'o':
                 cpu_print_details(cpu);
                 break;
