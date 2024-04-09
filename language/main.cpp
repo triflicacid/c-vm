@@ -1,7 +1,7 @@
 #include <iostream>
 #include <fstream>
-#include <sstream>
 #include "lexer/Lexer.hpp"
+#include "parser/Parser.hpp"
 
 struct Options {
     char *input_file;
@@ -79,33 +79,22 @@ int main(int argc, char *argv[]) {
     // TODO remove
     opts.debug = true;
 
-    // Read input_file
-    std::string file_contents;
+    // Create source
+    language::Source *source = language::Source::read_file(opts.input_file);
 
-    {
-        std::ifstream file;
-        file.open(opts.input_file, std::ios::in);
-
-        if (!file.is_open()) {
-            std::cout << "Unable to open file " << opts.input_file << std::endl;
-            return EXIT_FAILURE;
-        }
-
-        std::stringstream stream;
-        stream << file.rdbuf();
-        file.close();
-
-        file_contents = stream.str();
+    if (source == nullptr) {
+        std::cout << "Unable to read file " << opts.input_file << std::endl;
+        return EXIT_FAILURE;
     }
 
     // Create lexer and lex file
     message::List messages;
-    language::lexer::Lexer lexer(file_contents);
+    language::lexer::Lexer lexer(source);
 
-    lexer.set_path(std::filesystem::canonical(opts.input_file));
     lexer.lex(messages);
 
     if (message::print_and_check(messages)) {
+        delete source;
         return EXIT_FAILURE;
     }
 
@@ -123,5 +112,24 @@ int main(int argc, char *argv[]) {
         file.close();
     }
 
+    // Parse result
+    language::parser::Scope global_scope;
+    language::parser::Parser parser(source);
+    parser.set_scope(&global_scope);
+
+    parser.options.allow_shadowing = false;
+    parser.parse(messages);
+
+    if (message::print_and_check(messages)) {
+        delete source;
+        return EXIT_FAILURE;
+    }
+
+//    std::cout << "=== Scope ===" << std::endl;
+    global_scope.debug_print(std::cout);
+
+    // TODO print to xml
+
+    delete source;
     return EXIT_SUCCESS;
 }

@@ -1,4 +1,5 @@
 #include <iostream>
+#include <stack>
 #include "Lexer.hpp"
 
 namespace language::lexer {
@@ -10,7 +11,7 @@ namespace language::lexer {
         Location location(m_line, m_col);
         Token token(location, type, image);
 
-        m_tokens.push_back(token);
+        m_source->tokens.push_back(token);
     }
 
     bool Lexer::consume_newline() {
@@ -72,20 +73,47 @@ namespace language::lexer {
         std::stringstream stream;
         stream << "Unexpected token '" << peek() << "'.";
 
-        auto err = new message::MessageWithSource(message::Level::Error, m_path, m_line, m_col, m_col, 1, get_line(m_line));
+        auto err = new message::MessageWithSource(message::Level::Error, m_source->path(), m_line, m_col, m_col, 1, m_source->get_line(m_line));
         err->set_message(stream);
         return err;
+    }
+
+    void Lexer::generate_bracket_mismatch_error(lexer::Token& open_bracket, lexer::Token& closing_bracket, message::List& list) {
+        std::stringstream stream;
+        stream << "Bracket mismatch: expected " << lexer::Token::repr((lexer::Token::Type) (open_bracket.type() + 1))
+            << " to close " << lexer::Token::repr(open_bracket.type()) << ", got " << lexer::Token::repr(closing_bracket.type()) << ".";
+
+        Location closing_loc = closing_bracket.location();
+        Location opening_loc = open_bracket.location();
+
+        message::Message *msg = new message::MessageWithSource(message::Level::Error, m_source->path(), closing_loc.line(),
+                                                  closing_loc.column(), closing_loc.column(), 1,
+                                                  m_source->get_line(closing_loc.line()));
+        msg->set_message(stream);
+        list.add(msg);
+
+        msg = new message::MessageWithSource(message::Level::Note, m_source->path(), opening_loc.line(),
+                                             opening_loc.column(), opening_loc.column(), 1,
+                                             m_source->get_line(opening_loc.line()));
+        msg->set_message("Bracket group opened here");
+        list.add(msg);
     }
 
     void language::lexer::Lexer::lex(message::List &messages) {
         reset();
         int line_start_at = m_pos;
+        std::stack<lexer::Token> bracket_stack;
+        int open_bracket_paren_count = 0; // Count nest level of '(' and '['
 
         while (exists()) {
             if (consume_newline()) {
-                if (m_pos != line_start_at && !expect_after(m_tokens.back().type())) {
-                    add_token(Token::Type::EOL, "");
-                    line_start_at = m_pos;
+                if (m_pos != line_start_at) {
+                    auto type = m_source->tokens.back().type();
+
+                    if (!(open_bracket_paren_count > 0 || lexer::Token::is_operator(type) || lexer::Token::is_opening_bracket(type))) {
+                        add_token(Token::Type::EOL, "");
+                        line_start_at = m_pos;
+                    }
                 }
 
                 continue;
@@ -112,8 +140,32 @@ namespace language::lexer {
                 }
             }
 
-            if (found_match)
+            if (found_match) {
+                auto& token = m_source->tokens.back();
+
+                // Handle brackets
+                if (lexer::Token::is_opening_bracket(token.type())) {
+                    bracket_stack.push(token);
+
+                    if (token.type() != lexer::Token::LBRACE) {
+                        open_bracket_paren_count++;
+                    }
+                } else if (lexer::Token::is_closing_bracket(token.type())) {
+                    // Check that this matches with the topmost bracket on the stack
+                    if (lexer::Token::is_bracket_pair(bracket_stack.top().type(), token.type())) {
+                        bracket_stack.pop();
+
+                        if (token.type() != lexer::Token::RBRACE) {
+                            open_bracket_paren_count--;
+                        }
+                    } else {
+                        generate_bracket_mismatch_error(bracket_stack.top(), token, messages);
+                        return;
+                    }
+                }
+
                 continue;
+            }
 
             // Integer?
             if (std::isdigit(peek())) {
@@ -141,7 +193,7 @@ namespace language::lexer {
                    n++;
                }
 
-               add_token(std::isupper(peek()) ? Token::Type::DATA_NAME : Token::Type::SYMBOL_NAME, extract(n));
+               add_token(std::isupper(peek()) ? Token::Type::DATA_IDENTIFIER : Token::Type::IDENTIFIER, extract(n));
                move(n);
 
                continue;
@@ -151,10 +203,22 @@ namespace language::lexer {
             messages.add(generate_token_error());
             return;
         }
+
+        // Bracket stack should be empty
+        if (!bracket_stack.empty()) {
+            Token eol({ m_line, m_col }, Token::EOL, "");
+            generate_bracket_mismatch_error(bracket_stack.top(), eol, messages);
+            return;
+        }
+
+        // Add final EOL
+        if (!m_source->tokens.empty() && m_source->tokens.back().type() != Token::EOL) {
+            add_token(Token::EOL, "");
+        }
     }
 
     std::string Lexer::to_xml() {
-        if (m_tokens.empty()) {
+        if (m_source->tokens.empty()) {
             return "";
         }
 
@@ -162,7 +226,7 @@ namespace language::lexer {
         stream << "<Lines>" << std::endl << "  <Line>" << std::endl;
         int line_length = 0;
 
-        for (auto token : m_tokens) {
+        for (const auto& token : m_source->tokens) {
             if (token.type() == Token::Type::EOL) {
                 if (line_length > 0)
                     stream << "  </Line>" << std::endl << "  <Line>" << std::endl;
@@ -179,18 +243,5 @@ namespace language::lexer {
         stream << "  </Line>" << std::endl << "</Lines>" << std::endl;
 
         return stream.str();
-    }
-
-    std::string Lexer::get_line(int n) {
-        std::stringstream stream(m_string);
-        std::string line;
-
-        for (int i = 0; std::getline(stream, line); i++) {
-            if (i == n) {
-                return line;
-            }
-        }
-
-        return line;
     }
 }

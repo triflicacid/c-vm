@@ -6,6 +6,7 @@
 
 #include <utility>
 #include <vector>
+#include "../Source.hpp"
 
 namespace language::lexer {
     class Lexer {
@@ -13,9 +14,8 @@ namespace language::lexer {
         int m_line;
         int m_col;
         int m_pos;
+        Source *m_source;
         std::string m_string;
-        std::filesystem::path m_path;
-        std::vector<Token> m_tokens;
 
         /** Add token with the given type (must be in .tokens map) */
         void add_token(Token::Type type);
@@ -35,8 +35,8 @@ namespace language::lexer {
             m_line++;
         }
 
-        /** Check if character exists at (pos+n). Default n=1. */
-        bool exists(int n = 1) {
+        /** Check if character exists at (pos+n). Default n=0. */
+        bool exists(int n = 0) {
             return m_pos + n < m_string.length();
         }
 
@@ -68,23 +68,19 @@ namespace language::lexer {
         /** Consume a single- or multi-line comment */
         bool consume_comment();
 
-        /** Get the requested line (default to the last line) */
-        std::string get_line(int n);
-
         /** Construct parse error. */
         message::MessageWithSource *generate_token_error();
+
+        /** Generate bracket mismatch error. */
+        void generate_bracket_mismatch_error(lexer::Token& open_bracket, lexer::Token& closing_bracket, message::List& list);
     public:
-        explicit Lexer(std::string string) : m_line(0), m_col(0), m_pos(0), m_path("<file>"), m_string(std::move(string)) {};
+        explicit Lexer(Source *source) : m_line(0), m_col(0), m_pos(0), m_source(source), m_string(source->contents()) {};
 
         /** Reset internal states. */
         void reset() {
             m_line = m_col = m_pos = 0;
-            m_tokens.clear();
+            m_source->tokens.clear();
         }
-
-        std::filesystem::path get_path() { return m_path; }
-
-        void set_path(std::filesystem::path path) { m_path = std::move(path); }
 
         void lex(message::List &messages);
 
