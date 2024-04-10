@@ -20,7 +20,7 @@ namespace language::types {
             }
         }
 
-        /** Check if member already exists. */
+        /** Check if member already var_exists. */
         [[nodiscard]] bool exists(const std::string& name) const;
 
         /** Get member with the given name */
@@ -36,6 +36,8 @@ namespace language::types {
         [[nodiscard]] size_t size() const override { return m_offset; }
 
         [[nodiscard]] Category category() const override { return Category::User; }
+
+        [[nodiscard]] bool is_single_instance() const { return true; }
 
         void debug_print(std::ostream& stream, const std::string& prefix) const override;
     };

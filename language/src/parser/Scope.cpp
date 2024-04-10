@@ -7,30 +7,29 @@ namespace language::parser {
         m_symbols.clear();
     }
 
-    bool Scope::exists(const std::string &name) {
+    bool Scope::var_exists(const std::string &name) {
         return m_symbols.find(name) != m_symbols.end();
     }
 
-    const std::pair<const Symbol *, int> *Scope::get(const std::string &name) {
+    const std::pair<const Symbol *, int> *Scope::var_get(const std::string &name) {
         auto found = m_symbols.find(name);
         return found == m_symbols.end() ? nullptr : &found->second;
     }
 
-    const Symbol *Scope::create(const Symbol *symbol, bool has_size) {
+    const Symbol *Scope::var_create(const Symbol *symbol) {
         auto entry = m_symbols.find(symbol->name());
         const Symbol *old_symbol;
-        int offset = has_size ? (int) m_offset : 0;
 
         if (entry == m_symbols.end()) {
-            m_symbols.insert({ symbol->name(), { symbol, offset } });
+            m_symbols.insert({ symbol->name(), { symbol, (int) m_offset } });
             old_symbol = nullptr;
         } else {
             old_symbol = entry->second.first;
             entry->second.first = symbol;
-            entry->second.second = offset;
+            entry->second.second = (int) m_offset;
         }
 
-        if (has_size) grow(symbol->size());
+        grow(symbol->size());
         return old_symbol;
     }
 
@@ -73,5 +72,56 @@ namespace language::parser {
         }
 
         stream << prefix << "</Scope>";
+    }
+
+    bool Scope::func_exists(const std::string &name) {
+        return m_functions.find(name) != m_functions.end();
+    }
+
+    bool Scope::func_exists(const std::string &name, const types::FunctionType *overload) {
+        auto entry = m_functions.find(name);
+
+        if (entry == m_functions.end()) {
+            return false;
+        }
+
+        for (auto& f_type : entry->second) {
+            if (f_type->equal(*overload)) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    const std::vector<const types::FunctionType *> *Scope::func_get(const std::string &name) {
+        auto pair = m_functions.find(name);
+        return pair == m_functions.end() ? nullptr : &pair->second;
+    }
+
+    const types::FunctionType *Scope::func_get(const std::string &name, const types::FunctionType *overload) const {
+        auto vec = m_functions.find(name);
+
+        if (vec == m_functions.end()) {
+            return nullptr;
+        }
+
+        for (auto& f_type : vec->second) {
+            if (f_type->equal(*overload)) {
+                return f_type;
+            }
+        }
+
+        return nullptr;
+    }
+
+    void Scope::func_create(const std::string& name, const types::FunctionType *overload) {
+        auto entry = m_functions.find(name);
+
+        if (entry == m_functions.end()) {
+            m_functions.insert({ name, { overload } });
+        } else {
+            entry->second.push_back(overload);
+        }
     }
 }

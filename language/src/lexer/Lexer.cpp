@@ -1,4 +1,4 @@
-#include <iostream>
+#include <ostream>
 #include <stack>
 #include "Lexer.hpp"
 
@@ -107,7 +107,7 @@ namespace language::lexer {
 
         while (exists()) {
             if (consume_newline()) {
-                if (m_pos != line_start_at) {
+                if (m_pos != line_start_at && !m_source->tokens.empty()) {
                     auto type = m_source->tokens.back().type();
 
                     if (!(open_bracket_paren_count > 0 || lexer::Token::is_operator(type) || lexer::Token::is_opening_bracket(type))) {
@@ -217,31 +217,29 @@ namespace language::lexer {
         }
     }
 
-    std::string Lexer::to_xml() {
+    void Lexer::debug_print(std::ostream& stream, const std::string& prefix) {
         if (m_source->tokens.empty()) {
-            return "";
+            stream << prefix << "<Lines />";
+            return;
         }
 
-        std::stringstream stream;
-        stream << "<Lines>" << std::endl << "  <Line>" << std::endl;
+        stream << prefix << "<Lines>" << std::endl << prefix << "  <Line>" << std::endl;
         int line_length = 0;
 
         for (const auto& token : m_source->tokens) {
             if (token.type() == Token::Type::EOL) {
                 if (line_length > 0)
-                    stream << "  </Line>" << std::endl << "  <Line>" << std::endl;
+                    stream << prefix << "  </Line>" << std::endl << prefix << "  <Line>" << std::endl;
 
                 line_length = 0;
             } else {
-                stream << "    <Token line=\"" << token.location().line() << "\" col=\"" << token.location().column()
+                stream << prefix << "    <Token line=\"" << token.location().line() << "\" col=\"" << token.location().column()
                        << "\" type=\""
                        << token.type() << "\">" << token.image() << "</Token>" << std::endl;
                 line_length++;
             }
         }
 
-        stream << "  </Line>" << std::endl << "</Lines>" << std::endl;
-
-        return stream.str();
+        stream << prefix << "  </Line>" << std::endl << prefix << "</Lines>" << std::endl;
     }
 }

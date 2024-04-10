@@ -9,6 +9,7 @@ namespace language::types {
             None,
             Numeric,
             User,
+            Function,
         };
 
     private:
@@ -27,6 +28,9 @@ namespace language::types {
         [[nodiscard]] virtual Category category() const { return Category::None; }
 
         [[nodiscard]] int position() const { return m_pos; }
+
+        /** Return if there should only be a single instance of this specific type. Used to know if we should delete it. */
+        [[nodiscard]] virtual bool is_single_instance() const { return false; }
 
         virtual void debug_print(std::ostream& stream, const std::string& prefix) const {};
     };

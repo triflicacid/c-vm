@@ -20,7 +20,7 @@ To execute, run `./disassembler.exe <src> [options]` where
 
 ## Disassembling
 
-Bytes are read as a potential opcode. If the opcode exists, the instruction is extracted and destructured.
+Bytes are read as a potential opcode. If the opcode var_exists, the instruction is extracted and destructured.
 Otherwise, the opcode is taken to be raw data and added to a `u8 ...` clause.
 
 ### Labels

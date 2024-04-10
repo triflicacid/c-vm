@@ -15,6 +15,8 @@ namespace language::lexer {
             { Token::TYPE_u64, "u64" },
             { Token::TYPE_i64, "i64" },
 
+            { Token::UNIT, "()" },
+
             { Token::LPARENS, "(" },
             { Token::RPARENS, ")" },
             { Token::LBRACKET, "[" },

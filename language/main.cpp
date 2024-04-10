@@ -7,12 +7,14 @@ struct Options {
     char *input_file;
     char *output_file;
     char *lexed_file;
+    char *parsed_file;
     bool debug;
 
     Options() {
         input_file = nullptr;
         output_file = nullptr;
         lexed_file = nullptr;
+        parsed_file = nullptr;
         debug = false;
     }
 };
@@ -41,6 +43,15 @@ int parse_arguments(int argc, char **argv, Options &opts) {
                 }
 
                 opts.lexed_file = argv[i];
+            } else if (argv[i][1] == 'p' && !opts.parsed_file) { // Provide output file
+                i++;
+
+                if (i == argc) {
+                    std::cout << "-p: expected file path\n";
+                    return EXIT_FAILURE;
+                }
+
+                opts.parsed_file = argv[i];
             } else {
                 std::cout << "Unknown/repeated flag " << argv[i] << "\n";
                 return EXIT_FAILURE;
@@ -68,16 +79,35 @@ int parse_arguments(int argc, char **argv, Options &opts) {
     return EXIT_SUCCESS;
 }
 
+/** Attempt to write a stream's contents to the given file. Print if failure. */
+bool write_stream_to_file(const std::string& filename, const std::ostream& stream) {
+    std::ofstream file;
+    file.open(filename, std::ios::out);
+
+    if (!file.is_open()) {
+        std::cout << "Unable to open file " << filename << " for write." << std::endl;
+        return false;
+    }
+
+    file << stream.rdbuf();
+    file.close();
+
+    return true;
+}
+
 int main(int argc, char *argv[]) {
     // Parse provided options
     Options opts;
 
-    if (parse_arguments(argc, argv, opts) == EXIT_FAILURE) {
-        return EXIT_FAILURE;
-    }
+//    if (parse_arguments(argc, argv, opts) == EXIT_FAILURE) {
+//        return EXIT_FAILURE;
+//    }
 
     // TODO remove
     opts.debug = true;
+    opts.input_file = "C:\\Users\\ruben\\Desktop\\TIDY\\c-vm\\language\\program.txt";
+    opts.lexed_file = "C:\\Users\\ruben\\Desktop\\TIDY\\c-vm\\language\\lexed.xml";
+    opts.parsed_file = "C:\\Users\\ruben\\Desktop\\TIDY\\c-vm\\language\\parsed.xml";
 
     // Create source
     language::Source *source = language::Source::read_file(opts.input_file);
@@ -98,26 +128,18 @@ int main(int argc, char *argv[]) {
         return EXIT_FAILURE;
     }
 
-    // Print tokens for reference
+    // Write output of lexer to file
     if (opts.lexed_file) {
-        std::ofstream file;
-        file.open(opts.lexed_file, std::ios::out);
+        std::stringstream stream;
+        lexer.debug_print(stream);
 
-        if (file.is_open()) {
-            file << lexer.to_xml();
-        } else {
-            std::cout << "Unable to open file " << opts.lexed_file << std::endl;
-        }
-
-        file.close();
+        write_stream_to_file(opts.lexed_file, stream);
     }
 
     // Parse result
-    language::parser::Scope global_scope;
-    language::parser::Parser parser(source);
-    parser.set_scope(&global_scope);
+    language::Program program(source);
+    language::parser::Parser parser(&program);
 
-    parser.options.allow_shadowing = false;
     parser.parse(messages);
 
     if (message::print_and_check(messages)) {
@@ -125,10 +147,13 @@ int main(int argc, char *argv[]) {
         return EXIT_FAILURE;
     }
 
-//    std::cout << "=== Scope ===" << std::endl;
-    global_scope.debug_print(std::cout);
+    // Write output of parser to file
+    if (opts.parsed_file) {
+        std::stringstream stream;
+        program.debug_print(stream);
 
-    // TODO print to xml
+        write_stream_to_file(opts.parsed_file, stream);
+    }
 
     delete source;
     return EXIT_SUCCESS;

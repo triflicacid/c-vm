@@ -1,9 +1,9 @@
 <Lines>
   <Line>
     <Token line="0" col="0" type="2">func</Token>
-    <Token line="0" col="5" type="26">fun</Token>
-    <Token line="0" col="9" type="15">{</Token>
-    <Token line="2" col="0" type="16">}</Token>
+    <Token line="0" col="5" type="27">main</Token>
+    <Token line="0" col="10" type="16">{</Token>
+    <Token line="2" col="0" type="17">}</Token>
   </Line>
   <Line>
   </Line>

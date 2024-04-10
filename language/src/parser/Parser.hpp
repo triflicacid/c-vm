@@ -7,23 +7,26 @@
 #include "Source.hpp"
 #include "messages/MessageWithSource.hpp"
 #include "LanguageOptions.hpp"
+#include "ScopeManager.hpp"
+#include "Program.hpp"
 
 namespace language::parser {
     class Parser {
     private:
         int m_pos;
         std::stack<int> m_pos_stack; // Store position history
-        Source *m_source;
-        Scope *m_scope;
+        Program *m_prog;
+        std::vector<lexer::Token>& m_tokens;
+        ScopeManager m_scopes;
 
-        /** Check if token exists at (pos+n). Default n=1. */
+        /** Check if token var_exists at (pos+n). Default n=1. */
         bool exists(int n = 0) {
-            return m_pos + n < m_source->tokens.size();
+            return m_pos + n < m_tokens.size();
         }
 
         /** Get token at (pos+n). Default n=0. */
         lexer::Token *peek(int n = 0) {
-            return &m_source->tokens[m_pos + n];
+            return &m_tokens[m_pos + n];
         }
 
         /** Increment position. */
@@ -52,11 +55,29 @@ namespace language::parser {
         /** Restore old position. */
         void restore();
 
+        /** Parse a type, populate type pointer. Return if success, increment m_pos. */
+        bool consume_type(message::List& messages, const types::Type **type);
+
+        /** Consume "decl func ...". */
+        bool consume_kw_decl_func(message::List &messages);
+
         /** Consume "decl ...". */
         bool consume_kw_decl(message::List &messages);
 
         /** Consume "data ...". */
         bool consume_kw_data(message::List &messages);
+
+        /** Consume "func ...". */
+        bool consume_kw_func(message::List &messages);
+
+        /** Declaration: check if identifier exists in topmost scope. If it does, add messages to stack. */
+        bool check_can_create_identifier(const lexer::Token& identifier, int pos, message::List& messages);
+
+        /** Declaration: check if we can shadow the given identifier. If not, add messages to stack. */
+        bool check_can_shadow_identifier(const lexer::Token& identifier, int pos, message::List& messages);
+
+        /** Check whether the given function overload already exists. */
+        bool check_can_create_overload(const std::string& name, const types::FunctionType *overload, message::List& messages);
 
         /** Generate generic message with provided message about the current token. */
         message::MessageWithSource *generate_message(message::Level level, const std::string& message);
@@ -72,16 +93,21 @@ namespace language::parser {
     public:
         LanguageOptions options;
 
-        explicit Parser(Source *source) : m_source(source), m_pos(0), m_scope(nullptr) {};
-
-        [[nodiscard]] Scope *scope() const { return m_scope; }
-
-        void set_scope(Scope *scope) { m_scope = scope; }
+        explicit Parser(Program *program) : m_prog(program), m_pos(0), m_tokens(program->source()->tokens) {
+            // TODO remove, no scopes should be preserved.
+            m_scopes.push(program->global_scope());
+            m_scopes.set_immortal(1);
+        };
 
         void reset() {
             m_pos = 0;
             while (!m_pos_stack.empty()) m_pos_stack.pop();
         }
+
+        [[nodiscard]] const ScopeManager *scopes() const { return &m_scopes; }
+
+        /** Return: are we in the global scope? */
+        [[nodiscard]] bool in_global_scope() const { return m_scopes.size() == 1; }
 
         /** Parse tokens. Provide error list and global scope to populate. */
         void parse(message::List& messages);

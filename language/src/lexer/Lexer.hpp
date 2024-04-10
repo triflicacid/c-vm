@@ -35,7 +35,7 @@ namespace language::lexer {
             m_line++;
         }
 
-        /** Check if character exists at (pos+n). Default n=0. */
+        /** Check if character var_exists at (pos+n). Default n=0. */
         bool exists(int n = 0) {
             return m_pos + n < m_string.length();
         }
@@ -84,7 +84,6 @@ namespace language::lexer {
 
         void lex(message::List &messages);
 
-        /** Get token XML document. */
-        std::string to_xml();
+        void debug_print(std::ostream& stream, const std::string& prefix = "");
     };
 }

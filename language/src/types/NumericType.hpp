@@ -20,6 +20,8 @@ namespace language::types {
 
         [[nodiscard]] Category category() const override { return Category::Numeric; }
 
+        [[nodiscard]] bool is_single_instance() const { return false; }
+
         void debug_print(std::ostream& stream, const std::string& prefix) const override {
             stream << prefix << "<NumericType bytes=\"" << m_num->bytes << "\" signed=\"" << m_num->is_signed << "\" float=\""
                 << m_num->is_float << "\">" << m_token->image() << "</NumericType>";

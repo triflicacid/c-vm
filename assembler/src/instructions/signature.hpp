@@ -40,7 +40,7 @@ namespace assembler::instruction {
         /** Get byte-size of entire instruction. */
         int get_bytes();
 
-        /** Return whether the given opcode exists. */
+        /** Return whether the given opcode var_exists. */
         static bool exists(const std::string& mnemonic);
 
         /** Find the signature given mnemonic and arguments. */

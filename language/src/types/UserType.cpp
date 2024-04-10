@@ -11,7 +11,7 @@ namespace language::types {
     }
 
     void UserType::add(const parser::Symbol *symbol) {
-        bool physical = symbol->type() == parser::Symbol::Type::Variable;
+        bool physical = symbol->type()->category() != types::Type::Category::Function;
 
         m_members.insert({ symbol->name(), { symbol, physical ? m_offset : -1 } });
 

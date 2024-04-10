@@ -27,6 +27,8 @@ namespace language::lexer {
             TYPE_u64,
             TYPE_i64, // TYPE END
 
+            UNIT, // "()", special case of brackets
+
             LPARENS, // "("  BRACKET START
             RPARENS, // ")"
             LBRACKET, // "["
