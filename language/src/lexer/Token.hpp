@@ -16,6 +16,7 @@ namespace language::lexer {
 
             KW_DECL,  // KEYWORD START
             KW_DATA,
+            KW_ENTRY,
             KW_RETURN,
             KW_FUNC,  // KEYWORD END
 

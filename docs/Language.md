@@ -15,7 +15,13 @@ All `[options]` are optional, and are described as follows:
 - `-p <file>` - Write parsed program to `file` as XML.
 
 ## Language Configuration
-These options are listed internally, but currently cannot be changed without editing `src/LanguageOptions.hpp`.
+These options are listed internally, but currently cannot be changed without editing `src/LanguageOptions.cpp`.
+
+Some options take the form of a `reporting level`. The possible values are:
+- `-1` - Hidden, disables the reporting.
+- `0` - Notice.
+- `1` - Warning.
+- `2` - Error.
 
 ### `allow_shadowing`
 
@@ -39,6 +45,18 @@ Enforces the declaration of a function signature before its definition. I.e., al
 decl func add(i32, i32) -> i32
 ...
 func add(x: i32, y: i32) -> i32 { ... }
+```
+
+### `unused_symbol_level`
+
+**Default: `1` (Warning)**
+
+Defines the reporting level of unused symbols or necessary assignments. The following example would generate a report for both `c` (unused variable) and `b` (unnecessary assignment).
+
+```
+decl a: i32, b: i32, c: i32
+b = 2
+return a
 ```
 
 ## Syntax
@@ -123,3 +141,14 @@ func <name>[<params>] [-> <return>] { <body> }
 The `return [<expr>]` keyword is used to exit a function. If `<expr>` is provided, this will take place as the function's return value.
 
 Note that the same function cannot be defined more than once, but overloading is supported.
+
+#### Entry Point
+All programs must have an entry point. By default, this has the name `main`. A custom entry point may be defined as follows:
+
+```
+entry <name>[<type>]
+```
+
+Where `name` is the function name, and `type` is an optional type signature. Once the program has been fully parsed, symbol `name` will be located. If `type` was provided, this will be the entry point. Otherwise, the **first** valid entry-point signature of `name` will be selected.
+
+A valid entry point takes zero or more integers, and returns nothing or an integer (any integer type is permitted).

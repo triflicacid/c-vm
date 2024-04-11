@@ -1,5 +1,5 @@
-func main -> i32 {
-    decl a: i32
-    a = 10
-    return a
+entry start() -> ()
+
+func start -> () {
+
 }

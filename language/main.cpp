@@ -155,6 +155,8 @@ int main(int argc, char *argv[]) {
         write_stream_to_file(opts.parsed_file, stream);
     }
 
+    // TODO compile & check entry point is defined
+
     delete source;
     return EXIT_SUCCESS;
 }

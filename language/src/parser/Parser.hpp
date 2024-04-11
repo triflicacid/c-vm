@@ -1,15 +1,10 @@
 #pragma once
 
 #include <stack>
-#include "lexer/Token.hpp"
 #include "util/messages/list.hpp"
-#include "Scope.hpp"
-#include "Source.hpp"
 #include "messages/MessageWithSource.hpp"
-#include "LanguageOptions.hpp"
 #include "ScopeManager.hpp"
 #include "Program.hpp"
-#include "statement/Expression.hpp"
 #include "statement/OperatorType.hpp"
 
 namespace language::parser {
@@ -21,6 +16,9 @@ namespace language::parser {
         Program *m_prog;
         std::vector<lexer::Token>& m_tokens;
         ScopeManager m_scopes;
+        std::string m_entry_name; // Name of custom entry point
+        const types::FunctionType *m_entry_type; // Type of entrypoint (if null, search for one).
+        int m_entry_pos; // Position where "entry" was defined
 
         /** Check if token var_exists at (pos+n). Default n=1. */
         bool exists(int n = 0) {
@@ -82,6 +80,9 @@ namespace language::parser {
         /** Consume "return ...". If asked, check return type against current function. */
         bool consume_kw_return(message::List &messages, statement::StatementBlock& block, bool check_return_type = false);
 
+        /** Consume "entry ...". Populate program entries. */
+        bool consume_kw_entry(message::List &messages);
+
         /** Declaration: check if identifier exists in topmost scope. If it does, add messages to stack. */
         bool check_can_create_identifier(const lexer::Token& identifier, int pos, message::List& messages);
 
@@ -96,6 +97,12 @@ namespace language::parser {
 
         /** Check if a symbol is used: options.unused_symbol_level, add to messages. */
         bool check_symbol_unused(const parser::SymbolDeclaration *symbol, message::List& messages);
+
+        /** Check that m_entry exists. */
+        bool check_entry_point_exists(message::List& messages);
+
+        /** Parse a function type. If provided, set type.position() to the given value.  */
+        types::FunctionType *parse_function_type(message::List &messages, bool arg_list_required, int pos = -1);
 
         /** Parse an expression. */
         const statement::Expression *parse_expression(message::List& messages, int precedence = 0);
@@ -120,9 +127,7 @@ namespace language::parser {
         message::MessageWithSource *generate_custom_syntax_error(const std::string& expected);
 
     public:
-        LanguageOptions options;
-
-        explicit Parser(Program *program) : m_prog(program), m_pos(0), m_end_pos(-1), m_tokens(program->source()->tokens) {
+        explicit Parser(Program *program) : m_prog(program), m_pos(0), m_end_pos(-1), m_tokens(program->source()->tokens), m_entry_pos(-1), m_entry_type(nullptr) {
             m_scopes.push(program->global_scope());
             m_scopes.set_immortal(1);
         };

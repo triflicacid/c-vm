@@ -13,7 +13,13 @@ namespace language::types {
             }
         }
 
-        return true;
+        if (m_ret == nullptr) {
+            return other.m_ret == nullptr;
+        } else if (other.m_ret == nullptr) {
+            return false;
+        } else {
+            return m_ret->repr() == other.m_ret->repr();
+        }
     }
 
     void FunctionType::debug_print(std::ostream& stream, const std::string& prefix) const {
@@ -67,5 +73,19 @@ namespace language::types {
         stream << ") -> " << (m_ret ? m_ret->repr() : "()");
 
         return stream.str();
+    }
+
+    bool FunctionType::valid_entry_point(const FunctionType *type) {
+        for (auto& arg : type->m_args) {
+            if (arg->category() != Category::Numeric) {
+                return false;
+            }
+        }
+
+        if (type->m_ret && type->m_ret->category() != Category::Numeric) {
+            return false;
+        }
+
+        return true;
     }
 }

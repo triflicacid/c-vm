@@ -4,6 +4,7 @@ namespace language::lexer {
     std::map<Token::Type, std::string> tokens = {
             { Token::KW_DECL, "decl" },
             { Token::KW_DATA, "data" },
+            { Token::KW_ENTRY, "entry" },
             { Token::KW_FUNC, "func" },
             { Token::KW_RETURN, "return" },
 

@@ -18,8 +18,8 @@ namespace language::statement {
         const StatementBlock *m_body;
 
     public:
-        Function(types::FunctionType *type, int id)
-        : Statement(type->position()), m_name(type->name()), m_type(type), m_body(nullptr), m_id(id), m_is_complete(false) {
+        Function(const std::string& name, types::FunctionType *type, int id)
+        : Statement(type->position()), m_name(name), m_type(type), m_body(nullptr), m_id(id), m_is_complete(false) {
             type->set_id(id);
             type->is_used_by_fn = true;
         };
