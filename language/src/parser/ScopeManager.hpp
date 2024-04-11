@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Scope.hpp"
+#include "statement/Function.hpp"
 
 namespace language::parser {
     class ScopeManager {
@@ -26,7 +27,7 @@ namespace language::parser {
         [[nodiscard]] Scope *get_local() const { return m_scopes.back(); }
 
         /** Add a new scope. */
-        void push(int);
+        void push(const statement::Function *invoker);
 
         /** Push the given scope. */
         void push(Scope *);

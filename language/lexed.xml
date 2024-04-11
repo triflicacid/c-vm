@@ -1,18 +1,22 @@
 <Lines>
   <Line>
-    <Token line="0" col="0" type="2">entry</Token>
-    <Token line="0" col="6" type="29">start</Token>
-    <Token line="0" col="11" type="13">()</Token>
-    <Token line="0" col="14" type="21">-></Token>
-    <Token line="0" col="17" type="13">()</Token>
+    <Token line="0" col="0" type="4">func</Token>
+    <Token line="0" col="5" type="30">succ</Token>
+    <Token line="0" col="9" type="14">(</Token>
+    <Token line="0" col="10" type="30">n</Token>
+    <Token line="0" col="11" type="20">:</Token>
+    <Token line="0" col="13" type="10">i32</Token>
+    <Token line="0" col="16" type="15">)</Token>
+    <Token line="0" col="18" type="22">-></Token>
+    <Token line="0" col="21" type="10">i32</Token>
+    <Token line="0" col="25" type="18">{</Token>
+    <Token line="1" col="4" type="3">return</Token>
+    <Token line="1" col="11" type="30">n</Token>
+    <Token line="1" col="13" type="24">+</Token>
+    <Token line="1" col="15" type="29">1</Token>
   </Line>
   <Line>
-    <Token line="2" col="0" type="4">func</Token>
-    <Token line="2" col="5" type="29">start</Token>
-    <Token line="2" col="11" type="21">-></Token>
-    <Token line="2" col="14" type="13">()</Token>
-    <Token line="2" col="17" type="18">{</Token>
-    <Token line="4" col="0" type="19">}</Token>
+    <Token line="2" col="0" type="19">}</Token>
   </Line>
   <Line>
   </Line>

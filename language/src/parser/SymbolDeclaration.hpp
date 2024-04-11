@@ -8,6 +8,7 @@ namespace language::parser {
         int m_pos;
         std::string m_name;
         int m_offset;
+        bool m_is_arg; // Depends on how we access the variable.
         const types::Type *m_type;
 
     public:
@@ -16,9 +17,9 @@ namespace language::parser {
         bool was_used_since_assignment;
         int last_assigned_pos;
 
-        SymbolDeclaration(int pos, const std::string &name, const types::Type *type)
+        SymbolDeclaration(int pos, const std::string &name, const types::Type *type, bool is_arg)
         : m_type(type), m_pos(pos), m_name(name), m_offset(-1), delete_type(true), was_assigned(false),
-        was_used_since_assignment(false), last_assigned_pos(-1) {};
+        was_used_since_assignment(false), last_assigned_pos(-1), m_is_arg(is_arg) {};
 
         ~SymbolDeclaration() {
             if (!m_type->is_single_instance() && delete_type)
@@ -36,6 +37,8 @@ namespace language::parser {
         [[nodiscard]] int offset() const { return m_offset; }
 
         void set_offset(int o) { m_offset = o; }
+
+        [[nodiscard]] bool is_arg() const { return m_is_arg; }
 
         void debug_print(std::ostream& stream, const std::string& prefix) const;
     };

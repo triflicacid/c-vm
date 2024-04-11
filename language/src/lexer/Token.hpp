@@ -39,6 +39,7 @@ namespace language::lexer {
             RBRACE, // "}"  BRACKET END
 
             COLON, // ":"
+            DOT, // "."
             ARROW, // "->"
 
             COMMA, // ","  OPERATOR START

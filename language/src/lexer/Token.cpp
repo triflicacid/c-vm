@@ -27,6 +27,7 @@ namespace language::lexer {
             { Token::RBRACE, "}" },
 
             { Token::COLON, ":" },
+            { Token::DOT, "." },
             { Token::ARROW, "->" },
             { Token::COMMA, "," },
             { Token::EQUALS, "=" },

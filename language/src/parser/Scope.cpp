@@ -21,7 +21,7 @@ namespace language::parser {
         parser::SymbolDeclaration *old_symbol;
 
         // Update symbol's offset
-        symbol->set_offset((int) m_offset);
+        if (!symbol->is_arg()) symbol->set_offset((int) m_offset);
 
         if (entry == m_symbols.end()) {
             m_symbols.insert({ symbol->name(), symbol });
@@ -31,7 +31,7 @@ namespace language::parser {
             entry->second = symbol;
         }
 
-        grow(symbol->size());
+        if (!symbol->is_arg()) grow(symbol->size());
         return old_symbol;
     }
 

@@ -1,4 +1,5 @@
 #include <iostream>
+#include <set>
 #include "Parser.hpp"
 
 #include "language/src/statement/Symbol.hpp"
@@ -278,7 +279,7 @@ namespace language::parser {
                 *type = m_scopes.data_get(peek(-1)->image());
             } else {
                 move(-1);
-                messages.add(generate_error("Decl: reference to undefined type"));
+                messages.add(generate_error("Reference to undefined type"));
                 return false;
             }
         } else {
@@ -385,7 +386,7 @@ namespace language::parser {
                 }
 
                 // Add to current scope, deleting old Symbol if needed
-                auto symbol = new parser::SymbolDeclaration(identifier_pos, token_identifier->image(), type);
+                auto symbol = new parser::SymbolDeclaration(identifier_pos, token_identifier->image(), type, false);
                 delete m_scopes.get_local()->var_create(symbol);
 
                 // "," or <EOL>
@@ -426,6 +427,7 @@ namespace language::parser {
 
             // Start constructing type
             auto user_type = new types::UserType(token_data_identifier, data_pos);
+            m_scopes.get_local()->data_create(user_type);
 
             // Parse contents
             while (true) {
@@ -433,6 +435,7 @@ namespace language::parser {
                 int identifier_pos = m_pos;
 
                 if (!expect(lexer::Token::IDENTIFIER, &messages)) {
+                    delete user_type;
                     return false;
                 }
 
@@ -449,28 +452,34 @@ namespace language::parser {
                     set(data_pos);
                     messages.add(generate_message(message::Level::Note, "Data declared here"));
 
+                    delete user_type;
                     return false;
                 }
 
                 // ":"
                 if (!expect(lexer::Token::COLON, &messages)) {
+                    delete user_type;
                     return false;
                 }
 
                 // Type
                 const types::Type *type;
                 if (!consume_type(messages, &type)) {
+                    delete user_type;
                     return false;
                 }
 
                 // Add to current scope, deleting old Symbol if needed
-                auto symbol = new parser::SymbolDeclaration(identifier_pos, token_identifier->image(), type);
+                auto symbol = new parser::SymbolDeclaration(identifier_pos, token_identifier->image(), type, false);
                 user_type->add(symbol);
 
                 // <EOL> or "," or "}"
                 if (!expect({ lexer::Token::EOL, lexer::Token::COMMA, lexer::Token::RBRACE }, &messages)) {
+                    delete user_type;
                     return false;
                 }
+
+                while (expect(lexer::Token::EOL));
 
                 // If '}', exit
                 if (peek(-1)->type() == lexer::Token::RBRACE || (exists() && peek()->type() == lexer::Token::RBRACE)) {
@@ -478,9 +487,6 @@ namespace language::parser {
                     break;
                 }
             }
-
-            // Add to scope
-            m_scopes.get_local()->data_create(user_type);
 
             return true;
         } else {
@@ -551,7 +557,6 @@ namespace language::parser {
 
             // Collect parameters
             std::vector<const types::Type *> param_types;
-            std::vector<std::string> param_names;
             std::map<std::string, int> param_name_positions;
 
             if (!expect(lexer::Token::UNIT) && expect(lexer::Token::LPARENS)) {
@@ -584,7 +589,6 @@ namespace language::parser {
                     }
 
                     // Record parameter
-                    param_names.push_back(param_name);
                     param_name_positions.insert({ param_name, param_pos });
 
                     // ":"
@@ -675,8 +679,18 @@ namespace language::parser {
                 }
             }
 
-            // Create new scope
-            m_scopes.push(func->id());
+            // Extract map into vector of pairs and add to function
+            std::vector<std::pair<std::string, int>> param_names;
+            param_names.reserve(param_name_positions.size());
+
+            for (auto& pair : param_name_positions) {
+                param_names.emplace_back(pair);
+            }
+
+            func->set_params(param_names);
+
+            // Add new scope
+            m_scopes.push(func);
 
             // Parse body as code block
             auto *block = parse_code_block(messages);
@@ -689,7 +703,30 @@ namespace language::parser {
                 return false;
             }
 
-            func->complete_definition(param_names, block);
+            // Check for return statements
+            if (func->function_type()->return_type() != nullptr) {
+                bool has_return = false;
+
+                for (auto stmt : *block->statements()) {
+                    if (stmt->type() == statement::Type::RETURN) {
+                        has_return = true;
+                        break;
+                    }
+                }
+
+                if (!has_return) {
+                    move(-1);
+                    messages.add(generate_error("Type Mismatch: cannot match () with type " + func->function_type()->return_type()->repr()));
+                    set(func_name_pos);
+                    messages.add(generate_message(message::Level::Note, "Function definition begins here"));
+
+                    delete block;
+                    return false;
+                }
+            }
+
+            // Add function body
+            func->set_body(block);
 
             // TODO check for unused variables, functions completely
             if (options::unused_symbol_level > -1) {
@@ -1023,11 +1060,6 @@ namespace language::parser {
 
     void Parser::parse(message::List &messages) {
         reset();
-
-        // Ensure a scope exists -- global scope
-        if (m_scopes.size() == 0) {
-            m_scopes.push(-1);
-        }
 
         std::vector<std::function<bool()>> parsers = {
             [this, &messages] { return this->consume_kw_decl_func(messages); },

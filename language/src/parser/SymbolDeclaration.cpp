@@ -4,7 +4,9 @@
 namespace language::parser {
 
     void SymbolDeclaration::debug_print(std::ostream &stream, const std::string &prefix) const {
-        stream << prefix << "<Variable offset=\"" << m_offset << "\" bytes=\"" << size() << "\">" << std::endl;
+        std::string tag_name = m_is_arg ? "Argument" : "Variable";
+
+        stream << prefix << "<" << tag_name << " offset=\"" << m_offset << "\" bytes=\"" << size() << "\">" << std::endl;
 
         if (m_type->category() == types::Type::Category::User) {
             // Don't both printing out internal info
@@ -17,6 +19,6 @@ namespace language::parser {
             m_type->debug_print(stream, prefix + "  ");
         }
 
-        stream << std::endl << prefix << "  <Name>" << name() << "</Name>" << std::endl << prefix << "</Variable>";
+        stream << std::endl << prefix << "  <Name>" << name() << "</Name>" << std::endl << prefix << "</" << tag_name << ">";
     }
 }

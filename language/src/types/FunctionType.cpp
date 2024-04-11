@@ -26,9 +26,9 @@ namespace language::types {
         stream << prefix << "<FunctionType id=\"" << m_id << "\" argc=\"" << argc() << "\">" << std::endl;
 
         if (m_args.empty()) {
-            stream << prefix << "  <Arguments />" << std::endl;
+            stream << prefix << "  <ParameterTypes />" << std::endl;
         } else {
-            stream << prefix << "  <Arguments>" << std::endl;
+            stream << prefix << "  <ParameterTypes>" << std::endl;
 
             for (auto &arg: m_args) {
                 if (arg->category() == types::Type::Category::User) {
@@ -40,11 +40,11 @@ namespace language::types {
                 stream << std::endl;
             }
 
-            stream << prefix << "  </Arguments>" << std::endl;
+            stream << prefix << "  </ParameterTypes>" << std::endl;
         }
 
         if (m_ret != nullptr) {
-            stream << prefix << "  <Returns>" << std::endl;
+            stream << prefix << "  <ReturnType>" << std::endl;
 
             if (m_ret->category() == types::Type::Category::User) {
                 stream << prefix << "    <UserType>" << m_ret->repr() << "</UserType>";
@@ -52,9 +52,9 @@ namespace language::types {
                 m_ret->debug_print(stream, prefix + "    ");
             }
 
-            stream << std::endl << prefix << "  </Returns>" << std::endl;
+            stream << std::endl << prefix << "  </ReturnType>" << std::endl;
         } else {
-            stream << prefix << "  <Returns />" << std::endl;
+            stream << prefix << "  <ReturnType />" << std::endl;
         }
 
         stream << prefix << "</FunctionType>";
@@ -87,5 +87,28 @@ namespace language::types {
         }
 
         return true;
+    }
+
+    size_t FunctionType::arg_block_size() const {
+        size_t size = 0;
+
+        for (auto& arg : m_args) {
+            size += arg->size();
+        }
+
+        return size;
+    }
+
+    std::vector<int> FunctionType::arg_offsets() const {
+        int offset = (int) (arg_block_size() - m_args[0]->size());
+        std::vector<int> offsets;
+        offsets.reserve(m_args.size());
+
+        for (auto arg : m_args) {
+            offsets.push_back(offset);
+            offset -= (int) arg->size();
+        }
+
+        return offsets;
     }
 }

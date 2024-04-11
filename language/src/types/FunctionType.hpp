@@ -16,7 +16,7 @@ namespace language::types {
         bool is_used_by_fn; // If this type used by a Function object
 
         FunctionType(int token_pos, const std::vector<const types::Type *>& args, const types::Type *ret)
-        : Type(), m_pos(token_pos), m_args(args), m_ret(ret), m_id(-1), is_used_by_fn(false) {};
+                : Type(), m_pos(token_pos), m_args(args), m_ret(ret), m_id(-1), is_used_by_fn(false) { };
 
         ~FunctionType() {
             for (auto &arg : m_args) {
@@ -42,6 +42,14 @@ namespace language::types {
 
         /** Get argument count. */
         [[nodiscard]] size_t argc() const { return m_args.size(); }
+
+        [[nodiscard]] const types::Type *arg(int i) const { return m_args[i]; }
+
+        /** Calculate arg block size. */
+        [[nodiscard]] size_t arg_block_size() const;
+
+        /** Calculate offset of each argument from fp. */
+        [[nodiscard]] std::vector<int> arg_offsets() const;
 
         [[nodiscard]] int position() const { return m_pos; }
 

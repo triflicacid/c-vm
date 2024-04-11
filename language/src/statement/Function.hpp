@@ -5,6 +5,7 @@
 #include "types/FunctionType.hpp"
 #include "statement/Statement.hpp"
 #include "StatementBlock.hpp"
+#include "parser/Scope.hpp"
 
 namespace language::statement {
     class Function : public Statement {
@@ -14,15 +15,11 @@ namespace language::statement {
         const types::FunctionType *m_type;
         bool m_is_complete; // Do we have a complete definition?
 
-        std::vector<std::string> m_params; // Parameter names
+        std::vector<std::pair<std::string, int>> m_params; // Parameter names, positions (token)
         const StatementBlock *m_body;
 
     public:
-        Function(const std::string& name, types::FunctionType *type, int id)
-        : Statement(type->position()), m_name(name), m_type(type), m_body(nullptr), m_id(id), m_is_complete(false) {
-            type->set_id(id);
-            type->is_used_by_fn = true;
-        };
+        Function(const std::string& name, types::FunctionType *type, int id);
 
         ~Function() {
             delete m_type;
@@ -41,8 +38,12 @@ namespace language::statement {
 
         [[nodiscard]] int is_complete() const { return m_is_complete; }
 
-        /** Complete function definition. Assume: !is_complete(). */
-        void complete_definition(const std::vector<std::string>& params, const StatementBlock *body);
+        /** Add parameters to a scope. */
+        void add_args_to_scope(parser::Scope *scope) const;
+
+        void set_params(const std::vector<std::pair<std::string, int>>& params);
+
+        void set_body(const StatementBlock *body);
 
         void debug_print(std::ostream& stream, const std::string& prefix) const override;
     };

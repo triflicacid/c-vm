@@ -2,8 +2,10 @@
 
 namespace language::parser {
 
-    void ScopeManager::push(int invoker_func_id) {
-        m_scopes.push_back(new Scope(invoker_func_id));
+    void ScopeManager::push(const statement::Function *invoker) {
+        auto scope = new Scope(invoker->id());
+        invoker->add_args_to_scope(scope);
+        push(scope);
     }
 
     void ScopeManager::push(Scope *scope) {

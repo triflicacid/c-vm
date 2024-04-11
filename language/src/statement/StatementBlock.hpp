@@ -26,6 +26,8 @@ namespace language::statement {
             m_stmts.push_back(stmt);
         }
 
+        [[nodiscard]] const std::vector<const Statement *> *statements() const { return &m_stmts; }
+
         void debug_print(std::ostream& stream, const std::string& prefix) const {
             if (m_stmts.empty()) {
                 stream << prefix << "<StatementBlock />";
