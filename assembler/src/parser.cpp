@@ -530,48 +530,26 @@ namespace assembler::parser {
             return s[i - 1] - '0';
         }
 
-        if (s == REG_FLAG_SYM) {
-            i += sizeof(REG_FLAG_SYM) - 1;
-            return REG_FLAG;
-        }
-
-        if (s == REG_CMP_SYM) {
-            i += sizeof(REG_CMP_SYM) - 1;
-            return REG_CMP;
-        }
-
-        if (s == REG_CCR_SYM) {
-            i += sizeof(REG_CCR_SYM) - 1;
-            return REG_CCR;
-        }
-
-        if (s == REG_ERR_SYM) {
-            i += sizeof(REG_ERR_SYM) - 1;
-            return REG_ERR;
-        }
-
-        if (s == REG_IP_SYM) {
-            i += sizeof(REG_IP_SYM) - 1;
-            return REG_IP;
-        }
-
-        if (s == REG_SP_SYM) {
-            i += sizeof(REG_SP_SYM) - 1;
-            return REG_SP;
-        }
-
-        if (s == REG_STACK_SIZE_SYM) {
-            i += sizeof(REG_STACK_SIZE_SYM) - 1;
-            return REG_STACK_SIZE;
-        }
-
-        if (s == REG_FP_SYM) {
-            i += sizeof(REG_FP_SYM) - 1;
-            return REG_FP;
+        for (auto& pair : registers) {
+            if (s.length() - i >= pair.first.length() && s.substr(i, pair.first.length()) == pair.first) {
+                i += (int) pair.first.length();
+                return pair.second;
+            }
         }
 
         return -1;
     }
+
+    std::map<std::string, int> registers = {
+            {REG_FLAG_SYM, REG_FLAG},
+            {REG_CMP_SYM, REG_CMP},
+            {REG_CCR_SYM, REG_CCR},
+            {REG_ERR_SYM, REG_ERR},
+            {REG_IP_SYM, REG_IP},
+            {REG_SP_SYM, REG_SP},
+            {REG_FP_SYM, REG_FP},
+            {REG_STACK_SIZE_SYM, REG_STACK_SIZE}
+    };
 
     bool parse_number(const std::string& string, bool& is_decimal, unsigned long long& v_int, double &v_dbl) {
         int i = 0;

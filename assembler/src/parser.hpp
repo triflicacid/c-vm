@@ -37,4 +37,6 @@ namespace assembler::parser {
 
     /** Given a string, add bytes to data that it represents. Parse an entire data string e.g., '42 0 '\0'' */
     void parse_byte_sequence(const Data &data, int line_idx, int &col, message::List &msgs, const AddBytesFunction& add_bytes);
+
+    extern std::map<std::string, int> registers;
 }

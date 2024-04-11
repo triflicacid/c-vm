@@ -22,11 +22,11 @@ namespace assembler::instruction {
             { "mov32", { { ParamType::Literal, 4 }, { ParamType::Address, sizeof(UWORD_T) } }, OP_MOV32_LIT_MEM },
             { "mov64", { { ParamType::Literal, 8 }, { ParamType::Address, sizeof(UWORD_T) } }, OP_MOV64_LIT_MEM },
 
-            { "mov", { { ParamType::Register, 1 }, { ParamType::Literal, sizeof(WORD_T) }, { ParamType::Register, 1 } }, OP_MOV_LIT_OFF_REG },
-            { "mov8", { { ParamType::Register, 1 }, { ParamType::Literal, 1 }, { ParamType::Register, 1 } }, OP_MOV8_LIT_OFF_REG },
-            { "mov16", { { ParamType::Register, 1 }, { ParamType::Literal, 2 }, { ParamType::Register, 1 } }, OP_MOV16_LIT_OFF_REG },
-            { "mov32", { { ParamType::Register, 1 }, { ParamType::Literal, 4 }, { ParamType::Register, 1 } }, OP_MOV32_LIT_OFF_REG },
-            { "mov64", { { ParamType::Register, 1 }, { ParamType::Literal, 8 }, { ParamType::Register, 1 } }, OP_MOV64_LIT_OFF_REG },
+            { "mov", { { ParamType::Register, 1 }, { ParamType::Literal, sizeof(T_i32) }, { ParamType::Register, 1 } }, OP_MOV_LIT_OFF_REG },
+            { "mov8", { { ParamType::Register, 1 }, { ParamType::Literal, sizeof(T_i32) }, { ParamType::Register, 1 } }, OP_MOV8_LIT_OFF_REG },
+            { "mov16", { { ParamType::Register, 1 }, { ParamType::Literal, sizeof(T_i32) }, { ParamType::Register, 1 } }, OP_MOV16_LIT_OFF_REG },
+            { "mov32", { { ParamType::Register, 1 }, { ParamType::Literal, sizeof(T_i32) }, { ParamType::Register, 1 } }, OP_MOV32_LIT_OFF_REG },
+            { "mov64", { { ParamType::Register, 1 }, { ParamType::Literal, sizeof(T_i32) }, { ParamType::Register, 1 } }, OP_MOV64_LIT_OFF_REG },
 
             { "mov", { { ParamType::Address, sizeof(UWORD_T) }, { ParamType::Register, 1 } }, OP_MOV_MEM_REG },
             { "mov8", { { ParamType::Address, sizeof(UWORD_T) }, { ParamType::Register, 1 } }, OP_MOV8_MEM_REG },

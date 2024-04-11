@@ -243,14 +243,14 @@ void cpu_err_print(CPU cpu);
         else                                                     \
         {                                                        \
             ip += sizeof(T_u8);                                  \
-            WORD_T lit = MEM_READ(ip, WORD_T);                   \
-            ip += sizeof(WORD_T);                                \
+            T_i32 lit = MEM_READ(ip, T_i32);                     \
+            ip += sizeof(T_i32);                                 \
             T_u8 r2 = MEM_READ(ip, T_u8);                        \
             ERR_CHECK_REG(r2)                                    \
             else                                                 \
             {                                                    \
                 ip += sizeof(T_u8);                              \
-                type data = MEM_READ(lit + cpu->regs[r1], type); \
+                type data = MEM_READ(lit + (WORD_T)cpu->regs[r1], type); \
                 cpu->regs[r2] = data;                            \
             }                                                    \
         }                                                        \
