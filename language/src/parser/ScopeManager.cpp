@@ -2,8 +2,8 @@
 
 namespace language::parser {
 
-    void ScopeManager::push() {
-        m_scopes.push_back(new Scope());
+    void ScopeManager::push(int invoker_func_id) {
+        m_scopes.push_back(new Scope(invoker_func_id));
     }
 
     void ScopeManager::push(Scope *scope) {
@@ -25,7 +25,7 @@ namespace language::parser {
         return false;
     }
 
-    const std::pair<const Symbol *, int> *ScopeManager::var_get(const std::string &name) const {
+    parser::SymbolDeclaration *ScopeManager::var_get(const std::string &name) const {
         for (int i = (int) m_scopes.size() - 1; i >= 0; i--) {
             if (m_scopes[i]->var_exists(name)) {
                 return m_scopes[i]->var_get(name);
@@ -33,10 +33,6 @@ namespace language::parser {
         }
 
         return nullptr;
-    }
-
-    const Symbol *ScopeManager::var_create(const Symbol *symbol) {
-        return m_scopes.back()->var_create(symbol);
     }
 
     bool ScopeManager::data_exists(const std::string &name) const {
@@ -57,10 +53,6 @@ namespace language::parser {
         }
 
         return nullptr;
-    }
-
-    void ScopeManager::data_create(const types::UserType *data) {
-        m_scopes.back()->data_create(data);
     }
 
     void ScopeManager::debug_print(std::ostream &stream, const std::string &prefix) const {
@@ -117,9 +109,5 @@ namespace language::parser {
         }
 
         return nullptr;
-    }
-
-    void ScopeManager::func_create(const std::string &name, const types::FunctionType *overload) {
-        m_scopes.back()->func_create(name, overload);
     }
 }

@@ -26,10 +26,10 @@ namespace language::parser {
         [[nodiscard]] Scope *get_local() const { return m_scopes.back(); }
 
         /** Add a new scope. */
-        void push();
+        void push(int);
 
         /** Push the given scope. */
-        void push(Scope *scope);
+        void push(Scope *);
 
         /** Pop the topmost scope. */
         void pop();
@@ -38,19 +38,13 @@ namespace language::parser {
         [[nodiscard]] bool var_exists(const std::string& name) const;
 
         /** Get symbol information. */
-        [[nodiscard]] const std::pair<const Symbol *, int> *var_get(const std::string& name) const;
-
-        /** Insert new symbol. Note, this overwrites the old instance. Return reference to this old reference. */
-        const Symbol *var_create(const Symbol *symbol);
+        [[nodiscard]] parser::SymbolDeclaration *var_get(const std::string& name) const;
 
         /** Query if data type var_exists. */
         [[nodiscard]] bool data_exists(const std::string& name) const;
 
         /** Get symbol information. */
         [[nodiscard]] const types::UserType *data_get(const std::string& name) const;
-
-        /** Create new data-type. */
-        void data_create(const types::UserType *data);
 
         /** Query if function name var_exists. */
         [[nodiscard]] bool func_exists(const std::string& name) const;
@@ -62,9 +56,6 @@ namespace language::parser {
         [[nodiscard]] const std::vector<const types::FunctionType *> *func_get(const std::string& name) const;
 
         [[nodiscard]] const types::FunctionType *func_get(const std::string& name, const types::FunctionType *overload) const;
-
-        /** Create new function. */
-        void func_create(const std::string& name, const types::FunctionType *overload);
 
         /** DEBUG: print all scopes to stream */
         void debug_print(std::ostream& stream, const std::string& prefix = "") const;

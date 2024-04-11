@@ -67,4 +67,10 @@ namespace message {
 
         std::cout << ": " << m_msg << "\n";
     }
+
+    Level level_from_int(int level) {
+        if (level < 1) return Level::Note;
+        if (level == 1) return Level::Warning;
+        return Level::Error;
+    }
 }

@@ -16,6 +16,7 @@ namespace language::lexer {
 
             KW_DECL,  // KEYWORD START
             KW_DATA,
+            KW_RETURN,
             KW_FUNC,  // KEYWORD END
 
             TYPE_u8, // TYPE START
@@ -71,16 +72,6 @@ namespace language::lexer {
         /** Get token string representation. */
         static std::string repr(Type type);
 
-        /** Is 'u8', 'i8', ... */
-        static bool is_int_type(Type t) {
-            return t >= TYPE_u8 && t <= TYPE_i64;
-        }
-
-        /** Is a keyword. */
-        static bool is_keyword(Type t) {
-            return t >= KW_DECL && t <= KW_FUNC;
-        }
-
         /** Is any type of bracket. */
         static bool is_bracket(Type t) {
             return t >= LPARENS && t <= RBRACE;
@@ -105,25 +96,11 @@ namespace language::lexer {
         static bool is_operator(Type t) {
             return t >= COMMA && t <= SLASH;
         }
-
-        /** Is a literal? */
-        static bool is_literal(Type t) {
-            return t >= INTEGER && t <= IDENTIFIER;
-        }
     };
 
     /** Map of token types to pre-requisite string. */
     extern std::map<Token::Type, std::string> tokens;
 
-    /** Vector of tokens which may be used as a type. */
-    extern std::vector<Token::Type> valid_types;
-
-    struct NumInfo {
-        int bytes;
-        bool is_signed;
-        bool is_float;
-    };
-
-    /** Map of int types to detailed info: (bytes, signed, float). */
-    extern std::map<Token::Type, NumInfo> num_types;
+    /** Vector of numerical type tokens. */
+    extern std::vector<Token::Type> num_types;
 }

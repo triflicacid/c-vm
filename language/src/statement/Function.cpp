@@ -9,21 +9,15 @@ namespace language::statement {
         stream << std::endl;
 
         if (m_is_complete) {
-            stream << prefix << "  <Body statements=\"" << m_body.size() << "\">" << std::endl;
-
-            for (auto &stmt: m_body) {
-                stmt->debug_print(stream, prefix + "    ");
-                stream << std::endl;
-            }
-
-            stream << prefix << "  </Body>" << std::endl;
+            stream << prefix << "  <Body>" << std::endl;
+            m_body->debug_print(stream, prefix + "    ");
+            stream << std::endl << prefix << "  </Body>" << std::endl;
         }
 
         stream << prefix << "</Function>";
     }
 
-    void Function::complete_definition(const std::vector<std::string> &params,
-                                       const std::vector<const statement::Statement *> &body) {
+    void Function::complete_definition(const std::vector<std::string> &params, const StatementBlock *body) {
         if (m_is_complete)
             return;
 

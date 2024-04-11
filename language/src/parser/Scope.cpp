@@ -11,22 +11,24 @@ namespace language::parser {
         return m_symbols.find(name) != m_symbols.end();
     }
 
-    const std::pair<const Symbol *, int> *Scope::var_get(const std::string &name) {
+    parser::SymbolDeclaration *Scope::var_get(const std::string &name) {
         auto found = m_symbols.find(name);
-        return found == m_symbols.end() ? nullptr : &found->second;
+        return found == m_symbols.end() ? nullptr : found->second;
     }
 
-    const Symbol *Scope::var_create(const Symbol *symbol) {
+    parser::SymbolDeclaration *Scope::var_create(parser::SymbolDeclaration *symbol) {
         auto entry = m_symbols.find(symbol->name());
-        const Symbol *old_symbol;
+        parser::SymbolDeclaration *old_symbol;
+
+        // Update symbol's offset
+        symbol->set_offset((int) m_offset);
 
         if (entry == m_symbols.end()) {
-            m_symbols.insert({ symbol->name(), { symbol, (int) m_offset } });
+            m_symbols.insert({ symbol->name(), symbol });
             old_symbol = nullptr;
         } else {
-            old_symbol = entry->second.first;
-            entry->second.first = symbol;
-            entry->second.second = (int) m_offset;
+            old_symbol = entry->second;
+            entry->second = symbol;
         }
 
         grow(symbol->size());
@@ -53,7 +55,7 @@ namespace language::parser {
             stream << prefix << "  <Symbols>" << std::endl;
 
             for (auto &pair : m_symbols) {
-                pair.second.first->debug_print(stream, pair.second.second, prefix + "    ");
+                pair.second->debug_print(stream, prefix + "    ");
                 stream << std::endl;
             }
 
@@ -123,5 +125,16 @@ namespace language::parser {
         } else {
             entry->second.push_back(overload);
         }
+    }
+
+    std::vector<const parser::SymbolDeclaration *> Scope::symbols() const {
+        std::vector<const parser::SymbolDeclaration *> symbols;
+        symbols.reserve(m_symbols.size());
+
+        for (auto& pair : m_symbols) {
+            symbols.push_back(pair.second);
+        }
+
+        return symbols;
     }
 }

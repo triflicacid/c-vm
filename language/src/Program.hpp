@@ -14,7 +14,7 @@ namespace language {
 
     public:
         explicit Program(Source *source) : m_source(source), func_id(0) {
-            m_scope = new parser::Scope();
+            m_scope = new parser::Scope(-1); // Fake invoker ID - never used in topmost scope.
         }
 
         ~Program() {

@@ -5,7 +5,13 @@
 namespace language::statement {
     enum class Type {
         GENERIC = -1,
+        FUNCTION,
+        RETURN,
         EXPRESSION,
+        SYMBOL,
+        NUMBER,
+        BINARY_OPERATOR,
+        UNARY_OPERATOR
     };
 
     class Statement {

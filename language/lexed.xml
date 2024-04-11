@@ -1,9 +1,26 @@
 <Lines>
   <Line>
-    <Token line="0" col="0" type="2">func</Token>
-    <Token line="0" col="5" type="27">main</Token>
-    <Token line="0" col="10" type="16">{</Token>
-    <Token line="2" col="0" type="17">}</Token>
+    <Token line="0" col="0" type="3">func</Token>
+    <Token line="0" col="5" type="28">main</Token>
+    <Token line="0" col="10" type="20">-></Token>
+    <Token line="0" col="13" type="9">i32</Token>
+    <Token line="0" col="17" type="17">{</Token>
+    <Token line="1" col="4" type="0">decl</Token>
+    <Token line="1" col="9" type="28">a</Token>
+    <Token line="1" col="10" type="19">:</Token>
+    <Token line="1" col="12" type="9">i32</Token>
+  </Line>
+  <Line>
+    <Token line="2" col="4" type="28">a</Token>
+    <Token line="2" col="6" type="23">=</Token>
+    <Token line="2" col="8" type="27">10</Token>
+  </Line>
+  <Line>
+    <Token line="3" col="4" type="2">return</Token>
+    <Token line="3" col="11" type="28">a</Token>
+  </Line>
+  <Line>
+    <Token line="4" col="0" type="18">}</Token>
   </Line>
   <Line>
   </Line>

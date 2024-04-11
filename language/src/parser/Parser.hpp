@@ -9,11 +9,14 @@
 #include "LanguageOptions.hpp"
 #include "ScopeManager.hpp"
 #include "Program.hpp"
+#include "statement/Expression.hpp"
+#include "statement/OperatorType.hpp"
 
 namespace language::parser {
     class Parser {
     private:
-        int m_pos;
+        int m_pos; // Current index into token vector
+        int m_end_pos; // Used in few cases, used to select a range. m_pos <= m_end_pos when used.
         std::stack<int> m_pos_stack; // Store position history
         Program *m_prog;
         std::vector<lexer::Token>& m_tokens;
@@ -34,6 +37,12 @@ namespace language::parser {
 
         /** Set position. */
         void set(int pos) { m_pos = pos; }
+
+        /** Mark m_pos as the end of a range. */
+        void mark_end() { m_end_pos = m_pos; }
+
+        /** Set end of range */
+        void set_end(int pos) { m_end_pos = pos; }
 
         /** If we see the given token, return true. Increment position.
          * If provided, add error to message list [default nullptr]. */
@@ -70,6 +79,9 @@ namespace language::parser {
         /** Consume "func ...". */
         bool consume_kw_func(message::List &messages);
 
+        /** Consume "return ...". If asked, check return type against current function. */
+        bool consume_kw_return(message::List &messages, statement::StatementBlock& block, bool check_return_type = false);
+
         /** Declaration: check if identifier exists in topmost scope. If it does, add messages to stack. */
         bool check_can_create_identifier(const lexer::Token& identifier, int pos, message::List& messages);
 
@@ -78,6 +90,18 @@ namespace language::parser {
 
         /** Check whether the given function overload already exists. */
         bool check_can_create_overload(const std::string& name, const types::FunctionType *overload, message::List& messages);
+
+        /** Return if type `a` matches type `b` (order is important). If not, add messages to list. */
+        bool check_type_match(const types::Type *a, const types::Type *b, int pos = 0, message::List *messages = nullptr);
+
+        /** Check if a symbol is used: options.unused_symbol_level, add to messages. */
+        bool check_symbol_unused(const parser::SymbolDeclaration *symbol, message::List& messages);
+
+        /** Parse an expression. */
+        const statement::Expression *parse_expression(message::List& messages, int precedence = 0);
+
+        /** Parse code block. Assume token "{" has already been eaten. Return pointer to block, please delete even if error. */
+        statement::StatementBlock *parse_code_block(message::List& messages);
 
         /** Generate generic message with provided message about the current token. */
         message::MessageWithSource *generate_message(message::Level level, const std::string& message);
@@ -90,11 +114,15 @@ namespace language::parser {
         /** Generate error on the given token. */
         message::MessageWithSource *generate_syntax_error(const std::vector<lexer::Token::Type>& expected);
 
+        message::MessageWithSource *generate_syntax_error_multi(const std::vector<const std::vector<lexer::Token::Type> *>& expected);
+
+        /** Generate error on the given token. */
+        message::MessageWithSource *generate_custom_syntax_error(const std::string& expected);
+
     public:
         LanguageOptions options;
 
-        explicit Parser(Program *program) : m_prog(program), m_pos(0), m_tokens(program->source()->tokens) {
-            // TODO remove, no scopes should be preserved.
+        explicit Parser(Program *program) : m_prog(program), m_pos(0), m_end_pos(-1), m_tokens(program->source()->tokens) {
             m_scopes.push(program->global_scope());
             m_scopes.set_immortal(1);
         };
@@ -112,4 +140,13 @@ namespace language::parser {
         /** Parse tokens. Provide error list and global scope to populate. */
         void parse(message::List& messages);
     };
+
+    struct OperatorInfo {
+        int precedence;
+        bool right_associative;
+        statement::OperatorType type;
+    };
+
+    extern std::map<lexer::Token::Type, OperatorInfo> token_binary_operators;
+    extern std::map<lexer::Token::Type, OperatorInfo> token_unary_operators;
 }

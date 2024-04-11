@@ -7,6 +7,8 @@
 namespace language::types {
     class FunctionType : public Type {
     private:
+        int m_pos;
+        const lexer::Token *m_token;
         std::vector<const types::Type *> m_args; // Vector of argument type tokens
         const types::Type *m_ret; // Return type token, may be nullptr
         int m_id;
@@ -15,7 +17,7 @@ namespace language::types {
         bool is_used_by_fn; // If this type used by a Function object
 
         FunctionType(lexer::Token *token, int token_pos, const std::vector<const types::Type *>& args, const types::Type *ret)
-        : Type(token, token_pos), m_args(args), m_ret(ret), m_id(-1), is_used_by_fn(false) {};
+        : Type(), m_token(token), m_pos(token_pos), m_args(args), m_ret(ret), m_id(-1), is_used_by_fn(false) {};
 
         ~FunctionType() {
             for (auto &arg : m_args) {
@@ -44,12 +46,16 @@ namespace language::types {
 
         [[nodiscard]] std::string name() const { return m_token->image(); }
 
+        [[nodiscard]] int position() const { return m_pos; }
+
         [[nodiscard]] Category category() const override { return Category::Function; }
 
         [[nodiscard]] bool is_single_instance() const override { return is_used_by_fn; }
 
+        [[nodiscard]] const types::Type *return_type() const { return m_ret; }
+
         /** String representation as in definition. */
-        [[nodiscard]] std::string repr() const;
+        [[nodiscard]] std::string repr() const override;
 
         void debug_print(std::ostream& stream, const std::string& prefix) const override;
     };

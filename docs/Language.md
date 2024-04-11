@@ -76,6 +76,26 @@ decl v: Vec
 v.x // => 0
 ```
 
+### Numeric Literals
+Currently, only integers are supported. Integers have the format
+
+```
+[0-9]+
+```
+
+They are given the smallest possible *signed* type which they fit inside. The following types are checked in sequential order: `i8`, `i16`, `i32`, `i64`. If non of these work, `u64` is chosen.
+
+The type of the literal may be decided manually using `<num>: <type>`.
+
+### Variables
+Currently, variables are built-in numerical types, or user-defined data-structures. They are declared using the `decl` keyword, which allocates them a position on the stack.
+
+```
+decl <name>: <type>[, ...]
+```
+
+Multiple variables may be declared in one statement. Variables optionally may be shadowed, where the identifier is re-used.
+
 ### Functions
 
 The `decl func ...` compound keyword allows one to declare a function - tell the compiler about its existence - without providing a definition.
@@ -100,13 +120,6 @@ func <name>[<params>] [-> <return>] { <body> }
 - `<return>` (same as above.)
 - `<body>` is a collection of statements.
 
+The `return [<expr>]` keyword is used to exit a function. If `<expr>` is provided, this will take place as the function's return value.
+
 Note that the same function cannot be defined more than once, but overloading is supported.
-
-### Variables
-Currently, variables are built-in numerical types, or user-defined data-structures. They are declared using the `decl` keyword, which allocates them a position on the stack.
-
-```
-decl <name>: <type>[, ...]
-```
-
-Multiple variables may be declared in one statement. Variables optionally may be shadowed, where the identifier is re-used.

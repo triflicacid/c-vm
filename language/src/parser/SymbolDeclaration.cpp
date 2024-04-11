@@ -1,14 +1,14 @@
-#include "Symbol.hpp"
+#include "SymbolDeclaration.hpp"
 #include "types/FunctionType.hpp"
 
 namespace language::parser {
 
-    void Symbol::debug_print(std::ostream &stream, size_t offset, const std::string &prefix) const {
-        stream << prefix << "<Variable offset=\"" << offset << "\" bytes=\"" << size() << "\">" << std::endl;
+    void SymbolDeclaration::debug_print(std::ostream &stream, const std::string &prefix) const {
+        stream << prefix << "<Variable offset=\"" << m_offset << "\" bytes=\"" << size() << "\">" << std::endl;
 
         if (m_type->category() == types::Type::Category::User) {
             // Don't both printing out internal info
-            stream << prefix << "  <UserType>" << m_type->token()->image() << "</UserType>";
+            stream << prefix << "  <UserType>" << m_type->repr() << "</UserType>";
         } else if (m_type->category() == types::Type::Category::Function &&
                 ((types::FunctionType *) m_type)->is_stored()) {
             // Don't both printing out internal info
@@ -17,6 +17,6 @@ namespace language::parser {
             m_type->debug_print(stream, prefix + "  ");
         }
 
-        stream << std::endl << prefix << "  <Name>" << m_name << "</Name>" << std::endl << prefix << "</Variable>";
+        stream << std::endl << prefix << "  <Name>" << name() << "</Name>" << std::endl << prefix << "</Variable>";
     }
 }

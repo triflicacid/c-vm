@@ -8,7 +8,7 @@ namespace language::types {
         }
 
         for (int i = 0; i < argc(); i++) {
-            if (m_args[i]->token()->image() != other.m_args[i]->token()->image()) {
+            if (m_args[i]->repr() != other.m_args[i]->repr()) {
                 return false;
             }
         }
@@ -26,7 +26,7 @@ namespace language::types {
 
             for (auto &arg: m_args) {
                 if (arg->category() == types::Type::Category::User) {
-                    stream << prefix << "    <UserType>" << arg->token()->image() << "</UserType>";
+                    stream << prefix << "    <UserType>" << arg->repr() << "</UserType>";
                 } else {
                     arg->debug_print(stream, prefix + "    ");
                 }
@@ -41,7 +41,7 @@ namespace language::types {
             stream << prefix << "  <Returns>" << std::endl;
 
             if (m_ret->category() == types::Type::Category::User) {
-                stream << prefix << "    <UserType>" << m_ret->token()->image() << "</UserType>";
+                stream << prefix << "    <UserType>" << m_ret->repr() << "</UserType>";
             } else {
                 m_ret->debug_print(stream, prefix + "    ");
             }
@@ -59,12 +59,12 @@ namespace language::types {
         stream << "(";
 
         for (int i = 0; i < m_args.size(); i++) {
-            stream << m_args[i]->token()->image();
+            stream << m_args[i]->repr();
 
             if (i < m_args.size() - 1) stream << ", ";
         }
 
-        stream << ") -> " << (m_ret ? m_ret->token()->image() : "()");
+        stream << ") -> " << (m_ret ? m_ret->repr() : "()");
 
         return stream.str();
     }

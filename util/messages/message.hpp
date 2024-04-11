@@ -43,4 +43,7 @@ namespace message {
 
         virtual void print();
     };
+
+    /** Get level from int, where lowest is 0 */
+    Level level_from_int(int level);
 }
