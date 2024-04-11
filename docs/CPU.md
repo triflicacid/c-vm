@@ -50,3 +50,72 @@ These are errors which are thrown during machine code execution. The error code 
 | `ERR_UNINST`      | Opcode          | Encountered illegal opcode during FE-cycle       |
 | `ERR_STACK_UFLOW` | *N/A*           | Attempted to POP of an empty stack               |
 | `ERR_STACK_OFLOW` | Memory address  | Stack has overflown - size exceeds capacity      |
+
+## Calling Convention
+The following section steps through how a function is called.
+
+Before:
+```
+...     <-- SP
+```
+
+User pushes arguments, followed by the argument bytes:
+```
+A#     <-- SP
+A...
+A1
+...
+```
+
+where `A1` is the first argument, `A...` is more arguments, `A#` is the number of arguments in **bytes**.
+
+User calls `cal ...`:
+```
+R...   <-- SP
+OIP  
+OFP    <-- FP
+A#
+A...
+A1
+...
+```
+
+where `OFP` is the old frame pointer, `OIP` is the old instruction pointer, `R...` are saved registers.
+
+**NOTE** that `sp` points one byte **after** the stack.
+
+Say the stack is now 
+```
+...    <-- SP
+R...
+OIP
+OFP    <-- FP
+A#
+A...
+A1
+...
+```
+
+When we see `ret`, we first set `SP := FP-(RESV+1)` and restore `R...`. Then we update the pointers, namely `SP := FP`, `FP := OFP`, `IP := OIP`.
+```
+...
+R...
+IP
+OFP    <-- SP
+A#
+A...
+A1
+...
+```
+
+`SP` is then decremented and reduced by `A#`
+```
+...
+R...
+IP
+OFP
+A#
+A...
+A1
+...    <-- SP
+```
