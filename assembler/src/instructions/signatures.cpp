@@ -186,5 +186,6 @@ namespace assembler::instruction {
             { "cal", { { ParamType::Literal, sizeof(WORD_T) } }, OP_CALL_LIT },
             { "cal", { { ParamType::Register, 1 } }, OP_CALL_REG },
             { "syscall", { }, OP_SYSCALL },
+            { "ret", { }, OP_RET },
     };
 }

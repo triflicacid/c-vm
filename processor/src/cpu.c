@@ -877,48 +877,42 @@ void cpu_load_header(CPU cpu, struct binary_header_data *header) {
 }
 
 static void cpu_push_stack_frame(CPU cpu) {
+    // Push old FP
+    PUSH(UWORD_T, cpu->regs[REG_FP])
+
+    // Push old IP
+    PUSH(UWORD_T, cpu->regs[REG_IP])
+
+    // Update FP to point at OFP
+    cpu->regs[REG_FP] = cpu->regs[REG_SP] + sizeof(UWORD_T);
+
     WORD_T *err = cpu->regs + REG_ERR;
 
-    // Push general purpose registers
+    // Push reserved registers
     for (int off = 0; off < REG_RESV; ++off) {
         PUSH(WORD_T, cpu->regs[off])
         if (*err != ERR_NONE) return;
     }
-
-    // Push instruction pointer
-    PUSH(UWORD_T, cpu->regs[REG_IP])
-    if (*err != ERR_NONE) return;
-
-    // Record stack frame size
-    UWORD_T frame_size = cpu->regs[REG_FP] - cpu->regs[REG_SP];
-    PUSH(UWORD_T, frame_size + sizeof(UWORD_T))
-    if (*err != ERR_NONE) return;
-
-    // Move frame pointer
-    cpu->regs[REG_FP] = cpu->regs[REG_SP];
 }
 
 static void cpu_pop_stack_frame(CPU cpu) {
-    WORD_T *err = cpu->regs + REG_ERR;
+    cpu->regs[REG_SP] = cpu->regs[REG_FP] - (REG_RESV + 1) * sizeof(WORD_T); // Jump to topmost register
 
-    // Get frame size
-    WORD_T frame_size;
-    POP(UWORD_T, frame_size)
-    if (*err != ERR_NONE) return;
-
-    // Pop IP
-    WORD_T ip;
-    POP(UWORD_T, ip)
-    if (*err != ERR_NONE) return;
-    cpu->regs[REG_IP] = ip;
-
-    // Pop general purpose registers
-    for (T_u8 off = REG_RESV; off > 0; --off) {
-        POP(UWORD_T, cpu->regs[off - 1])
-        if (*err != ERR_NONE) return;
+    // Restore registers
+    for (int off = REG_RESV - 1; off >= 0; off--) {
+        POP(WORD_T, cpu->regs[off])
     }
 
-    cpu->regs[REG_FP] += frame_size;
+    // Restore IP
+    POP(UWORD_T, cpu->regs[REG_IP])
+
+    // Load old FP
+    POP(UWORD_T, cpu->regs[REG_FP])
+
+    // Load argument count in bytes
+    UWORD_T arg_bytes;
+    POP(UWORD_T, arg_bytes);
+    cpu->regs[REG_SP] += arg_bytes;
 }
 
 int cpu_syscall(CPU cpu, int op) {
