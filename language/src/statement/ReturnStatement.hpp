@@ -11,14 +11,14 @@ namespace language::statement {
     public:
         ReturnStatement(int pos, const Expression *expr) : Statement(pos), m_expr(expr) {};
 
-        [[nodiscard]] virtual Type type() const { return Type::RETURN; }
+        [[nodiscard]] Type type() const override { return Type::RETURN; }
 
         [[nodiscard]] bool is_empty() const { return m_expr == nullptr; }
 
         /** Get return type. */
         [[nodiscard]] const types::Type *get_type_of() const { return m_expr ? m_expr->get_type_of() : nullptr; }
 
-        virtual void debug_print(std::ostream& stream, const std::string& prefix) const {
+        void debug_print(std::ostream& stream, const std::string& prefix) const override {
             stream << prefix;
 
             if (m_expr == nullptr) {

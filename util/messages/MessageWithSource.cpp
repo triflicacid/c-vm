@@ -15,14 +15,14 @@ namespace message {
     void MessageWithSource::print_notice() {
         std::cout << "[" CONSOLE_BLUE "NOTICE" CONSOLE_RESET "] " << m_file.string() << ':' << m_line + 1 << ':' << m_col + 1 << ": " << m_msg
                   << '\n' << m_line + 1 << " | " << m_src.substr(0, m_idx) << CONSOLE_BLUE << m_src.substr(m_idx, m_len) << CONSOLE_RESET << m_src.substr(m_idx + m_len)
-                  << '\n' << std::string(std::to_string(m_line).length(), ' ') << "   " << std::string(m_idx, ' ') << CONSOLE_BLUE "^" << std::string(m_len - 1, '~') << CONSOLE_RESET
+                  << '\n' << std::string(std::to_string(m_line + 1).length(), ' ') << "   " << std::string(m_idx, ' ') << CONSOLE_BLUE "^" << std::string(m_len - 1, '~') << CONSOLE_RESET
                   << std::endl;
     }
 
     void MessageWithSource::print_warning() {
         std::cout << "[" CONSOLE_YELLOW "WARNING" CONSOLE_RESET "] " << m_file.string() << ':' << m_line + 1 << ':' << m_col + 1 << ": " << m_msg
                   << '\n' << m_line + 1 << " | " << m_src.substr(0, m_idx) << CONSOLE_YELLOW << m_src.substr(m_idx, m_len) << CONSOLE_RESET << m_src.substr(m_idx + m_len)
-                  << '\n' << std::string(std::to_string(m_line).length(), ' ') << "   " << std::string(m_idx, ' ') << CONSOLE_YELLOW "^" << std::string(m_len - 1, '~') << CONSOLE_RESET
+                  << '\n' << std::string(std::to_string(m_line + 1).length(), ' ') << "   " << std::string(m_idx, ' ') << CONSOLE_YELLOW "^" << std::string(m_len - 1, '~') << CONSOLE_RESET
                   << std::endl;
     }
 
@@ -37,7 +37,8 @@ namespace message {
                       << m_src.substr(m_idx + m_len);
         }
 
-        std::cout << '\n' << std::string(std::to_string(m_line).length(), ' ') << "   " << std::string(m_idx, ' ') << CONSOLE_RED "^" << std::string(m_len - 1, '~') << CONSOLE_RESET
+
+        std::cout << '\n' << std::string(std::to_string(m_line + 1).length(), ' ') << "   " << std::string(m_idx, ' ') << CONSOLE_RED "^" << std::string(m_len - 1, '~') << CONSOLE_RESET
                   << std::endl;
     }
 

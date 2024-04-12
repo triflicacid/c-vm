@@ -6,6 +6,7 @@ namespace language::statement {
         ADDITION,
         MULTIPLICATION,
         SUBTRACTION,
+        FUNCTION_CALL,
         DIVISION,
 
         NEGATION

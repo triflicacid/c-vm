@@ -2,14 +2,16 @@
 #include <set>
 #include "Parser.hpp"
 
-#include "language/src/statement/Symbol.hpp"
-#include "language/src/statement/Symbol.hpp"
+#include "language/src/statement/SymbolRef.hpp"
+#include "language/src/statement/SymbolRef.hpp"
 #include "types/NumericType.hpp"
 #include "statement/Number.hpp"
 #include "statement/UnaryOperator.hpp"
 #include "statement/BinaryOperator.hpp"
 #include "statement/ReturnStatement.hpp"
 #include "LanguageOptions.hpp"
+#include "statement/FunctionRef.hpp"
+#include "types/UnitType.hpp"
 
 namespace language::parser {
     void Parser::save() {
@@ -145,32 +147,7 @@ namespace language::parser {
     bool Parser::check_type_match(const types::Type *a, const types::Type *b, int pos, message::List *messages) {
         bool match = true;
 
-        // b is empty, a is not
-        if (b == nullptr) {
-            if (a != nullptr) {
-                match = false;
-
-                if (messages) {
-                    set(pos);
-                    messages->add(generate_error("Type Mismatch: cannot match type " + a->repr() + " with ()"));
-                }
-            }
-        }
-
-        // a is empty, b is not
-        else if (a == nullptr) {
-            match = false;
-
-            if (messages) {
-                mark_end();
-                set(pos);
-                messages->add(generate_error("Type Mismatch: cannot match () with type " + b->repr()));
-            }
-        }
-
-        // If either are not numeric or cannot implicitly cast between them
-        else if (a->category() != types::Type::Category::Numeric || b->category() != types::Type::Category::Numeric
-                || !types::NumericType::can_implicitly_cast_to((types::NumericType *) a, (types::NumericType *) b)) {
+        if (!types::can_implicitly_cast_to(a, b)) {
             match = false;
 
             if (messages) {
@@ -271,6 +248,16 @@ namespace language::parser {
         return generate_error(message.str());
     }
 
+    message::MessageWithSource *Parser::generate_syntax_error_expected_expression() {
+        std::vector<lexer::Token::Type> expected = {lexer::Token::IDENTIFIER, lexer::Token::INTEGER, lexer::Token::LPARENS};
+
+        for (auto& pair : token_unary_operators) {
+            expected.emplace_back(pair.first);
+        }
+
+        return generate_syntax_error(expected);
+    }
+
     bool Parser::consume_type(message::List& messages, const types::Type **type) {
         if (expect(lexer::num_types)) {
             *type = &types::num_types.find(peek(-1)->type())->second;
@@ -330,6 +317,37 @@ namespace language::parser {
 
             auto *func = new statement::Function(token_func_name->image(), type, m_prog->new_function_id());
             m_prog->register_function(func);
+
+            return true;
+        } else {
+            return false;
+        }
+    }
+
+    bool Parser::consume_kw_decl_data(message::List &messages) {
+        if (expect(lexer::Token::KW_DECL) && expect(lexer::Token::KW_DATA)) {
+            // <DATA_IDENTIFIER>
+            if (!expect(lexer::Token::DATA_IDENTIFIER, &messages)) {
+                return false;
+            }
+
+            auto token = peek(-1);
+            int token_pos = m_pos - 1;
+
+            // Does data already exist?
+            if (m_scopes.get_local()->data_exists(token->image())) {
+                set(token_pos);
+                messages.add(generate_error("Cannot re-declare data type"));
+
+                auto *data = m_scopes.get_local()->data_get(token->image());
+                set(data->position());
+                messages.add(generate_message(message::Level::Note, "Declared here"));
+
+                return false;
+            }
+
+            // Create empty definition
+            m_scopes.get_local()->data_create(new types::UserType(token, token_pos));
 
             return true;
         } else {
@@ -415,9 +433,24 @@ namespace language::parser {
 
             auto token_data_identifier = peek(-1);
 
-            // Perform checks
-            if (!check_can_create_identifier(*token_data_identifier, data_pos, messages)) {
-                return false;
+            // Either create type, or complete definition
+            types::UserType *user_type;
+
+            if (m_scopes.get_local()->data_exists(token_data_identifier->image())) {
+                user_type = m_scopes.get_local()->data_get(token_data_identifier->image());
+
+                if (user_type->member_count() > 0) {
+                    set(data_pos);
+                    messages.add(generate_error("Identifier is already bound"));
+
+                    set(user_type->position());
+                    messages.add(generate_message(message::Level::Note, "Identifier bound here"));
+
+                    return false;
+                }
+            } else {
+                user_type = new types::UserType(token_data_identifier, data_pos);
+                m_scopes.get_local()->data_create(user_type);
             }
 
             // "{"
@@ -425,17 +458,12 @@ namespace language::parser {
                 return false;
             }
 
-            // Start constructing type
-            auto user_type = new types::UserType(token_data_identifier, data_pos);
-            m_scopes.get_local()->data_create(user_type);
-
             // Parse contents
             while (true) {
                 // <IDENTIFIER>
                 int identifier_pos = m_pos;
 
                 if (!expect(lexer::Token::IDENTIFIER, &messages)) {
-                    delete user_type;
                     return false;
                 }
 
@@ -452,20 +480,17 @@ namespace language::parser {
                     set(data_pos);
                     messages.add(generate_message(message::Level::Note, "Data declared here"));
 
-                    delete user_type;
                     return false;
                 }
 
                 // ":"
                 if (!expect(lexer::Token::COLON, &messages)) {
-                    delete user_type;
                     return false;
                 }
 
                 // Type
                 const types::Type *type;
                 if (!consume_type(messages, &type)) {
-                    delete user_type;
                     return false;
                 }
 
@@ -473,18 +498,16 @@ namespace language::parser {
                 auto symbol = new parser::SymbolDeclaration(identifier_pos, token_identifier->image(), type, false);
                 user_type->add(symbol);
 
-                // <EOL> or "," or "}"
-                if (!expect({ lexer::Token::EOL, lexer::Token::COMMA, lexer::Token::RBRACE }, &messages)) {
-                    delete user_type;
-                    return false;
-                }
-
-                while (expect(lexer::Token::EOL));
-
-                // If '}', exit
-                if (peek(-1)->type() == lexer::Token::RBRACE || (exists() && peek()->type() == lexer::Token::RBRACE)) {
-                    move();
+                if (expect(lexer::Token::COMMA)) {
+                    expect(lexer::Token::EOL);
+                    continue;
+                } else if (expect(lexer::Token::EOL)) {
+                    continue;
+                } else if (expect(lexer::Token::RBRACE)) {
                     break;
+                } else {
+                    generate_syntax_error({lexer::Token::COMMA, lexer::Token::EOL, lexer::Token::RBRACE});
+                    return false;
                 }
             }
 
@@ -617,12 +640,16 @@ namespace language::parser {
             }
 
             // Parse return type
-            const types::Type *return_type = nullptr;
+            const types::Type *return_type;
 
             if (expect(lexer::Token::ARROW)) {
-                if (!expect(lexer::Token::UNIT) && !consume_type(messages, &return_type)) {
+                if (expect(lexer::Token::UNIT)) {
+                    return_type = new types::UnitType();
+                } else if (!consume_type(messages, &return_type)) {
                     return false;
                 }
+            } else {
+                return_type = new types::UnitType();
             }
 
             // "{"
@@ -638,6 +665,12 @@ namespace language::parser {
 
             // Create function type
             auto *type = new types::FunctionType(func_name_pos, param_types, return_type);
+
+            // Check if we can create the overload
+            if (!check_can_create_overload(token_func_name->image(), type, messages)) {
+                delete type;
+                return false;
+            }
 
             // Check if function was declared previously
             auto *old_type = m_scopes.get_local()->func_get(token_func_name->image(), type);
@@ -704,7 +737,7 @@ namespace language::parser {
             }
 
             // Check for return statements
-            if (func->function_type()->return_type() != nullptr) {
+            if (func->function_type()->return_type()->category() != types::Category::None) {
                 bool has_return = false;
 
                 for (auto stmt : *block->statements()) {
@@ -793,6 +826,33 @@ namespace language::parser {
         }
     }
 
+    bool Parser::parse_expression_list(message::List& messages, std::vector<const statement::Expression *>& expressions) {
+        if (!expect(lexer::Token::LPARENS, &messages)) {
+            return false;
+        }
+
+        while (exists()) {
+            auto *expr = parse_expression(messages);
+
+            if (messages.has_message_of(message::Level::Error)) {
+                return false;
+            } else if (expr == nullptr) {
+                messages.add(generate_syntax_error_expected_expression());
+                return false;
+            }
+
+            expressions.push_back(expr);
+
+            if (expect(lexer::Token::RPARENS)) {
+                break;
+            } else if (!expect(lexer::Token::COMMA, &messages)) {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
     const statement::Expression *Parser::parse_expression(message::List& messages, int precedence) {
         // Collect LHS
         const statement::Expression *lhs = nullptr;
@@ -830,13 +890,15 @@ namespace language::parser {
             if (m_scopes.var_exists(identifier->image())) {
                 auto *decl = m_scopes.var_get(identifier->image());
                 decl->was_used_since_assignment = true;
-                auto *symbol = new statement::Symbol(pos, identifier, decl);
-                lhs = symbol;
+
+                if (decl->type()->category() == types::Category::Function) {
+                    auto *func = m_prog->get_function(((types::FunctionType *) decl->type())->id());
+                    lhs = new statement::FunctionRef(pos, identifier, func);
+                } else {
+                    lhs = new statement::SymbolRef(pos, identifier, decl);
+                }
             } else if (m_scopes.func_exists(identifier->image())) {
-                // TODO
-                set(pos);
-                messages.add(generate_error("Function calls are not supported."));
-                return nullptr;
+                lhs = new statement::FunctionRef(pos, identifier, identifier->image());
             } else {
                 set(pos);
 
@@ -888,25 +950,14 @@ namespace language::parser {
         const lexer::Token *op_token;
         int op_pos;
 
-        while (exists() && peek()->type() != lexer::Token::EOL && peek()->type() != lexer::Token::RPARENS) {
+        while (exists()) {
             // Expect infix operator
             op_token = peek();
             op_pos = m_pos;
             auto op = token_binary_operators.find(op_token->type());
 
             if (op == token_binary_operators.end()) {
-                // Build vector of binary operator types to report in an error
-                std::vector<lexer::Token::Type> expected;
-                expected.reserve(token_binary_operators.size());
-
-                for (auto &pair: token_binary_operators) {
-                    expected.push_back(pair.first);
-                }
-
-                messages.add(generate_syntax_error(expected));
-                delete lhs;
-
-                return nullptr;
+                break;
             }
 
             op_info = &op->second;
@@ -914,6 +965,33 @@ namespace language::parser {
             // Exit if higher precedence
             if (precedence >= op_info->precedence) {
                 break;
+            }
+
+            // If function call, we parse slightly differently
+            if (op_info->type == statement::OperatorType::FUNCTION_CALL) {
+                // Check we have a function reference
+                if (lhs->type() != statement::Type::FUNCTION_REF) {
+                    messages.add(generate_custom_syntax_error(op_token->image() + " can only be applied to a function"));
+                    delete lhs;
+                    return nullptr;
+                }
+
+                // Parse and generate call
+                auto *call = parse_function_call(messages, *(statement::FunctionRef *) lhs);
+                delete lhs;
+
+                if (call == nullptr) {
+                    return nullptr;
+                }
+
+                lhs = call;
+                continue;
+            }
+
+            // Unresolved function reference?
+            if (lhs->type() == statement::Type::FUNCTION_REF && !check_function_reference_is_resolved(messages, (statement::FunctionRef *) lhs)) {
+                delete lhs;
+                return nullptr;
             }
 
             move();
@@ -928,8 +1006,8 @@ namespace language::parser {
             }
 
             // If we have a symbol, perform some checks
-            if (lhs->type() == statement::Type::SYMBOL) {
-                auto *symbol = m_scopes.get_local()->var_get(((statement::Symbol *) lhs)->name());
+            if (lhs->type() == statement::Type::SYMBOL_REF) {
+                auto *symbol = m_scopes.get_local()->var_get(((statement::SymbolRef *) lhs)->name());
 
                 if (op_info->type == statement::OperatorType::ASSIGNMENT) {
                     symbol->was_assigned = true;
@@ -952,6 +1030,12 @@ namespace language::parser {
 
             // Wrap in operator
             lhs = new statement::BinaryOperator(op_pos, op_token, op_info->type, lhs, rhs);
+        }
+
+        // Unresolved function reference?
+        if (lhs->type() == statement::Type::FUNCTION_REF && !check_function_reference_is_resolved(messages, (statement::FunctionRef *) lhs)) {
+            delete lhs;
+            return nullptr;
         }
 
         return lhs;
@@ -991,12 +1075,16 @@ namespace language::parser {
         }
 
         // Parse return type
-        const types::Type *return_type = nullptr;
+        const types::Type *return_type;
 
         if (expect(lexer::Token::ARROW)) {
-            if (!expect(lexer::Token::UNIT) && !consume_type(messages, &return_type)) {
+            if (expect(lexer::Token::UNIT)) {
+                return_type = new types::UnitType();
+            } else if (!consume_type(messages, &return_type)) {
                 return nullptr;
             }
+        } else {
+            return_type = new types::UnitType();
         }
 
         return new types::FunctionType(given_pos == -1 ? pos : given_pos, param_types, return_type);
@@ -1050,6 +1138,9 @@ namespace language::parser {
 
             if (messages.has_message_of(message::Level::Error)) {
                 break;
+            } else if (expr == nullptr) {
+                messages.add(generate_syntax_error_expected_expression());
+                break;
             }
 
             block->add(expr);
@@ -1062,6 +1153,7 @@ namespace language::parser {
         reset();
 
         std::vector<std::function<bool()>> parsers = {
+            [this, &messages] { return this->consume_kw_decl_data(messages); },
             [this, &messages] { return this->consume_kw_decl_func(messages); },
             [this, &messages] { return this->consume_kw_data(messages); },
             [this, &messages] { return this->consume_kw_func(messages); },
@@ -1182,14 +1274,123 @@ namespace language::parser {
         return true;
     }
 
+    const statement::FunctionCall *Parser::parse_function_call(message::List &messages, statement::FunctionRef &function_ref) {
+        auto *signatures = m_scopes.func_get(function_ref.name());
+        std::vector<const statement::Expression *> arguments;
+
+        // Expect argument list or "()"
+        if (exists() && peek()->type() == lexer::Token::LPARENS) {
+            if (!parse_expression_list(messages, arguments)) {
+                for (auto &arg : arguments) delete arg;
+                return nullptr;
+            }
+        } else if (!expect(lexer::Token::UNIT)) {
+            messages.add(generate_syntax_error({lexer::Token::RPARENS, lexer::Token::UNIT}));
+            return nullptr;
+        }
+
+        // Get argument types
+        std::vector<const types::Type *> argument_types;
+        argument_types.reserve(arguments.size());
+
+        for (auto &arg : arguments) {
+            argument_types.push_back(arg->get_type_of());
+        }
+
+        // Look for signature which matches arguments, or check if supplies signature exists
+        bool error = false;
+        std::string error_message;
+
+        if (function_ref.function() == nullptr) {
+            const types::FunctionType *signature = nullptr;
+
+            for (auto &candidate: *signatures) {
+                if (candidate->matches_args(argument_types)) {
+                    signature = candidate;
+                    break;
+                }
+            }
+
+            if (signature == nullptr) {
+                error = true;
+                error_message = "Cannot find signature " + function_ref.name();
+            } else {
+                function_ref.set_function(m_prog->get_function(signature->id()));
+            }
+        } else {
+            if (!function_ref.function()->function_type()->matches_args(argument_types)) {
+                error = true;
+                error_message = "Type Mismatch: cannot match supplied function " + function_ref.name() + function_ref.function()->function_type()->repr() + " with arguments ";
+            }
+        }
+
+        // Report error?
+        if (error) {
+            mark_end();
+            set(function_ref.position());
+
+            std::stringstream stream;
+            stream << "(";
+
+            for (int i = 0; i < arguments.size(); i++) {
+                stream << argument_types[i]->repr();
+
+                if (i < arguments.size() - 1) stream << ", ";
+            }
+
+            stream << ")";
+
+            messages.add(generate_error(error_message + stream.str()));
+
+            for (auto &arg: arguments) delete arg;
+            return nullptr;
+        }
+
+        // Return call
+        return new statement::FunctionCall(&function_ref, arguments);
+    }
+
+    bool Parser::check_function_reference_is_resolved(message::List &messages, statement::FunctionRef *reference) {
+        if (reference->function() == nullptr) {
+            // Collect candidates
+            auto *candidates = m_scopes.func_get(reference->name());
+
+            // If only one candidate, pick this one
+            if (candidates->size() == 1) {
+                reference->set_function(m_prog->get_function(candidates->back()->id()));
+                return true;
+            }
+
+            mark_end();
+            set(reference->position());
+            set_end(-1);
+
+            messages.add(generate_error("Unable to resolve ambiguous function reference"));
+
+            for (auto& candidate : *candidates) {
+                set(candidate->position());
+                messages.add(generate_message(message::Level::Note, "Possible candidate: " + reference->name() + candidate->repr()));
+            }
+
+            // Loop
+
+            return false;
+        }
+
+        return true;
+    }
+
     std::map<lexer::Token::Type, OperatorInfo> token_binary_operators = {
             { lexer::Token::EQUALS, { 4, true, statement::OperatorType::ASSIGNMENT } },
             { lexer::Token::PLUS, { 14, false, statement::OperatorType::ADDITION } },
             { lexer::Token::DASH, { 14, false, statement::OperatorType::SUBTRACTION } },
             { lexer::Token::STAR, { 15, false, statement::OperatorType::MULTIPLICATION } },
+            { lexer::Token::STAR, { 15, false, statement::OperatorType::MULTIPLICATION } },
+            { lexer::Token::LPARENS, { 18, false, statement::OperatorType::FUNCTION_CALL } },
+            { lexer::Token::UNIT, { 18, false, statement::OperatorType::FUNCTION_CALL } },
     };
 
     std::map<lexer::Token::Type, OperatorInfo> token_unary_operators = {
-            { lexer::Token::DASH, { 7, false, statement::OperatorType::NEGATION } },
+            { lexer::Token::DASH, { 17, false, statement::OperatorType::NEGATION } },
     };
 }

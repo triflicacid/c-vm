@@ -1,6 +1,6 @@
 #pragma once
 
-#include "language/src/statement/Symbol.hpp"
+#include "language/src/statement/SymbolRef.hpp"
 #include "types/UserType.hpp"
 #include "types/FunctionType.hpp"
 
@@ -10,7 +10,7 @@ namespace language::parser {
         size_t m_offset;
         size_t m_size;
         std::map<std::string, parser::SymbolDeclaration *> m_symbols; // Physical stack
-        std::map<std::string, const types::UserType *> m_user_types;
+        std::map<std::string, types::UserType *> m_user_types;
         std::map<std::string, std::vector<const types::FunctionType *>> m_functions;
         int m_func_id; // ID of invoker function
 
@@ -51,10 +51,10 @@ namespace language::parser {
         bool data_exists(const std::string& name);
 
         /** Get symbol information. */
-        const types::UserType *data_get(const std::string& name);
+        types::UserType *data_get(const std::string& name);
 
         /** Create new data-type. */
-        void data_create(const types::UserType *data);
+        void data_create(types::UserType *data);
 
         /** Query if function name var_exists. */
         bool func_exists(const std::string& name);

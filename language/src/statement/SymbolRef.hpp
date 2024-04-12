@@ -4,15 +4,15 @@
 #include "parser/SymbolDeclaration.hpp"
 
 namespace language::statement {
-    class Symbol : public Expression {
+    class SymbolRef : public Expression {
     private:
         const parser::SymbolDeclaration *m_decl;
 
     public:
-        Symbol(int pos, const lexer::Token *token, const parser::SymbolDeclaration *decl)
+        SymbolRef(int pos, const lexer::Token *token, const parser::SymbolDeclaration *decl)
         : Expression(pos, token), m_decl(decl) {};
 
-        [[nodiscard]] Type type() const override { return Type::SYMBOL; }
+        [[nodiscard]] Type type() const override { return Type::SYMBOL_REF; }
 
         [[nodiscard]] std::string name() const { return m_token->image(); }
 

@@ -121,7 +121,7 @@ Numbers containing `.` will be treated as floating-point.
 ### Directives
 These are instructions to the pre-processor, and are handled before compilation. These modify the source code itself, so may be used for meta-programming.
 
-- `%define [SYMBOL] [VALUE]` - defines the constant `SYMBOL` with value `VALUE`. `VALUE` contains everything from after `SYMBOL ` to end of the line. From this point, any occurrences of `SYMBOL` is replaced by `VALUE`.
+- `%define [SYMBOL] [VALUE]` - defines the constant `SYMBOL_REF` with value `VALUE`. `VALUE` contains everything from after `SYMBOL ` to end of the line. From this point, any occurrences of `SYMBOL` is replaced by `VALUE`.
 ```
 %define NUMBER 123
 mov NUMBER, r0

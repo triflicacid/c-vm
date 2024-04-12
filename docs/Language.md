@@ -85,6 +85,8 @@ data <Name> {
 
 They are defined with a data identifier and contain a list of field-type pairs. Delimiting commas are optional if newlines are used.
 
+One may use `decl data <Name>` to declare a data type without implementing it.
+
 Members may be accessed using the `.` operator:
 
 ```

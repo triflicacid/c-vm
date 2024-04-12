@@ -3,15 +3,14 @@
 #include "lexer/Token.hpp"
 
 namespace language::types {
-    class Type {
-    public:
-        enum class Category {
-            None,
-            Numeric,
-            User,
-            Function,
-        };
+    enum class Category {
+        None,
+        Numeric,
+        User,
+        Function,
+    };
 
+    class Type {
     public:
         [[nodiscard]] virtual size_t size() const { return 0; }
 

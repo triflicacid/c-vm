@@ -6,6 +6,8 @@
 #include "ScopeManager.hpp"
 #include "Program.hpp"
 #include "statement/OperatorType.hpp"
+#include "statement/FunctionRef.hpp"
+#include "statement/FunctionCall.hpp"
 
 namespace language::parser {
     class Parser {
@@ -68,6 +70,9 @@ namespace language::parser {
         /** Consume "decl func ...". */
         bool consume_kw_decl_func(message::List &messages);
 
+        /** Consume "decl data ...". */
+        bool consume_kw_decl_data(message::List& messages);
+
         /** Consume "decl ...". */
         bool consume_kw_decl(message::List &messages);
 
@@ -101,8 +106,17 @@ namespace language::parser {
         /** Check that m_entry exists. */
         bool check_entry_point_exists(message::List& messages);
 
+        /** Check function reference is resolved. If not, try to resolve it, or report error. */
+        bool check_function_reference_is_resolved(message::List& messages, statement::FunctionRef *reference);
+
         /** Parse a function type. If provided, set type.position() to the given value.  */
         types::FunctionType *parse_function_type(message::List &messages, bool arg_list_required, int pos = -1);
+
+        /** Parse structure in the form (..., ..., ...). If error, delete all expressions. */
+        bool parse_expression_list(message::List& messages, std::vector<const statement::Expression *>& expressions);
+
+        /** Parse function call (peek() must point to '('). Update given function reference. Return nullptr if error, or create FunctionCall. */
+        const statement::FunctionCall *parse_function_call(message::List& messages, statement::FunctionRef& function_ref);
 
         /** Parse an expression. */
         const statement::Expression *parse_expression(message::List& messages, int precedence = 0);
@@ -122,6 +136,9 @@ namespace language::parser {
         message::MessageWithSource *generate_syntax_error(const std::vector<lexer::Token::Type>& expected);
 
         message::MessageWithSource *generate_syntax_error_multi(const std::vector<const std::vector<lexer::Token::Type> *>& expected);
+
+        /** Generate a syntax error for expected expression. */
+        message::MessageWithSource *generate_syntax_error_expected_expression();
 
         /** Generate error on the given token. */
         message::MessageWithSource *generate_custom_syntax_error(const std::string& expected);

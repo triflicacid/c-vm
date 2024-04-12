@@ -37,5 +37,8 @@ namespace language::types {
         static lexer::Token::Type get_suitable_type(unsigned long long);
     };
 
+    /** Checks if both types are numeric and can cast from fst to snd. */
+    bool can_implicitly_cast_to(const Type *fst, const Type *snd);
+
     extern std::map<lexer::Token::Type, NumericType> num_types;
 }

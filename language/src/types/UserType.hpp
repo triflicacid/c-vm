@@ -19,7 +19,10 @@ namespace language::types {
             }
         }
 
-        /** Check if member already var_exists. */
+        /** Get number of members. */
+        [[nodiscard]] size_t member_count() const { return m_members.size(); }
+
+        /** Check if member already exists. */
         [[nodiscard]] bool exists(const std::string& name) const;
 
         /** Get member with the given name */

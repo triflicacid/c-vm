@@ -8,10 +8,10 @@ namespace language::parser {
 
         stream << prefix << "<" << tag_name << " offset=\"" << m_offset << "\" bytes=\"" << size() << "\">" << std::endl;
 
-        if (m_type->category() == types::Type::Category::User) {
+        if (m_type->category() == types::Category::User) {
             // Don't both printing out internal info
             stream << prefix << "  <UserType>" << m_type->repr() << "</UserType>";
-        } else if (m_type->category() == types::Type::Category::Function &&
+        } else if (m_type->category() == types::Category::Function &&
                 ((types::FunctionType *) m_type)->is_stored()) {
             // Don't both printing out internal info
             stream << prefix << "  <FunctionType id=\"" << ((types::FunctionType *) m_type)->id() << "\" />";

@@ -8,7 +8,9 @@ namespace language::statement {
         FUNCTION,
         RETURN,
         EXPRESSION,
-        SYMBOL,
+        SYMBOL_REF,
+        FUNCTION_REF,
+        FUNCTION_CALL,
         NUMBER,
         BINARY_OPERATOR,
         UNARY_OPERATOR

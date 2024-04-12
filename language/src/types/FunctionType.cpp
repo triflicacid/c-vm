@@ -1,16 +1,33 @@
 #include <sstream>
 #include "FunctionType.hpp"
+#include "NumericType.hpp"
 
 namespace language::types {
-    bool FunctionType::equal(const FunctionType& other) const {
-        if (argc() != other.argc()) {
+    bool FunctionType::matches_args(const std::vector<const types::Type *> &arguments) const {
+        if (argc() != arguments.size()) {
             return false;
         }
 
         for (int i = 0; i < argc(); i++) {
-            if (m_args[i]->repr() != other.m_args[i]->repr()) {
+            if (m_args[i] == arguments[i] || can_implicitly_cast_to(arguments[i], m_args[i])) {
+                continue;
+            }
+
+            if (m_args[i] == nullptr || arguments[i] == nullptr || m_args[i]->repr() != arguments[i]->repr()) {
                 return false;
             }
+        }
+
+        return true;
+    }
+
+    bool FunctionType::matches_args(const FunctionType *other) const {
+        return matches_args(other->m_args);
+    }
+
+    bool FunctionType::equal(const FunctionType& other) const {
+        if (!matches_args(other.m_args)) {
+            return false;
         }
 
         if (m_ret == nullptr) {
@@ -31,7 +48,7 @@ namespace language::types {
             stream << prefix << "  <ParameterTypes>" << std::endl;
 
             for (auto &arg: m_args) {
-                if (arg->category() == types::Type::Category::User) {
+                if (arg->category() == types::Category::User) {
                     stream << prefix << "    <UserType>" << arg->repr() << "</UserType>";
                 } else {
                     arg->debug_print(stream, prefix + "    ");
@@ -46,7 +63,7 @@ namespace language::types {
         if (m_ret != nullptr) {
             stream << prefix << "  <ReturnType>" << std::endl;
 
-            if (m_ret->category() == types::Type::Category::User) {
+            if (m_ret->category() == types::Category::User) {
                 stream << prefix << "    <UserType>" << m_ret->repr() << "</UserType>";
             } else {
                 m_ret->debug_print(stream, prefix + "    ");
@@ -100,6 +117,9 @@ namespace language::types {
     }
 
     std::vector<int> FunctionType::arg_offsets() const {
+        if (m_args.empty())
+            return {};
+
         int offset = (int) (arg_block_size() - m_args[0]->size());
         std::vector<int> offsets;
         offsets.reserve(m_args.size());

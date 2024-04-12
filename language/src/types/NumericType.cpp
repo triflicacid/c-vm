@@ -19,4 +19,9 @@ namespace language::types {
         if (value <= LLONG_MAX) return lexer::Token::TYPE_i64;
         return lexer::Token::TYPE_u64;
     }
+
+    bool can_implicitly_cast_to(const Type *fst, const Type *snd) {
+        return fst && snd && fst->category() == Category::Numeric && snd->category() == Category::Numeric
+               && NumericType::can_implicitly_cast_to((NumericType *) fst, (NumericType *) snd);
+    }
 }

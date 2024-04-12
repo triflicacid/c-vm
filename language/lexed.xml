@@ -12,8 +12,8 @@
     <Token line="0" col="25" type="18">{</Token>
     <Token line="1" col="4" type="3">return</Token>
     <Token line="1" col="11" type="30">n</Token>
-    <Token line="1" col="13" type="24">+</Token>
-    <Token line="1" col="15" type="29">1</Token>
+    <Token line="1" col="12" type="24">+</Token>
+    <Token line="1" col="13" type="29">1</Token>
   </Line>
   <Line>
     <Token line="2" col="0" type="19">}</Token>

@@ -39,12 +39,12 @@ namespace language::parser {
         return m_user_types.find(name) != m_user_types.end();
     }
 
-    const types::UserType *Scope::data_get(const std::string &name) {
+    types::UserType *Scope::data_get(const std::string &name) {
         auto entry = m_user_types.find(name);
         return entry == m_user_types.end() ? nullptr : entry->second;
     }
 
-    void Scope::data_create(const types::UserType *data) {
+    void Scope::data_create(types::UserType *data) {
         m_user_types.insert({ data->name(), data });
     }
 
@@ -88,7 +88,7 @@ namespace language::parser {
         }
 
         for (auto& f_type : entry->second) {
-            if (f_type->equal(*overload)) {
+            if (f_type->matches_args(overload)) {
                 return true;
             }
         }
@@ -109,7 +109,7 @@ namespace language::parser {
         }
 
         for (auto& f_type : vec->second) {
-            if (f_type->equal(*overload)) {
+            if (f_type->matches_args(overload)) {
                 return f_type;
             }
         }

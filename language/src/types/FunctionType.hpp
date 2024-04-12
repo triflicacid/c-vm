@@ -9,7 +9,7 @@ namespace language::types {
     private:
         int m_pos;
         std::vector<const types::Type *> m_args; // Vector of argument type tokens
-        const types::Type *m_ret; // Return type token, may be nullptr
+        const types::Type *m_ret;
         int m_id;
 
     public:
@@ -26,7 +26,13 @@ namespace language::types {
             if (m_ret && !m_ret->is_single_instance()) delete m_ret;
         }
 
-        [[nodiscard]] size_t size() const override { return sizeof(WORD_T); };
+        [[nodiscard]] size_t size() const override { return sizeof(WORD_T); }
+
+        /** Check if arguments match with another type. */
+        [[nodiscard]] bool matches_args(const FunctionType *other) const;
+
+        /** Check if arguments match. */
+        [[nodiscard]] bool matches_args(const std::vector<const types::Type *>& arguments) const;
 
         /** Check if two signatures are equal */
         [[nodiscard]] bool equal(const FunctionType& other) const;
